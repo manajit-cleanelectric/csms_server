@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Table: charger_types
+model charger_types {
+  type_id      Int           @id @default(autoincrement())
+  charger_type String
+
+  charge_points charge_points[]
+}
+
+// Table: tariff_types
+model tariff_types {
+  tariff_id   Int           @id @default(autoincrement())
+  tariff_type String
+  tariff_cost Int
+
+  charge_points charge_points[]
+}
+
+// Table: charge_points
+model charge_points {
+  charge_point_id   String        @id
+  model             String
+  vendor            String
+  serial_number     String
+  firmware_version  String?
+  status            String
+  last_heartbeat    DateTime
+  charger_type_id   Int
+  tariff_id         Int
+
+  charger_types     charger_types @relation(fields: [charger_type_id], references: [type_id])
+  tariff_types      tariff_types  @relation(fields: [tariff_id], references: [tariff_id])
+  transactions      transactions[]
+  meter_values      meter_values[]
+
+  @@map("charge_points")
+}
+
+// Table: users
+model users {
+  phone_no         String         @id
+  VEN              String         @unique
+  password         String
+  name             String
+  email            String
+  created_at       DateTime
+  is_active        Boolean
+  has_pending_auth Boolean
+
+  transactions     transactions[]
+}
+
+// Table: transactions
+model transactions {
+  transaction_id   String        @id
+  charge_point_id  String
+  connector_id     String
+  VEN              String
+  start_timestamp  DateTime
+  stop_timestamp   DateTime
+  meter_start      Int
+  meter_stop       Int
+  status           String
+
+  charge_points    charge_points @relation(fields: [charge_point_id], references: [charge_point_id])
+  users            users         @relation(fields: [VEN], references: [VEN])
+  meter_values     meter_values[]
+
+  @@map("transactions")
+}
+
+// Table: meter_values
+model meter_values {
+  id              Int           @id @default(autoincrement())
+  transaction_id  String
+  charge_point_id String
+  connector_id    String
+  measurand       String
+  value           Float
+  unit            String
+  timestamp       DateTime
+
+  transactions    transactions  @relation(fields: [transaction_id], references: [transaction_id])
+  charge_points   charge_points @relation(fields: [charge_point_id], references: [charge_point_id])
+
+  @@map("meter_values")
+}
