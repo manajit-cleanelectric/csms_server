@@ -1,6 +1,7 @@
 import {NextFunction, Request, Response} from 'express';
 import jwt from 'jsonwebtoken';
-import {UserRoles} from '../models/users'
+import {UserRoles} from '../models/users';
+import {JWT_SECRET_KEY} from "../app";
 
 interface UserPayload {
     id: string;
@@ -25,7 +26,8 @@ const authenticate = (req: Request, res: Response, next: NextFunction): void => 
             return;
         }
         const token = authHeader.replace('Bearer ', '').trim();
-        req.user = jwt.verify(token, process.env.JWT_SECRET_KEY!) as UserPayload;
+        const { user } = jwt.verify(token, JWT_SECRET_KEY) as { user: UserPayload; iat: number; exp: number };
+        req.user = user;
         next();
     } catch (error: any) {
         if (error.name === 'TokenExpiredError') {
