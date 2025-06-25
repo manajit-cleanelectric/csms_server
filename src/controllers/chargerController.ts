@@ -26,5 +26,13 @@ async function listAllCharger() {
     }
 }
 
+async function getCharger(chargerId: string) {
+    try {
+        return await Chargers.findOneBy({ id: parseInt(chargerId,10) });
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+}
 
-export {addCharger, listAllCharger};
+
+export {addCharger, listAllCharger, getCharger};

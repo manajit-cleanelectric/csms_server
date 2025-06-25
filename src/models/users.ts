@@ -1,13 +1,13 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, UpdateDateColumn, CreateDateColumn} from "typeorm";
 
-export enum UserRole {
+enum UserRoles {
     ADMIN = 'admin',
     SUPERVISOR = 'supervisor',
     CUSTOMER = 'customer',
 }
 
 @Entity("users")
-export class Users extends BaseEntity {
+class Users extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -68,8 +68,8 @@ export class Users extends BaseEntity {
 
     @Column({
         type: 'enum',
-        enum: UserRole,
-        default: UserRole.CUSTOMER,
+        enum: UserRoles,
+        default: UserRoles.CUSTOMER,
     })
     role!: string;
 
@@ -82,4 +82,9 @@ export class Users extends BaseEntity {
     public get fullName() {
         return this.firstName + " " + this.lastName;
     }
+}
+
+export {
+    Users,
+    UserRoles
 }
