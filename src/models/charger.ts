@@ -2,7 +2,15 @@ import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColu
 
 export enum ChargerTypes {
     TYPE_6 = 'type_6',
-    CCS_2 = 'ccs2'
+    CCS_2 = 'ccs_2'
+}
+
+export enum ChargerStatus {
+    AVAILABLE = 'available',
+    IN_USE = 'in_use',
+    POWER_DOWN = 'power_down',
+    DOWN_FOR_MAINTENANCE = 'down_for_maintenance',
+    UNKNOWN = 'unknown',
 }
 
 
@@ -60,11 +68,17 @@ export class Chargers extends BaseEntity {
 
     @Column({
         type: "int",
-        unique: true,
         nullable: false
     })
     @Check(`"noOfConnector" >= 1 AND "noOfConnector" <= 10`)
     noOfConnector: number;
+
+    @Column({
+        type: 'enum',
+        enum: ChargerStatus,
+        default: ChargerStatus.UNKNOWN,
+    })
+    status: string
 
     @CreateDateColumn()
     createdAt!: Date;
