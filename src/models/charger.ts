@@ -74,11 +74,27 @@ export class Chargers extends BaseEntity {
     noOfConnector: number;
 
     @Column({
+        type: "decimal",
+        precision: 10,
+        scale: 6
+    })
+    latitude: number;
+
+    @Column({
+        type: "decimal",
+        precision: 10,
+        scale: 6
+    })
+    longitude: number;
+
+    @Column({
         type: 'enum',
         enum: ChargerStatus,
         default: ChargerStatus.UNKNOWN,
     })
     status: string
+
+    // TODO: Different status for each connector
 
     @CreateDateColumn()
     createdAt!: Date;
