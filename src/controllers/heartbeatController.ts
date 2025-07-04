@@ -23,3 +23,8 @@ async function getChargerHeartbeats(chargerId: number) {
         throw new Error(error.message);
     }
 }
+
+export {
+    addHeartbeat,
+    getChargerHeartbeats
+}
