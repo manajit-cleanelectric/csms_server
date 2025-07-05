@@ -12,12 +12,12 @@ router.get('/api/sessions/:sessionId', authenticate, async (req: Request, res: R
         const session = await getSession(Number(sessionId));
         res.status(200).send({ success: true, message: "Session details retrieved", data: session });
     } catch (error: any) {
-        logger.error([]);
+        logger.error(`Error retrieving session ${req.params.sessionId}: ${error.message}`);
         res.status(500).send({ error: error.message });
     }
 });
 
-router.get('/api/sessions/:userId'), authenticate, async (req: Request, res: Response) => {
+router.get('/api/sessions/:userId', authenticate, async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
         const sessions = await listAllUserSessions(Number(userId));
@@ -25,7 +25,7 @@ router.get('/api/sessions/:userId'), authenticate, async (req: Request, res: Res
     } catch (error: any) {
         res.status(500).send({ error: error.message });
     }
-}
+});
 
 export {
     router

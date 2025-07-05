@@ -35,7 +35,7 @@ class Users extends BaseEntity {
 
     @Column({
         type: "varchar",
-        nullable: true,
+        nullable: false,
         length: 64
     })
     vehicle!: string;
@@ -53,6 +53,20 @@ class Users extends BaseEntity {
         length: 64
     })
     state!: string;
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 64
+    })
+    rcNumber!: string;
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 256
+    })
+    rcImageURL!: string;
 
     @Column({type: "boolean", default: false})
     isAccountApproved: boolean
