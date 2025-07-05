@@ -56,14 +56,14 @@ class Sessions extends BaseEntity {
     VEN!: string;
 
     @Column({
-        type: "datetime",
+        type: "timestamp",
         nullable: false,
         default: () => "CURRENT_TIMESTAMP"
     })
     startTime!: Timestamp;
 
     @Column({
-        type: "datetime",
+        type: "timestamp",
     })
     endTime!: Timestamp;
 

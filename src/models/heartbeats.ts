@@ -24,7 +24,7 @@ class Heartbeats extends BaseEntity {
     chargerId!: number;
 
     @Column({
-        type: "datetime",
+        type: "timestamp",
         nullable: false,
         default: () => "CURRENT_TIMESTAMP"
     })

@@ -31,7 +31,7 @@ class MeterValues extends BaseEntity {
     connectorId!: number;
 
     @Column({
-        type: "datetime",
+        type: "timestamp",
         nullable: false,
         default: () => "CURRENT_TIMESTAMP"
     })
