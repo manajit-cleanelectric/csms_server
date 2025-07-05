@@ -64,6 +64,7 @@ class Sessions extends BaseEntity {
 
     @Column({
         type: "timestamp",
+        nullable: true
     })
     endTime!: Timestamp;
 
@@ -76,11 +77,13 @@ class Sessions extends BaseEntity {
 
     @Column({
         type: "float",
+        nullable: true
     })
     meterStop!: number;
 
     @Column({
         type: "float",
+        nullable: true
     })
     energyUsed!: number;
 
@@ -94,6 +97,7 @@ class Sessions extends BaseEntity {
     @Column({
         type: "enum",
         enum: Status,
+        default: Status.AVAILABLE,
     })
     status!: Status;
 

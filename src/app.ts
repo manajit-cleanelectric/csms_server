@@ -7,6 +7,7 @@ import express, {type Express} from "express";
 import {pino} from "pino";
 import {router as userRoutes} from "./routes/userRoutes";
 import {router as chargerRoutes} from "./routes/chargerRoutes";
+import {router as sessionRoutes} from "./routes/sessionRoutes";
 
 const app: Express = express();
 
@@ -53,6 +54,7 @@ app.use(cors());
 app.use(express.json());
 app.use(userRoutes);
 app.use(chargerRoutes);
+app.use(sessionRoutes);
 
 
 export {

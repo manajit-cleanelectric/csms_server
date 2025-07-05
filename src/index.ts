@@ -10,7 +10,7 @@ AppDataSource.initialize()
       });
     })
     .catch((err) => {
-      logger.error( err);
+      logger.error('Database initialization failed', err);
       process.exit(1);
     });
 
