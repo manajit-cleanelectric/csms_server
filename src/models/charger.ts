@@ -49,7 +49,7 @@ export class Chargers extends BaseEntity {
         nullable: false,
         length: 10
     })
-    location: string
+    city: string
 
     @Column({
         type: "varchar",
@@ -76,14 +76,16 @@ export class Chargers extends BaseEntity {
     @Column({
         type: "decimal",
         precision: 10,
-        scale: 6
+        scale: 6,
+        default: 0
     })
     latitude: number;
 
     @Column({
         type: "decimal",
         precision: 10,
-        scale: 6
+        scale: 6,
+        default: 0
     })
     longitude: number;
 

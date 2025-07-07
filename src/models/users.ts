@@ -1,7 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, UpdateDateColumn, CreateDateColumn} from "typeorm";
 
-enum UserRoles {
-    ADMIN = 'admin',
+enum UserRoles {ADMINISTRATOR = 'administrator',
     SUPERVISOR = 'supervisor',
     CUSTOMER = 'customer',
 }
@@ -35,7 +34,7 @@ class Users extends BaseEntity {
 
     @Column({
         type: "varchar",
-        nullable: false,
+        nullable: true,
         length: 64
     })
     vehicle!: string;

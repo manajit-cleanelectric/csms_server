@@ -6,7 +6,7 @@ async function addCharger(data: any) {
         charger.type = data.type;
         charger.model = data.model;
         charger.address = data.address;
-        charger.location = data.location;
+        charger.city = data.city;
         charger.noOfConnector = data.noOfConnector;
         charger.vendor = data.vendor;
         charger.serialNumber = data.serialNumber;
@@ -42,7 +42,7 @@ async  function updateCharger(chargerId: string, data: any) {
         charger.type = data.type || charger.type;
         charger.model = data.model || charger.model;
         charger.address = data.address || charger.address;
-        charger.location = data.location || charger.location;
+        charger.city = data.location || charger.city;
         charger.noOfConnector = data.noOfConnector || charger.noOfConnector;
         charger.vendor = data.vendor || charger.vendor;
         charger.serialNumber = data.serialNumber || charger.serialNumber;
@@ -56,8 +56,8 @@ async  function updateCharger(chargerId: string, data: any) {
 async function getChargerByLocation(location: string) {
     try {
         return await Chargers.find({
-            select: ["id", "model", "vendor", "location", "address", "type", "noOfConnector", "status", "longitude", "latitude"],
-            where: { location: location}
+            select: ["id", "model", "vendor", "city", "address", "type", "noOfConnector", "status", "longitude", "latitude"],
+            where: { city: location}
         });
     } catch (error: any) {
         throw new Error(error.message);

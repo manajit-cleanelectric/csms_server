@@ -7,6 +7,7 @@ import {MeterValues} from "../models/meterValues";
 import {Sessions} from "../models/sessions";
 import {Heartbeats} from "../models/heartbeats";
 import {StatusLogs} from "../models/statusLogs";
+import { Address} from "../models/address";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -15,7 +16,7 @@ const AppDataSource = new DataSource({
     username: DATABASE_USERNAME,
     password: DATABASE_PASSWORD,
     database: DATABASE_NAME,
-    entities: [Users, Chargers, MeterValues, Sessions, Heartbeats, StatusLogs],
+    entities: [Users, Chargers,Address, MeterValues, Sessions, Heartbeats, StatusLogs],
     synchronize: true,
     logging: false,
 })

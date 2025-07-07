@@ -14,7 +14,7 @@ router.get('/api/chargers', authenticate, async (req: Request, res: Response) =>
     }
 });
 
-router.post('/api/chargers', authenticate, authorize(UserRoles.ADMIN), async (req: Request, res: Response) => {
+router.post('/api/chargers', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
     try {
         const chargers = await addCharger(req.body);
         res.status(201).send({success: true, message: "New Charger Added", data: chargers});
