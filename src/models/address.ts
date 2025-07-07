@@ -1,31 +1,77 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import {BaseEntity, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm"
+import {Chargers} from "./charger";
 
-@Entity()
-export class Address extends BaseEntity {
+@Entity("addresses")
+class Addresses extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
-    @Column()
+    @OneToOne(() => Chargers, (charger) => charger.address)
+    charger: Chargers
+
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: false,
+        length: 128
+    })
     line1: string;
 
-    @Column()
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: false,
+        length: 128
+    })
     line2: string;
 
-    @Column()
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: false,
+        length: 64
+    })
+    location: string;
+
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: false,
+        length: 64
+    })
     city: string;
 
-    @Column()
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: false,
+        length: 64
+    })
     state: string;
 
-    @Column()
-    zipcode: string;
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: false,
+        length: 16
+    })
+    zipCode: string;
 
-    @Column()
+    @Column({
+        type: "varchar",
+        unique: false,
+        nullable: true,
+        length: 64
+    })
     country: string;
 
-    @Column()
-    createAt: Date;
+    @CreateDateColumn()
+    createdAt!: Date;
 
-    @Column()
-    updateAt: Date;
+    @UpdateDateColumn()
+    updatedAt!: Date;
+}
+
+export {
+    Addresses,
 }

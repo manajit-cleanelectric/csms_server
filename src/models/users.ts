@@ -1,4 +1,13 @@
-import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, UpdateDateColumn, CreateDateColumn} from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
+import {Vehicles} from "./vehicle";
 
 enum UserRoles {ADMINISTRATOR = 'administrator',
     SUPERVISOR = 'supervisor',
@@ -32,12 +41,8 @@ class Users extends BaseEntity {
     })
     lastName!: string;
 
-    @Column({
-        type: "varchar",
-        nullable: true,
-        length: 64
-    })
-    vehicle!: string;
+    @OneToMany(() => Vehicles, (vehicle) => vehicle.user)
+    vehicles!: Vehicles[];
 
     @Column({
         type: "varchar",
@@ -53,25 +58,11 @@ class Users extends BaseEntity {
     })
     state!: string;
 
-    @Column({
-        type: "varchar",
-        nullable: true,
-        length: 64
-    })
-    rcNumber!: string;
-
-    @Column({
-        type: "varchar",
-        nullable: true,
-        length: 256
-    })
-    rcImageURL!: string;
+    @Column({type: "boolean", default: false})
+    isAccountApproved: boolean;
 
     @Column({type: "boolean", default: false})
-    isAccountApproved: boolean
-
-    @Column({type: "boolean", default: false})
-    isProfileComplete: boolean
+    isProfileComplete: boolean;
 
     @Column({type: "boolean", default: true})
     isActive!: boolean;

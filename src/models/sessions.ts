@@ -1,23 +1,24 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
     BaseEntity,
-    UpdateDateColumn,
+    Column,
     CreateDateColumn,
-    Timestamp, Check,
-    ManyToOne, OneToMany, OneToOne
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    Timestamp,
+    UpdateDateColumn
 } from "typeorm";
+import {Chargers} from "./charger";
+import {Connectors} from "./connector";
+import {Vehicles} from "./vehicle";
 
-enum Status {
-    AVAILABLE = 'Available',
+enum SessionStatus {
     PREPARING = 'Preparing',
     CHARGING = 'Charging',
     SUSPENDED_EVSE = 'Suspended_EVSE',
     SUSPENDED_EV = 'Suspended_EV',
     FINISHING = 'Finishing',
-    RESERVED = 'Reserved',
-    UNAVAILABLE = 'Unavailable',
     FAULTED = 'Faulted',
 }
 
@@ -29,31 +30,17 @@ class Sessions extends BaseEntity {
     })
     id!: number;
 
-    @Column({
-        type: "int",
-        nullable: false
-    })
-    userId!: number;
+    @ManyToOne(() => Chargers, (charger) => charger.sessions)
+    @JoinColumn({ name: "chargerId" })
+    charger!: Chargers;
 
-    @Column({
-        type: "int",
-        nullable: false,
-    })
-    ChargerId!: number;
+    @ManyToOne(() => Connectors, (connector) => connector.sessions)
+    @JoinColumn({ name: "connectorId" })
+    connector!: Connectors;
 
-    @Column({
-        type: "int",
-        nullable: false,
-        default: 0
-    })
-    connectorId!: number;
-
-    @Column({
-        type: "varchar",
-        nullable: false,
-        length: 64
-    })
-    vin!: string;
+    @ManyToOne(() => Vehicles, (vehicle) => vehicle.sessions)
+    @JoinColumn({ name: "vehicleId" })
+    vehicle!: Vehicles;
 
     @Column({
         type: "timestamp",
@@ -96,10 +83,10 @@ class Sessions extends BaseEntity {
 
     @Column({
         type: "enum",
-        enum: Status,
-        default: Status.AVAILABLE,
+        enum: SessionStatus,
+        default: SessionStatus.PREPARING,
     })
-    status!: Status;
+    status!: SessionStatus;
 
     @CreateDateColumn()
     createdAt!: Date;
@@ -110,5 +97,5 @@ class Sessions extends BaseEntity {
 
 export {
     Sessions,
-    Status
+    SessionStatus
 };

@@ -1,13 +1,15 @@
 import "reflect-metadata"
-import { DataSource } from "typeorm"
-import { Users } from "../models/users";
-import { Chargers} from "../models/charger";
-import { DATABASE_HOST, DATABASE_PORT, DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD} from "../app";
+import {DataSource} from "typeorm"
+import {Users} from "../models/users";
+import {Chargers} from "../models/charger";
+import {DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_USERNAME} from "../app";
 import {MeterValues} from "../models/meterValues";
 import {Sessions} from "../models/sessions";
 import {Heartbeats} from "../models/heartbeats";
 import {StatusLogs} from "../models/statusLogs";
-import { Address} from "../models/address";
+import {Vehicles} from "../models/vehicle";
+import {Connectors} from "../models/connector";
+import {Addresses} from "../models/address";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -16,7 +18,7 @@ const AppDataSource = new DataSource({
     username: DATABASE_USERNAME,
     password: DATABASE_PASSWORD,
     database: DATABASE_NAME,
-    entities: [Users, Chargers,Address, MeterValues, Sessions, Heartbeats, StatusLogs],
+    entities: [Users, Vehicles, Chargers, Connectors, Addresses, Sessions, MeterValues, Heartbeats, StatusLogs],
     synchronize: true,
     logging: false,
 })

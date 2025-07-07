@@ -1,15 +1,5 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    BaseEntity,
-    UpdateDateColumn,
-    CreateDateColumn,
-    Timestamp, Check,
-    ManyToOne, OneToMany, OneToOne
-} from "typeorm";
-
-import {Status} from "./sessions";
+import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {ConnectorStatus} from "./connector";
 
 enum ErrorCode {
     CONNECTOR_LOCK_FAILURE = "ConnectorLockFailure",
@@ -60,9 +50,9 @@ class StatusLogs extends BaseEntity {
 
     @Column({
         type: "enum",
-        enum: Status,
+        enum: ConnectorStatus,
     })
-    status!: Status;
+    status!: ConnectorStatus;
 
     @CreateDateColumn()
     createdAt!: Date;
