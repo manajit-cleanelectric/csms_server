@@ -1,7 +1,6 @@
 import {logger} from "../app";
 import {Chargers, ChargerStatus} from "../models/charger";
 import {createRPCError} from "ocpp-rpc";
-import {Users} from "../models/users";
 import {Sessions} from "../models/sessions";
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
@@ -31,7 +30,7 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
     let user = null;
     try {
         // TODO: Confirm 'vehicle' field is correct for VIN
-        user = await Users.findOneBy({vehicle: params.vehicle});
+        // user = await Users.findOneBy({vehicle: params.vehicle});
     } catch (err) {
         logger.error(`Failed to read vehicle VIN from DB:`, err);
         throw createRPCError("InternalError", "Database read failed.");
@@ -94,8 +93,8 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
     let {connectorId, idTag, meterStart, timestamp} = params;
     try {
         const chargingSession = new Sessions();
-        chargingSession.connectorId = connectorId;
-        chargingSession.vin = idTag;
+        // chargingSession.connectorId = connectorId;
+        // chargingSession.vin = idTag;
         chargingSession.meterStart = meterStart;
         chargingSession.startTime = timestamp;
         await chargingSession.save();

@@ -1,5 +1,5 @@
-import {Router, Request, Response} from 'express';
-import {addCharger, getCharger, getChargerByLocation, listAllCharger} from '../controllers/chargerController';
+import {Request, Response, Router} from 'express';
+import {addCharger, getCharger, getChargerByCity, listAllCharger} from '../controllers/chargerController';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {UserRoles} from "../models/users";
 
@@ -36,7 +36,7 @@ router.get('/api/chargers/:chargerId', authenticate, async (req: Request, res: R
 router.get('/api/chargers/location/:location', authenticate, async (req: Request, res: Response) => {
     try {
         const {location} = req.params;
-        const chargers = await getChargerByLocation(location);
+        const chargers = await getChargerByCity(location);
         res.status(200).send({success: true, message: "Charger Details by Location", data: chargers});
     } catch (error: any) {
         res.status(500).send({error: error.message});

@@ -37,6 +37,12 @@ class Connectors extends BaseEntity {
     charger!: Chargers;
 
     @Column({
+        type: "int",
+        unsigned: true,
+    })
+    chargerConnectorId!: number;
+
+    @Column({
         type: "enum",
         enum: ConnectorStatus,
         default: ConnectorStatus.AVAILABLE

@@ -1,12 +1,30 @@
 import {Sessions} from "../models/sessions";
-import {Users} from "../models/users";
+import {Chargers} from "../models/charger";
+import {Vehicles} from "../models/vehicle";
 
 async function addSession(data: any) {
     try {
+        // Validate required fields
+        if (!data.ChargerId || !data.connectorId || !data.VEN || !data.startTime || !data.meterStart) {
+            throw new Error("Missing required fields");
+        }
+        // Create a new session
         const session = new Sessions();
-        session.ChargerId = data.ChargerId;
-        session.connectorId = data.connectorId;
-        session.vin = data.vin;
+        const charger = await Chargers.findOneBy({ id: data.ChargerId });
+        if (!charger) {
+            throw new Error("Charger not found");
+        }
+        session.charger = charger;
+        const connector = charger.connectors.find(conn => conn.chargerConnectorId === data.connectorId);
+        if (!connector) {
+            throw new Error("Connector not found");
+        }
+        session.connector = connector;
+        const vehicle = await Vehicles.findOneBy({ id: data.VEN });
+        if (!vehicle) {
+            throw new Error("Vehicle not found");
+        }
+        session.vehicle = vehicle;
         session.startTime = data.startTime;
         session.meterStart = data.meterStart;
         await session.save();
@@ -63,8 +81,8 @@ async function getSession(sessionId: number) {
 async function listAllUserSessions(userId: number) {
     try {
         return await Sessions.find({
-            select: ["id", "ChargerId", "startTime", "endTime", "energyUsed"],
-            where: { userId: userId },
+            select: ["id", "charger", "startTime", "endTime", "energyUsed"],
+            where: { },
             order: { startTime: "DESC" }
         });
     } catch (error: any) {
