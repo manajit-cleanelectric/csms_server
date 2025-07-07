@@ -1,5 +1,6 @@
 import { app, logger } from './app';
 import { AppDataSource } from './database/datasource';
+import { rpcServer } from "./ocpp/ocppServer";
 
 let server: ReturnType<typeof app.listen>;
 
@@ -8,9 +9,10 @@ AppDataSource.initialize()
       server = app.listen(3000, () => {
         logger.info('Server started on port 3000');
       });
+      server.on('upgrade', rpcServer.handleUpgrade);
     })
     .catch((err) => {
-      logger.error('Database initialization failed', err);
+      logger.error('Database initialization failed', err.message);
       process.exit(1);
     });
 
@@ -28,30 +30,3 @@ const onCloseSignal = () => {
 
 process.on('SIGINT', onCloseSignal);
 process.on('SIGTERM', onCloseSignal);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// require('dotenv').config();
-// const http = require('http');
-// const app = require('./app');
-// const { createOcppServer } = require('./ocpp/server');
-//
-// const httpServer = http.createServer(app);
-// const rpcServer = createOcppServer(httpServer);
-//
-// httpServer.listen(3000, () => {
-//   console.log('HTTP Server with Express running on port 3000');
-// });
