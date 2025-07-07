@@ -8,6 +8,7 @@ import {pino} from "pino";
 import {router as userRoutes} from "./routes/userRoutes";
 import {router as chargerRoutes} from "./routes/chargerRoutes";
 import {router as sessionRoutes} from "./routes/sessionRoutes";
+import {router as vehicleRoutes} from "./routes/vehicleRoutes";
 
 const app: Express = express();
 
@@ -55,7 +56,7 @@ app.use(express.json());
 app.use(userRoutes);
 app.use(chargerRoutes);
 app.use(sessionRoutes);
-
+app.use(vehicleRoutes);
 
 export {
     app,
