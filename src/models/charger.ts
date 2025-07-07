@@ -1,4 +1,18 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Check, BaseEntity} from "typeorm"
+import {
+    BaseEntity,
+    Check,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm"
+import {Sessions} from "./sessions";
+import {Connectors} from "./connector";
+import {Addresses} from "./address";
 
 export enum ChargerTypes {
     TYPE_6 = 'type_6',
@@ -17,58 +31,47 @@ export enum ChargerStatus {
 @Entity("chargers")
 export class Chargers extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
     @Column({
         type: "varchar",
-        unique: false,
-        nullable: false,
         length: 128
     })
-    model: string
+    model: string;
 
     @Column({
         type: "varchar",
-        unique: false,
-        nullable: false,
         length: 128
     })
-    vendor: string
+    vendor: string;
 
     @Column({
         type: "varchar",
         unique: true,
-        nullable: false,
         length: 128
     })
-    serialNumber: string
+    serialNumber: string;
 
     @Column({
         type: "varchar",
         unique: false,
-        nullable: false,
-        length: 10
+        length: 64
     })
-    location: string
+    city: string;
 
-    @Column({
-        type: "varchar",
-        unique: false,
-        nullable: false,
-        length: 128
-    })
-    address: string
+    @OneToOne(() => Addresses, (address) => address.charger, {cascade: true})
+    @JoinColumn({ name: "addressId" })
+    address: Addresses;
 
     @Column({
         type: 'enum',
         enum: ChargerTypes,
         default: ChargerTypes.TYPE_6,
     })
-    type: string
+    type: string;
 
     @Column({
         type: "int",
-        nullable: false
     })
     @Check(`"noOfConnector" >= 1 AND "noOfConnector" <= 10`)
     noOfConnector: number;
@@ -92,9 +95,13 @@ export class Chargers extends BaseEntity {
         enum: ChargerStatus,
         default: ChargerStatus.UNKNOWN,
     })
-    status: string
+    status: ChargerStatus;
 
-    // TODO: Different status for each connector
+    @OneToMany(() => Sessions, (session) => session.charger)
+    sessions: Sessions[];
+
+    @OneToMany(() => Connectors, (connector) => connector.charger)
+    connectors: Connectors[];
 
     @CreateDateColumn()
     createdAt!: Date;
