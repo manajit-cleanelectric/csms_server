@@ -1,58 +1,40 @@
-import {RPCServer, RPCClient, createRPCError} from "ocpp-rpc";
+import { RPCServer, RPCClient, createRPCError } from "ocpp-rpc";
 import { logger } from "../app";
-import { Chargers, ChargerStatus } from "../models/charger";
+import { handleHeartbeat, handleBootNotification, handleAuthorize, handleMeterValues, handleStatusNotification, handleStopTransaction, handleStartTransaction, handleRemoteStopTransaction } from "../controllers/ocppHandler"
 
 export const rpcServer = new RPCServer({});
 
 rpcServer.on("client", async (client: RPCClient) => {
-    logger.info(client.identity);
-
     client.handle("BootNotification", async ({params}) => {
-        logger.info(`Received BootNotification from ${client.identity}:`, params);
-        return {
-            status: "Accepted",
-            interval: 300,
-            currentTime: new Date().toISOString(),
-        };
+        return await handleBootNotification({client, params});
     });
 
     client.handle("Heartbeat", async ({params}) => {
-        logger.info(`Received Heartbeat from ${client.identity}:`, params);
-        await Chargers.update({id: parseInt(client.identity!,10)}, {status: ChargerStatus.AVAILABLE})
-        return {
-            currentTime: new Date().toISOString(),
-        };
+        return await handleHeartbeat({client, params});
     });
 
     client.handle("Authorize", async ({params}) => {
-        logger.info(`Received Authorize from ${client.identity}:`, params);
-        return {
-            currentTime: new Date().toISOString(),
-        };
+        return await handleAuthorize({client, params});
     });
 
     client.handle("MeterValues", async ({params}) => {
-        logger.info(`Received MeterValues from ${client.identity}:`, params);
-        return {
-            currentTime: new Date().toISOString(),
-        };
+        return await handleMeterValues({client, params});
     });
 
     client.handle("RemoteStopTransaction", async ({params}) => {
-        logger.info(`Received RemoteStopTransaction from ${client.identity}:`, params);
-        return {
-            currentTime: new Date().toISOString(),
-        };
+        return await handleRemoteStopTransaction({client, params});
+    });
+
+    client.handle("StartTransaction", async ({params}) => {
+        return await handleStartTransaction({client, params});
     });
 
     client.handle("StopTransaction", async ({params}) => {
-        logger.info(`Received StopTransaction from ${client.identity}:`, params);
-        return {};
+        return await handleStopTransaction({client, params});
     });
 
     client.handle("StatusNotification", async ({params}) => {
-        logger.info(`Received StatusNotification from ${client.identity}:`, params);
-        return {};
+        return await handleStatusNotification({client, params});
     });
 
     // Fallback handler

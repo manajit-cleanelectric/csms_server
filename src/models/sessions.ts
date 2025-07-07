@@ -53,7 +53,7 @@ class Sessions extends BaseEntity {
         nullable: false,
         length: 64
     })
-    VEN!: string;
+    vin!: string;
 
     @Column({
         type: "timestamp",

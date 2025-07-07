@@ -6,7 +6,7 @@ async function addSession(data: any) {
         const session = new Sessions();
         session.ChargerId = data.ChargerId;
         session.connectorId = data.connectorId;
-        session.VEN = data.VEN;
+        session.vin = data.vin;
         session.startTime = data.startTime;
         session.meterStart = data.meterStart;
         await session.save();
