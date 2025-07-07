@@ -2,6 +2,7 @@ import {logger} from "../app";
 import {Chargers, ChargerStatus} from "../models/charger";
 import {createRPCError} from "ocpp-rpc";
 import {Sessions} from "../models/sessions";
+import {Vehicles} from "../models/vehicle";
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received BootNotification from ${client.identity}:`, params);
@@ -30,11 +31,13 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
     let user = null;
     try {
         // TODO: Confirm 'vehicle' field is correct for VIN
-        // user = await Users.findOneBy({vehicle: params.vehicle});
+        const vehicle = await Vehicles.findOneBy({vin: params.idTag});
+        user = vehicle?.user;
     } catch (err) {
         logger.error(`Failed to read vehicle VIN from DB:`, err);
         throw createRPCError("InternalError", "Database read failed.");
     }
+    //TODO add wallet validation
     if (user) {
         return {
             status: "Accepted",

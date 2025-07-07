@@ -9,7 +9,8 @@ import {
 } from "typeorm";
 import {Vehicles} from "./vehicle";
 
-enum UserRoles {ADMINISTRATOR = 'administrator',
+enum UserRoles {
+    ADMINISTRATOR = 'administrator',
     SUPERVISOR = 'supervisor',
     CUSTOMER = 'customer',
 }
