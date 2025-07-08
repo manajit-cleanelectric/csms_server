@@ -3,31 +3,26 @@ import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/smsService"
 
-// async function addUser(firstName: string, lastName: string, phoneNumber: string, vehicle: string) {
-//     try {
-//         // Check if user already exists
-//         const existingUser = await Users.findOne({
-//             where: [
-//                 {phoneNumber: phoneNumber},
-//                 {vehicle: vehicle},
-//             ]
-//         });
-//         if (existingUser) {
-//             return null;
-//         }
-//         // Create a new user
-//         const user = new Users();
-//         user.firstName = firstName;
-//         user.lastName = lastName;
-//         user.phoneNumber = phoneNumber;
-//         user.vehicle = vehicle;
-//         await user.save();
-//         return user;
-//     } catch (error) {
-//         logger.error("Error adding user:", error);
-//         throw new Error("Failed to add user");
-//     }
-// }
+async function addUserInfo(data: any) {
+    try {
+        // Validate input data
+        const {firstName, lastName, phoneNumber, city, state} = data;
+        // Check if user already exists
+        const user = await Users.findOneBy({phoneNumber: phoneNumber});
+        if (!user) {
+            throw new Error("User not found");
+        }
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.city = city;
+        user.state = state;
+        await user.save();
+        return user;
+    } catch (error) {
+        logger.error(`Error adding userInfo: ${error}`);
+        throw new Error(`Failed to add userInfo: ${error}`);
+    }
+}
 
 // async function updateUserRC(userId: number, rcNumber: string, rcImageURL: string){
 //     try {
@@ -143,7 +138,8 @@ function generateRandomDigitString(size: number): string {
 async function listUnApprovedUsers() {
     try {
         return await Users.find({
-            select: ["id", "firstName", "lastName", "phoneNumber", "vehicles"],
+            select: ["id", "firstName", "lastName", "phoneNumber"],
+            relations: ["vehicles"],
             where: {isAccountApproved: false, isProfileComplete: true}
         });
     } catch (error) {
@@ -168,7 +164,7 @@ async function approveUser(userId: number) {
 }
 
 export {
-    // addUser,
+    addUserInfo,
     // updateUserRC,
     // updateUser,
     login,

@@ -1,7 +1,6 @@
-import { app, logger } from './app';
-import { AppDataSource } from './database/datasource';
-import { rpcServer } from "./ocpp/ocppServer";
-import { SERVER_PORT } from "./app";
+import {app, logger, SERVER_PORT} from './app';
+import {AppDataSource} from './database/datasource';
+import {rpcServer} from "./ocpp/ocppServer";
 
 let server: ReturnType<typeof app.listen>;
 
@@ -13,7 +12,7 @@ AppDataSource.initialize()
       server.on('upgrade', rpcServer.handleUpgrade);
     })
     .catch((err) => {
-      logger.error('Database initialization failed', err.message);
+      logger.error(`Database initialization failed ${err}`);
       process.exit(1);
     });
 

@@ -8,6 +8,7 @@ import {
     UpdateDateColumn
 } from "typeorm";
 import {Vehicles} from "./vehicle";
+import {AuthTokens} from "./authTokens";
 
 enum UserRoles {
     ADMINISTRATOR = 'administrator',
@@ -44,6 +45,9 @@ class Users extends BaseEntity {
 
     @OneToMany(() => Vehicles, (vehicle) => vehicle.user)
     vehicles!: Vehicles[];
+
+    @OneToMany(() => AuthTokens, (authToken) => authToken.user)
+    authTokens!: AuthTokens[];
 
     @Column({
         type: "varchar",
