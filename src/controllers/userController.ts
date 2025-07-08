@@ -2,6 +2,7 @@ import {Users} from "../models/users";
 import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/smsService"
+import {AuthTokens} from "../models/authTokens";
 
 async function addUserInfo(data: any) {
     try {
@@ -75,21 +76,22 @@ async function login(phoneNumber: string, otp: string) {
         // TODO proper validation of OTP
         throw new Error("Invalid One Time Password");
     }
-    const user: Users | null = await Users.findOneBy({phoneNumber: phoneNumber});
+    let user: Users | null = await Users.findOneBy({phoneNumber: phoneNumber});
     if (!user) {
-        // create a new user and return jwt token
-        const user = new Users();
+        // create a new user
+        user = new Users();
         user.phoneNumber = phoneNumber;
         await user.save();
-        const accessToken = jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
-        const refreshToken = jwt.sign({user}, REFRESH_TOKEN_SECRET_KEY, {expiresIn: '7d'});
-        return {accessToken, refreshToken};
-    } else {
-        // return jwt token
-        const accessToken = jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
-        const refreshToken = jwt.sign({user}, REFRESH_TOKEN_SECRET_KEY, {expiresIn: '7d'});
-        return {accessToken, refreshToken};
     }
+    // return jwt token
+    const accessToken = jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
+    const refreshToken = jwt.sign({user}, REFRESH_TOKEN_SECRET_KEY, {expiresIn: '7d'});
+    const authToken = new AuthTokens()
+    authToken.user = user;
+    authToken.token = refreshToken;
+    // TODO add other details
+    await authToken.save()
+    return {accessToken, refreshToken};
 }
 
 async function getUserById(userId: number) {
@@ -106,13 +108,36 @@ async function getUserById(userId: number) {
 }
 
 async function generateAccessTokenViaRefreshToken(token: string) {
-    //TODO use proper validation of the refresh token
-    return "df";
+    try {
+        const authToken = await AuthTokens.findOne({
+            where: {token: token, isRevoked: false },
+            relations: ['user'],
+        });
+        if (!authToken) {
+            throw new Error("Invalid Token");
+        }
+        const user = authToken.user;
+        if (!user) {
+            throw new Error("User not found");
+        }
+        return jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
+    } catch (error:any) {
+        throw new Error("Invalid refresh token");
+    }
 }
 
 async function logout(token: string) {
-    // TODO implement the function
-    return true;
+    try {
+        const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false });
+        if (!authToken) {
+            throw new Error("Invalid Token");
+        }
+        authToken.isRevoked = true;
+        await authToken.save();
+        return true;
+    } catch (error:any) {
+        throw new Error("Invalid refresh token");
+    }
 }
 
 async function sendOtpToPhoneNumber(phoneNumber: string) {
@@ -173,4 +198,5 @@ export {
     sendOtpToPhoneNumber,
     getUserById,
     generateAccessTokenViaRefreshToken,
+    logout,
 }

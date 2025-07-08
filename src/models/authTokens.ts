@@ -19,8 +19,15 @@ class AuthTokens extends BaseEntity {
     id!: number;
 
     @ManyToOne(() => Users, (user) => user.authTokens)
-    @JoinColumn({ name: "userId" })
+    @JoinColumn({name: "userId"})
     user!: Users;
+
+    @Column({
+        type: "varchar",
+        nullable: false,
+        length: 1024
+    })
+    token!: string;
 
     @Column({
         type: "varchar",

@@ -1,5 +1,10 @@
 import {Router, Request, Response} from 'express';
-import {getUserById, login as userLogin, generateAccessTokenViaRefreshToken} from '../controllers/userController';
+import {
+    getUserById,
+    login as userLogin,
+    logout as userLogout,
+    generateAccessTokenViaRefreshToken
+} from '../controllers/userController';
 import {sendOtpToPhoneNumber} from '../controllers/userController'
 import {authenticate} from "../middleware/auth.middleware";
 import {UserPayload} from "../middleware/auth.middleware";
@@ -27,6 +32,16 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
     }
 });
 
+router.post('/api/auth/logout', authenticate, async (req: Request, res: Response) => {
+    const {refreshToken} = req.body;
+    try {
+        await userLogout(refreshToken);
+        res.status(200).send({success: true, message: "Successfully logged out", data: null});
+    } catch (error: any) {
+        res.status(500).send({error: error.message});
+    }
+});
+
 router.post('/api/auth/refresh', async (req: Request, res: Response) => {
     const {token} = req.body;
     try {
@@ -46,4 +61,6 @@ router.post('/api/users/me', authenticate, async (req: Request, res: Response) =
     }
 });
 
-export {router};
+export {
+    router,
+};
