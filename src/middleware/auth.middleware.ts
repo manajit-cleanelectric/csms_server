@@ -52,5 +52,6 @@ const authorize = (...allowedRoles: UserRoles[]) => {
 
 export  {
     authenticate,
-    authorize
+    authorize,
+    UserPayload
 }

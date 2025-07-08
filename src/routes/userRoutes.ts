@@ -1,19 +1,48 @@
 import {Router, Request, Response} from 'express';
-import {login as userLogin} from '../controllers/userController';
+import {getUserById, login as userLogin, generateAccessTokenViaRefreshToken} from '../controllers/userController';
+import {sendOtpToPhoneNumber} from '../controllers/userController'
+import {authenticate} from "../middleware/auth.middleware";
+import {UserPayload} from "../middleware/auth.middleware";
+
 
 const router: Router = Router();
 
 router.post('/api/auth/send-otp', async (req: Request, res: Response) => {
-    res.json({message: 'Get all users'});
+    const {phoneNumber} = req.body;
+    try {
+        await sendOtpToPhoneNumber(phoneNumber);
+        res.status(200).send({success: true, message: "OTP Sent Successfully", data: null});
+    } catch (error: any) {
+        res.status(500).send({success: false, message: error.message, data: null});
+    }
 });
 
 router.post('/api/auth/login', async (req: Request, res: Response) => {
     const {phoneNumber, otp} = req.body;
     try {
         const {accessToken, refreshToken} = await userLogin(phoneNumber, otp);
-        res.json({accessToken: accessToken, refreshToken: refreshToken});
+        res.status(200).json({accessToken: accessToken, refreshToken: refreshToken});
     } catch (error: any) {
         res.status(500).send({error: error.message});
+    }
+});
+
+router.post('/api/auth/refresh', async (req: Request, res: Response) => {
+    const {token} = req.body;
+    try {
+        const accessToken = await generateAccessTokenViaRefreshToken(token);
+        res.status(200).json({accessToken: accessToken});
+    } catch (error: any) {
+        res.status(500).send({error: error.message});
+    }
+});
+router.post('/api/users/me', authenticate, async (req: Request, res: Response) => {
+    const user = req.user as UserPayload | undefined;
+    try {
+        const myUser = await getUserById(Number(user?.id));
+        res.status(200).send({success: true, message: "OTP Sent Successfully", data: myUser});
+    } catch (error: any) {
+        res.status(500).send({success: false, message: error.message, data: null});
     }
 });
 

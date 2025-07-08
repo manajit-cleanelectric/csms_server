@@ -1,6 +1,7 @@
 import {Users} from "../models/users";
 import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
+import {sendOtp} from "../services/smsService"
 
 // async function addUser(firstName: string, lastName: string, phoneNumber: string, vehicle: string) {
 //     try {
@@ -96,6 +97,49 @@ async function login(phoneNumber: string, otp: string) {
     }
 }
 
+async function getUserById(userId: number) {
+    try {
+        const user = await Users.findOneBy({id: userId});
+        if (!user) {
+            throw new Error("User not found with id " + userId);
+        }
+        return user;
+    } catch (error) {
+        logger.error(error);
+        throw new Error("Could not find user with id " + userId);
+    }
+}
+
+async function generateAccessTokenViaRefreshToken(token: string) {
+    //TODO use proper validation of the refresh token
+    return "df";
+}
+
+async function logout(token: string) {
+    // TODO implement the function
+    return true;
+}
+
+async function sendOtpToPhoneNumber(phoneNumber: string) {
+    const otp = generateRandomDigitString(4);
+    try {
+        await sendOtp(phoneNumber, otp);
+        return true;
+    } catch (error) {
+        logger.error("Error occurred while sending otp:", error);
+        throw new Error("Something went wrong in sending OTP");
+    }
+}
+
+function generateRandomDigitString(size: number): string {
+    if (size <= 0) throw new Error('k must be a positive integer');
+    if (size === 1) return Math.floor(Math.random() * 10).toString();
+    const min = Math.pow(10, size - 1);
+    const max = Math.pow(10, size) - 1;
+    const num = Math.floor(min + Math.random() * (max - min + 1));
+    return num.toString();
+}
+
 async function listUnApprovedUsers() {
     try {
         return await Users.find({
@@ -130,4 +174,7 @@ export {
     login,
     listUnApprovedUsers,
     approveUser,
+    sendOtpToPhoneNumber,
+    getUserById,
+    generateAccessTokenViaRefreshToken,
 }
