@@ -1,13 +1,14 @@
 import { app, logger } from './app';
 import { AppDataSource } from './database/datasource';
 import { rpcServer } from "./ocpp/ocppServer";
+import { SERVER_PORT } from "./app";
 
 let server: ReturnType<typeof app.listen>;
 
 AppDataSource.initialize()
     .then(() => {
-      server = app.listen(3000, () => {
-        logger.info('Server started on port 3000');
+      server = app.listen(SERVER_PORT, () => {
+        logger.info(`Server started on port ${SERVER_PORT}`);
       });
       server.on('upgrade', rpcServer.handleUpgrade);
     })

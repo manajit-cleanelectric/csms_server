@@ -19,6 +19,7 @@ const DATABASE_PORT = parseInt(process.env.DATABASE_PORT!, 10);
 const DATABASE_NAME = process.env.DATABASE_NAME!;
 const DATABASE_USERNAME = process.env.DATABASE_USERNAME!;
 const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD!;
+const SERVER_PORT = parseInt(process.env.SERVER_PORT!,10);
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -40,6 +41,9 @@ if (!DATABASE_USERNAME) {
 }
 if (!DATABASE_PASSWORD) {
     throw new Error('DATABASE_PASSWORD is not defined in environment variables.');
+}
+if (!SERVER_PORT) {
+    throw new Error('SERVER_PORT is not defined in environment variables.');
 }
 
 
@@ -67,5 +71,6 @@ export {
     DATABASE_PORT,
     DATABASE_NAME,
     DATABASE_USERNAME,
-    DATABASE_PASSWORD
+    DATABASE_PASSWORD,
+    SERVER_PORT,
 };
