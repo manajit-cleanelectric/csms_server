@@ -1,4 +1,14 @@
-import {BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 import {Users} from "./users";
 import {Sessions} from "./sessions";
 
@@ -51,6 +61,9 @@ class Vehicles extends BaseEntity {
     })
     rcNumber!: string;
 
+    @Column({ type: "boolean", default: false })
+    isApproved!: boolean;
+
     @Column({
         type: "varchar",
         nullable: true,
@@ -60,6 +73,12 @@ class Vehicles extends BaseEntity {
 
     @OneToMany(() => Sessions, (session) => session.vehicle)
     sessions!: Sessions[];
+
+    @CreateDateColumn()
+    createdAt!: Date;
+
+    @UpdateDateColumn()
+    updatedAt!: Date;
 }
 
 export {
