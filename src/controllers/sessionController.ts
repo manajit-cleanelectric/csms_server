@@ -3,16 +3,18 @@ import {Chargers} from "../models/charger";
 import {Vehicles} from "../models/vehicle";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {v7 as uuidv7} from "uuid";
+import {Users} from "../models/users";
+import {logger} from "../app";
 
 async function addSession(data: any) {
     try {
         // Validate required fields
-        if (!data.ChargerId || !data.connectorId || !data.VEN || !data.startTime || !data.meterStart) {
+        if (!data.chargerId || !data.connectorId || !data.vin || !data.startTime || !data.meterStart) {
             throw new Error("Missing required fields");
         }
         // Create a new session
         const session = new Sessions();
-        const charger = await Chargers.findOneBy({ id: data.ChargerId });
+        const charger = await Chargers.findOneBy({ id: data.chargerId });
         if (!charger) {
             throw new Error("Charger not found");
         }
@@ -22,17 +24,19 @@ async function addSession(data: any) {
             throw new Error("Connector not found");
         }
         session.connector = connector;
-        const vehicle = await Vehicles.findOneBy({ id: data.VEN });
+        const vehicle = await Vehicles.findOneBy({ id: data.vin });
         if (!vehicle) {
             throw new Error("Vehicle not found");
         }
         session.vehicle = vehicle;
+        session.user = vehicle.user;
         session.startTime = data.startTime;
         session.meterStart = data.meterStart;
         await session.save();
         return session;
     } catch (error: any) {
-        throw new Error(error.message);
+        logger.error(`Error adding session: ${error.message}`);
+        throw new Error(`Error adding session: ${error.message}`);
     }
 }
 
@@ -82,11 +86,11 @@ async function getSession(sessionId: number) {
 
 async function listAllUserSessions(userId: number) {
     try {
-        return await Sessions.find({
-            select: ["id", "charger", "startTime", "endTime", "energyUsed"],
-            where: { },
-            order: { startTime: "DESC" }
+        const user = await Users.findOne({
+            where: { id: userId },
+            relations: ["sessions"]
         });
+        return user ? user.sessions : [];
     } catch (error: any) {
         throw new Error(error.message);
     }

@@ -1,6 +1,6 @@
-import {Router, Request, Response} from 'express';
+import {Request, Response, Router} from 'express';
 import {getSession, listAllUserSessions} from '../controllers/sessionController';
-import {authenticate, authorize} from "../middleware/auth.middleware";
+import {authenticate} from "../middleware/auth.middleware";
 import {logger} from "../app";
 import {sendRemoteStopTransaction} from "../controllers/sessionController";
 
@@ -18,7 +18,7 @@ router.get('/api/sessions/:sessionId', authenticate, async (req: Request, res: R
     }
 });
 
-router.get('/api/sessions/:userId', authenticate, async (req: Request, res: Response) => {
+router.get('/api/user/:userId/sessions', authenticate, async (req: Request, res: Response) => {
     try {
         const {userId} = req.params;
         const sessions = await listAllUserSessions(Number(userId));

@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import {Vehicles} from "./vehicle";
 import {AuthTokens} from "./authTokens";
+import {Sessions} from "./sessions";
 
 enum UserRoles {
     ADMINISTRATOR = 'administrator',
@@ -45,6 +46,9 @@ class Users extends BaseEntity {
 
     @OneToMany(() => Vehicles, (vehicle) => vehicle.user)
     vehicles!: Vehicles[];
+
+    @OneToMany(() => Sessions, (session) => session.user)
+    sessions!: Sessions[];
 
     @OneToMany(() => AuthTokens, (authToken) => authToken.user)
     authTokens!: AuthTokens[];
