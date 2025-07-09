@@ -12,6 +12,7 @@ import {
 import {Chargers} from "./charger";
 import {Connectors} from "./connector";
 import {Vehicles} from "./vehicle";
+import {Users} from "./users";
 
 enum SessionStatus {
     PREPARING = 'Preparing',
@@ -30,17 +31,37 @@ class Sessions extends BaseEntity {
     })
     id!: number;
 
-    @ManyToOne(() => Chargers, (charger) => charger.sessions)
+    @ManyToOne(() => Chargers, (charger) => charger.sessions, {
+        onDelete: "SET NULL",
+        nullable: true,
+        orphanedRowAction: "nullify"
+    })
     @JoinColumn({ name: "chargerId" })
     charger!: Chargers;
 
-    @ManyToOne(() => Connectors, (connector) => connector.sessions)
+    @ManyToOne(() => Connectors, (connector) => connector.sessions, {
+        onDelete: "SET NULL",
+        nullable: true,
+        orphanedRowAction: "nullify"
+    })
     @JoinColumn({ name: "connectorId" })
     connector!: Connectors;
 
-    @ManyToOne(() => Vehicles, (vehicle) => vehicle.sessions)
+    @ManyToOne(() => Vehicles, (vehicle) => vehicle.sessions, {
+        onDelete: "SET NULL",
+        nullable: true,
+        orphanedRowAction: "nullify"
+    })
     @JoinColumn({ name: "vehicleId" })
     vehicle!: Vehicles;
+
+    @ManyToOne(() => Users, (user) => user.sessions, {
+        onDelete: "SET NULL",
+        nullable: true,
+        orphanedRowAction: "nullify"
+    })
+    @JoinColumn({ name: "userId" })
+    user!: Users | null;
 
     @Column({
         type: "timestamp",

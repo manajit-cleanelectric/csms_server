@@ -21,9 +21,13 @@ class Vehicles extends BaseEntity {
     })
     id!: number;
 
-    @ManyToOne(() => Users, (user) => user.vehicles)
+    @ManyToOne(() => Users, (user) => user.vehicles, {
+        onDelete: "SET NULL",
+        nullable: true,
+        orphanedRowAction: "nullify"
+    })
     @JoinColumn({ name: "userId" })
-    user!: Users;
+    user!: Users | null;
 
     @Column({
         type: "varchar",

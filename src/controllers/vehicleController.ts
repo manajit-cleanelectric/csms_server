@@ -55,8 +55,13 @@ async function approveVehicle(vehicleId: number) {
             throw new Error("Vehicle not found");
         }
         vehicle.isApproved = true;
-        vehicle.user.isAccountApproved = true;
-        await vehicle.user.save();
+        if (vehicle.user){
+            vehicle.user.isAccountApproved = true;
+            await vehicle.user.save();
+        } else {
+            logger.warn(`Vehicle with ID ${vehicleId} has no associated user.`);
+            throw new Error("Vehicle has no associated user");
+        }
         await vehicle.save();
         return vehicle;
     } catch (error) {
