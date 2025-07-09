@@ -3,12 +3,13 @@ import {Chargers, ChargerStatus} from "../models/charger";
 import {createRPCError} from "ocpp-rpc";
 import {Sessions} from "../models/sessions";
 import {Vehicles} from "../models/vehicle";
+import {Heartbeats} from "../models/heartbeats";
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received BootNotification from ${client.identity}:`, params);
     return {
         status: "Accepted",
-        interval: 300,
+        interval: 5,
         currentTime: new Date().toISOString(),
     };
 };
@@ -16,14 +17,17 @@ const handleBootNotification = async ({client, params}: { client: any; params: a
 const handleHeartbeat = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Heartbeat from ${client.identity}:`, params);
     try {
-        await Chargers.update({id: parseInt(client.identity!, 10)}, {status: ChargerStatus.AVAILABLE})
+        await Chargers.update({id: parseInt(client.identity!, 10)}, {status: ChargerStatus.AVAILABLE});
+        const heartBeat = new Heartbeats();
+        heartBeat.chargerId = parseInt(client.identity!, 10);
+        await heartBeat.save();
+        return {
+            currentTime: new Date().toISOString(),
+        };
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
     }
-    return {
-        currentTime: new Date().toISOString(),
-    };
 };
 
 const handleAuthorize = async ({client, params}: { client: any; params: any }) => {
@@ -64,7 +68,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
 };
 
 const handleRemoteStopTransaction = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Heartbeat from ${client.identity}:`, params);
+    logger.info(`Received Remote Stop Transaction from ${client.identity}:`, params);
     // TODO implement remote stop transactions
     try {
         await Chargers.update({id: parseInt(client.identity!, 10)}, {status: ChargerStatus.AVAILABLE})
@@ -78,7 +82,7 @@ const handleRemoteStopTransaction = async ({client, params}: { client: any; para
 };
 
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Heartbeat from ${client.identity}:`, params);
+    logger.info(`Received Status Notification from ${client.identity}:`, params);
     // TODO handle status notification
     try {
         await Chargers.update({id: parseInt(client.identity!, 10)}, {status: ChargerStatus.AVAILABLE})
@@ -96,8 +100,12 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
     let {connectorId, idTag, meterStart, timestamp} = params;
     try {
         const chargingSession = new Sessions();
-        // chargingSession.connectorId = connectorId;
-        // chargingSession.vin = idTag;
+        chargingSession.connector = connectorId;
+        const vehicle = await Vehicles.findOneBy({vin: idTag});
+        if (!vehicle) {
+            throw new Error('Vehicle not found');
+        }
+        chargingSession.vehicle = vehicle;
         chargingSession.meterStart = meterStart;
         chargingSession.startTime = timestamp;
         await chargingSession.save();
