@@ -2,10 +2,13 @@ import { RPCServer, RPCClient, createRPCError } from "ocpp-rpc";
 import { logger } from "../app";
 import { handleHeartbeat, handleBootNotification, handleAuthorize, handleMeterValues, handleStatusNotification, handleStopTransaction, handleStartTransaction, handleRemoteStopTransaction } from "../controllers/ocppHandler"
 
-export const rpcServer = new RPCServer({});
+const ChargerWebsocketMap = new Map<string, RPCClient>();
+
+const rpcServer = new RPCServer({});
 
 rpcServer.on("client", async (client: RPCClient) => {
     client.handle("BootNotification", async ({params}) => {
+        ChargerWebsocketMap.set(String(client.identity),client);
         return await handleBootNotification({client, params});
     });
 
@@ -43,3 +46,8 @@ rpcServer.on("client", async (client: RPCClient) => {
         throw createRPCError("NotImplemented", `Method ${method} not supported.`);
     });
 });
+
+export {
+    rpcServer,
+    ChargerWebsocketMap,
+}

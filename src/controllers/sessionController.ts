@@ -1,6 +1,8 @@
 import {Sessions} from "../models/sessions";
 import {Chargers} from "../models/charger";
 import {Vehicles} from "../models/vehicle";
+import {ChargerWebsocketMap} from "../ocpp/ocppServer";
+import {v7 as uuidv7} from "uuid";
 
 async function addSession(data: any) {
     try {
@@ -90,10 +92,33 @@ async function listAllUserSessions(userId: number) {
     }
 }
 
+async function sendRemoteStopTransaction(chargerId: string, transactionId: number) {
+    const rpcClient = ChargerWebsocketMap.get(String(chargerId));
+
+    if (!rpcClient || rpcClient._ws.readyState !== WebSocket.OPEN) {
+        console.error(`WebSocket not open for charger ${chargerId}`);
+        return false;
+    }
+
+    const messageId = uuidv7(); // Unique ID for tracking
+    const message = [
+        2, // CALL message
+        messageId,
+        "RemoteStopTransaction",
+        {
+            transactionId: transactionId
+        }
+    ];
+    rpcClient.sendRaw(JSON.stringify(message));
+    console.log(`Sent RemoteStopTransaction to charger ${chargerId}`);
+    return true;
+}
+
 export {
     addSession,
     updateSession,
     endSession,
     getSession,
-    listAllUserSessions
+    listAllUserSessions,
+    sendRemoteStopTransaction,
 }
