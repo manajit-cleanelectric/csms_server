@@ -51,7 +51,7 @@ router.post('/api/auth/refresh', async (req: Request, res: Response) => {
         res.status(500).send({error: error.message});
     }
 });
-router.post('/api/users/me', authenticate, async (req: Request, res: Response) => {
+router.get('/api/users/me', authenticate, async (req: Request, res: Response) => {
     const user = req.user as UserPayload | undefined;
     try {
         const myUser = await getUserById(Number(user?.id));
