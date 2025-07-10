@@ -2,11 +2,8 @@ import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Up
 
 @Entity("meterValues")
 class MeterValues extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
-    id!: number;
+    @PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     @Column({
         type: "uuid",

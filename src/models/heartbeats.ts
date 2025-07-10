@@ -2,10 +2,7 @@ import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Up
 
 @Entity("heartbeats")
 class Heartbeats extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
+    @PrimaryGeneratedColumn("uuid")
     id!: number;
 
     @Column({

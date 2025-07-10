@@ -12,10 +12,7 @@ import {Users} from "./users";
 
 @Entity("authTokens")
 class AuthTokens extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
+    @PrimaryGeneratedColumn("uuid")
     id!: number;
 
     @ManyToOne(() => Users, (user) => user.authTokens)

@@ -22,11 +22,8 @@ enum ErrorCode {
 
 @Entity("statusLogs")
 class StatusLogs extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
-    id!: number;
+    @PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     @Column({
         type: "uuid",

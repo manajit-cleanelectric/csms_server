@@ -26,11 +26,8 @@ enum ConnectorStatus {
 
 @Entity("connectors")
 class Connectors extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
-    id!: number;
+    @PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     @ManyToOne(() => Chargers, (charger) => charger.connectors)
     @JoinColumn({ name: "chargerId" })

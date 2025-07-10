@@ -1,13 +1,12 @@
-import {Router, Request, Response} from 'express';
+import {Request, Response, Router} from 'express';
 import {
+    generateAccessTokenViaRefreshToken,
     getUserById,
     login as userLogin,
     logout as userLogout,
-    generateAccessTokenViaRefreshToken
+    sendOtpToPhoneNumber
 } from '../controllers/userController';
-import {sendOtpToPhoneNumber} from '../controllers/userController'
-import {authenticate} from "../middleware/auth.middleware";
-import {UserPayload} from "../middleware/auth.middleware";
+import {authenticate, UserPayload} from "../middleware/auth.middleware";
 
 
 const router: Router = Router();
@@ -54,8 +53,12 @@ router.post('/api/auth/refresh', async (req: Request, res: Response) => {
 router.post('/api/users/me', authenticate, async (req: Request, res: Response) => {
     const user = req.user as UserPayload | undefined;
     try {
-        const myUser = await getUserById(Number(user?.id));
-        res.status(200).send({success: true, message: "OTP Sent Successfully", data: myUser});
+        if (user?.id){
+            const myUser = await getUserById(user?.id);
+            res.status(200).send({success: true, message: "OTP Sent Successfully", data: myUser});
+        } else {
+            res.status(400).send({success: false, message: "User not found", data: null});
+        }
     } catch (error: any) {
         res.status(500).send({success: false, message: error.message, data: null});
     }

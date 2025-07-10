@@ -19,8 +19,8 @@ enum UserRoles {
 
 @Entity("users")
 class Users extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     @Column({
         type: "varchar",
