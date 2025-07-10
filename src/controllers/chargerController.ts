@@ -27,18 +27,14 @@ async function listAllCharger() {
 
 async function getCharger(chargerId: string) {
     try {
-        return await Chargers.findOneBy({ id: parseInt(chargerId,10) });
+        return await Chargers.findOneBy({ id: chargerId as unknown as typeof Chargers.prototype.id });
     } catch (error: any) {
         throw new Error(error.message);
     }
 }
 
-async  function updateCharger(chargerId: string, data: any) {
+async  function updateCharger(charger: Chargers, data: any) {
     try {
-        const charger = await Chargers.findOneBy({ id: parseInt(chargerId,10) });
-        if (!charger) {
-            throw new Error("Charger not found");
-        }
         charger.type = data.type || charger.type;
         charger.model = data.model || charger.model;
         charger.address = data.address || charger.address;

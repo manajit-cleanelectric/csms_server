@@ -1,10 +1,21 @@
-import { RPCServer, RPCClient, createRPCError } from "ocpp-rpc";
-import { logger } from "../app";
-import { handleHeartbeat, handleBootNotification, handleAuthorize, handleMeterValues, handleStatusNotification, handleStopTransaction, handleStartTransaction, handleRemoteStopTransaction } from "../controllers/ocppHandler"
+import {createRPCError, RPCClient, RPCServer} from "ocpp-rpc";
+import {logger} from "../app";
+import {
+    handleAuthorize,
+    handleBootNotification,
+    handleHeartbeat,
+    handleMeterValues,
+    handleRemoteStopTransaction,
+    handleStartTransaction,
+    handleStatusNotification,
+    handleStopTransaction
+} from "../controllers/ocppHandler"
 
 const ChargerWebsocketMap = new Map<string, RPCClient>();
 
-const rpcServer = new RPCServer({});
+const rpcServer = new RPCServer({
+    protocols: ['ocpp1.6'],
+});
 
 rpcServer.on("client", async (client: RPCClient) => {
     client.handle("BootNotification", async ({params}) => {

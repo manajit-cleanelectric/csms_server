@@ -30,7 +30,7 @@ export enum ChargerStatus {
 
 @Entity("chargers")
 export class Chargers extends BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn("uuid")
     id: number;
 
     @Column({

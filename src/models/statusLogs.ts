@@ -29,7 +29,7 @@ class StatusLogs extends BaseEntity {
     id!: number;
 
     @Column({
-        type: "int",
+        type: "uuid",
         nullable: false
     })
     chargerId!: number;

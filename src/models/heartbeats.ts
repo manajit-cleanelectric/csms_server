@@ -1,13 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    BaseEntity,
-    UpdateDateColumn,
-    CreateDateColumn,
-    Timestamp, Check,
-    ManyToOne, OneToMany, OneToOne
-} from "typeorm";
+import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 
 @Entity("heartbeats")
 class Heartbeats extends BaseEntity {
@@ -18,7 +9,7 @@ class Heartbeats extends BaseEntity {
     id!: number;
 
     @Column({
-        type: "int",
+        type: "uuid",
         nullable: false
     })
     chargerId!: number;
