@@ -28,7 +28,7 @@ router.get('/api/user/:userId/sessions', authenticate, async (req: Request, res:
     }
 });
 
-router.get('/api/users/:userId/session/remote-stop-transaction', authenticate, async (req: Request, res: Response) => {
+router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, async (req: Request, res: Response) => {
     try {
         const {chargerId, transactionId} = req.body;
         const status = await sendRemoteStopTransaction(chargerId, transactionId);
