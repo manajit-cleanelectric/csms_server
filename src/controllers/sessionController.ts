@@ -5,6 +5,7 @@ import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {v7 as uuidv7} from "uuid";
 import {Users} from "../models/users";
 import {logger} from "../app";
+import WebSocket from 'ws';
 
 async function addSession(data: any) {
     try {
@@ -99,6 +100,7 @@ async function listAllUserSessions(userId: number) {
 async function sendRemoteStopTransaction(chargerId: string, transactionId: number) {
     const rpcClient = ChargerWebsocketMap.get(String(chargerId));
 
+    // @ts-ignore
     if (!rpcClient || rpcClient._ws.readyState !== WebSocket.OPEN) {
         console.error(`WebSocket not open for charger ${chargerId}`);
         return false;

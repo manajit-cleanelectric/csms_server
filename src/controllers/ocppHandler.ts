@@ -4,6 +4,17 @@ import {createRPCError} from "ocpp-rpc";
 import {Sessions} from "../models/sessions";
 import {Vehicles} from "../models/vehicle";
 import {Heartbeats} from "../models/heartbeats";
+import {MeterValues} from "../models/meterValues";
+import {StatusLogs} from "../models/statusLogs";
+
+const acceptedMeasurands: string[] = [
+    "Energy.Active.Import.Register",
+    "Power.Active.Import",
+    "Current.Import",
+    "Voltage",
+    "Temperature",
+    "SoC",
+];
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received BootNotification from ${client.identity}:`, params);
@@ -35,7 +46,10 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
     let user = null;
     try {
         // TODO: Confirm 'vehicle' field is correct for VIN
-        const vehicle = await Vehicles.findOneBy({vin: params.idTag});
+        const vehicle = await Vehicles.findOne({
+            where: { vin: params.idTag },
+            relations: ["user"]
+        })
         user = vehicle?.user;
     } catch (err) {
         logger.error(`Failed to read vehicle VIN from DB:`, err);
@@ -56,8 +70,44 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
 const handleMeterValues = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Meter Values from ${client.identity}:`, params);
     // TODO implement meter values
+    let {connectorId, transactionId, meterValue} = params;
+    let chargerId = Number(client.identity!);
     try {
-        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
+        await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE})
+        const currentMeterValue = new MeterValues();
+        currentMeterValue.chargerId = chargerId;
+        currentMeterValue.connectorId = connectorId;
+        currentMeterValue.sessionId = transactionId;
+        meterValue.forEach((item: any) => {
+            let {timestamp, sampledValue} = item;
+            currentMeterValue.timestamp = timestamp;
+            sampledValue.forEach((sample: any) => {
+                switch (sample.measurand) {
+                    case 'Energy.Active.Import.Register':
+                        currentMeterValue.energyActiveImportRegister = sample.value;
+                        break;
+                    case 'Power.Active.Import':
+                        currentMeterValue.powerActiveImport = sample.value;
+                        break;
+                    case 'Current.Import':
+                        currentMeterValue.currentImport = sample.value;
+                        break;
+                    case 'Voltage':
+                        currentMeterValue.voltage = sample.value;
+                        break;
+                    case 'Temperature':
+                        currentMeterValue.temperature = sample.value;
+                        break;
+                    case 'SoC':
+                        currentMeterValue.soc = sample.value;
+                        break;
+                    default:
+                        logger.info(`Received Meter Values for measurand ${sample.measurand}`,);
+                }
+            });
+
+        });
+        await currentMeterValue.save();
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
@@ -84,8 +134,15 @@ const handleRemoteStopTransaction = async ({client, params}: { client: any; para
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Status Notification from ${client.identity}:`, params);
     // TODO handle status notification
+    let  {connectorId, errorCode, status} = params;
+    let chargerId = Number(client.identity!);
     try {
-        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
+        const statusNotification = new StatusLogs();
+        statusNotification.status = status;
+        statusNotification.chargerId = chargerId;
+        statusNotification.connectorId = connectorId;
+        statusNotification.errorCode = errorCode;
+        await statusNotification.save();
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
@@ -100,7 +157,7 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
     let {connectorId, idTag, meterStart, timestamp} = params;
     try {
         const chargingSession = new Sessions();
-        chargingSession.connector = connectorId;
+        // chargingSession.connector = connectorId;
         const vehicle = await Vehicles.findOneBy({vin: idTag});
         if (!vehicle) {
             throw new Error('Vehicle not found');
@@ -126,7 +183,7 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
     let chargingSession: Sessions | null = null;
     try {
         chargingSession = await Sessions.findOneBy({id: transactionId});
-        if (!chargingSession) {
+        if (chargingSession) {
             chargingSession!.meterStop = meterStop;
             chargingSession!.endTime = timestamp;
             // TODO log reason in sessions
