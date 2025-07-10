@@ -41,7 +41,7 @@ async function addSession(data: any) {
     }
 }
 
-async function updateSession(sessionId: number, data: any) {
+async function updateSession(sessionId: string, data: any) {
     try {
         const session = await Sessions.findOneBy({ id: sessionId });
         if (!session) {
@@ -56,7 +56,7 @@ async function updateSession(sessionId: number, data: any) {
     }
 }
 
-async function endSession(sessionId: number, data: any) {
+async function endSession(sessionId: string, data: any) {
     try {
         const session = await Sessions.findOneBy({id: sessionId});
         if (!session) {
@@ -73,7 +73,7 @@ async function endSession(sessionId: number, data: any) {
     }
 }
 
-async function getSession(sessionId: number) {
+async function getSession(sessionId: string) {
     try {
         const session = await Sessions.findOneBy({ id: sessionId });
         if (!session) {
@@ -85,7 +85,7 @@ async function getSession(sessionId: number) {
     }
 }
 
-async function listAllUserSessions(userId: number) {
+async function listAllUserSessions(userId: string) {
     try {
         const user = await Users.findOne({
             where: { id: userId },

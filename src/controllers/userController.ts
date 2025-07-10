@@ -98,7 +98,7 @@ async function login(phoneNumber: string, otp: string) {
     return {accessToken, refreshToken};
 }
 
-async function getUserById(userId: number) {
+async function getUserById(userId: string) {
     try {
         const user = await Users.findOneBy({id: userId});
         if (!user) {
@@ -177,7 +177,7 @@ async function listUnApprovedUsers() {
     }
 }
 
-async function approveUser(userId: number) {
+async function approveUser(userId: string) {
     try {
         const user = await Users.findOneBy({id: userId});
         if (!user) {

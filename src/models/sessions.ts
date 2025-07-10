@@ -6,7 +6,6 @@ import {
     JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
-    Timestamp,
     UpdateDateColumn
 } from "typeorm";
 import {Chargers} from "./charger";
@@ -25,11 +24,8 @@ enum SessionStatus {
 
 @Entity("sessions")
 class Sessions extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
-    id!: number;
+    @PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     @ManyToOne(() => Chargers, (charger) => charger.sessions, {
         onDelete: "SET NULL",
@@ -68,13 +64,13 @@ class Sessions extends BaseEntity {
         nullable: false,
         default: () => "CURRENT_TIMESTAMP"
     })
-    startTime!: Timestamp;
+    startTime!: Date;
 
     @Column({
         type: "timestamp",
         nullable: true
     })
-    endTime!: Timestamp;
+    endTime!: Date;
 
     @Column({
         type: "float",

@@ -3,11 +3,11 @@ import {Chargers} from "./charger";
 
 @Entity("addresses")
 class Addresses extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
     @OneToOne(() => Chargers, (charger) => charger.address)
-    charger: Chargers
+    charger: Chargers;
 
     @Column({
         type: "varchar",

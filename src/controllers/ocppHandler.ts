@@ -73,7 +73,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
     let {connectorId, transactionId, meterValue} = params;
     let chargerId = client.identity!;
     try {
-        await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE})
+        await Chargers.update({id: chargerId}, {status: ChargerStatus.AVAILABLE})
         const currentMeterValue = new MeterValues();
         currentMeterValue.chargerId = chargerId;
         currentMeterValue.connectorId = connectorId;
