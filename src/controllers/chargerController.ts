@@ -27,7 +27,7 @@ async function listAllCharger() {
 
 async function getCharger(chargerId: string) {
     try {
-        return await Chargers.findOneBy({ id: chargerId as unknown as typeof Chargers.prototype.id });
+        return await Chargers.findOneBy({ id: chargerId });
     } catch (error: any) {
         throw new Error(error.message);
     }

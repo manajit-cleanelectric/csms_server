@@ -31,7 +31,7 @@ export enum ChargerStatus {
 @Entity("chargers")
 export class Chargers extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
-    id: number;
+    id: string;
 
     @Column({
         type: "varchar",

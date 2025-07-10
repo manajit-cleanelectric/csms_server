@@ -17,9 +17,9 @@ const handleBootNotification = async ({client, params}: { client: any; params: a
 const handleHeartbeat = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Heartbeat from ${client.identity}:`, params);
     try {
-        await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE});
+        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE});
         const heartBeat = new Heartbeats();
-        heartBeat.chargerId = client.identity! as unknown as typeof Chargers.prototype.id;
+        heartBeat.chargerId = client.identity!;
         await heartBeat.save();
         return {
             currentTime: new Date().toISOString(),
@@ -57,7 +57,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
     logger.info(`Received Meter Values from ${client.identity}:`, params);
     // TODO implement meter values
     try {
-        await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE})
+        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
@@ -71,7 +71,7 @@ const handleRemoteStopTransaction = async ({client, params}: { client: any; para
     logger.info(`Received Remote Stop Transaction from ${client.identity}:`, params);
     // TODO implement remote stop transactions
     try {
-        await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE})
+        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
@@ -85,7 +85,7 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
     logger.info(`Received Status Notification from ${client.identity}:`, params);
     // TODO handle status notification
     try {
-        await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE})
+        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");

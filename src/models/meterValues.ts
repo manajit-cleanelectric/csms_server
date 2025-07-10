@@ -12,7 +12,7 @@ class MeterValues extends BaseEntity {
         type: "uuid",
         nullable: false
     })
-    chargerId!: number;
+    chargerId!: string;
 
     @Column({
         type: "int",
