@@ -8,6 +8,13 @@ async function addVehicle(userId: any, data: any) {
         if (!user) {
             throw new Error("User not found");
         }
+        const detailedUser = await Users.findOne({
+            where: {id: userId},
+            relations: ['vehicles'],
+        });
+        if (detailedUser && detailedUser?.vehicles.length > 0) {
+            throw new Error("User already has added a vehicle");
+        }
         const vehicle = new Vehicles();
         vehicle.vehicleNo = data.vehicleNo;
         vehicle.rcNumber = data.rcNumber;

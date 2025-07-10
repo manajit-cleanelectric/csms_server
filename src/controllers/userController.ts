@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/smsService"
 import {AuthTokens} from "../models/authTokens";
+import {Chargers, ChargerStatus} from "../models/charger";
 
 async function addUserInfo(data: any) {
     try {
@@ -82,6 +83,9 @@ async function login(phoneNumber: string, otp: string) {
         user = new Users();
         user.phoneNumber = phoneNumber;
         await user.save();
+    } else {
+        // TODO to allow concurrent login change the login here
+        await AuthTokens.update({user: user}, {isRevoked: true});
     }
     // return jwt token
     const accessToken = jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
@@ -110,7 +114,7 @@ async function getUserById(userId: number) {
 async function generateAccessTokenViaRefreshToken(token: string) {
     try {
         const authToken = await AuthTokens.findOne({
-            where: {token: token, isRevoked: false },
+            where: {token: token, isRevoked: false},
             relations: ['user'],
         });
         if (!authToken) {
@@ -121,21 +125,21 @@ async function generateAccessTokenViaRefreshToken(token: string) {
             throw new Error("User not found");
         }
         return jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
-    } catch (error:any) {
+    } catch (error: any) {
         throw new Error("Invalid refresh token");
     }
 }
 
 async function logout(token: string) {
     try {
-        const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false });
+        const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false});
         if (!authToken) {
             throw new Error("Invalid Token");
         }
         authToken.isRevoked = true;
         await authToken.save();
         return true;
-    } catch (error:any) {
+    } catch (error: any) {
         throw new Error("Invalid refresh token");
     }
 }
