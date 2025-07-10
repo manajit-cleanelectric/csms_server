@@ -1,4 +1,4 @@
-import { StatusLogs } from "../models/statusLogs";
+import {StatusLogs} from "../models/statusLogs";
 
 async function addStatusLog(data: any) {
     try {
@@ -14,7 +14,7 @@ async function addStatusLog(data: any) {
     }
 }
 
-async function getStatusLogsByChargerId(chargerId: number) {
+async function getStatusLogsByChargerId(chargerId: string) {
     try {
         return await StatusLogs.find({ where: { chargerId } });
     } catch (error: any) {
@@ -22,7 +22,7 @@ async function getStatusLogsByChargerId(chargerId: number) {
     }
 }
 
-async function getStatusLogsByChargerIdAndConnectorId(chargerId: number, connectorId: number) {
+async function getStatusLogsByChargerIdAndConnectorId(chargerId: string, connectorId: number) {
     try {
         return await StatusLogs.find({ where: { chargerId, connectorId } });
     } catch (error: any) {

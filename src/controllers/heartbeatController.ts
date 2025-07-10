@@ -1,4 +1,4 @@
-import { Heartbeats } from "../models/heartbeats";
+import {Heartbeats} from "../models/heartbeats";
 
 async function addHeartbeat(data: any) {
     try {
@@ -12,7 +12,7 @@ async function addHeartbeat(data: any) {
     }
 }
 
-async function getChargerHeartbeats(chargerId: number) {
+async function getChargerHeartbeats(chargerId: string) {
     try {
         const heartbeats = await Heartbeats.find({ where: { chargerId } });
         if (!heartbeats || heartbeats.length === 0) {

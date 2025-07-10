@@ -71,7 +71,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
     logger.info(`Received Meter Values from ${client.identity}:`, params);
     // TODO implement meter values
     let {connectorId, transactionId, meterValue} = params;
-    let chargerId = Number(client.identity!);
+    let chargerId = client.identity!;
     try {
         await Chargers.update({id: client.identity! as unknown as typeof Chargers.prototype.id}, {status: ChargerStatus.AVAILABLE})
         const currentMeterValue = new MeterValues();
@@ -135,7 +135,7 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
     logger.info(`Received Status Notification from ${client.identity}:`, params);
     // TODO handle status notification
     let  {connectorId, errorCode, status} = params;
-    let chargerId = Number(client.identity!);
+    let chargerId = client.identity!;
     try {
         const statusNotification = new StatusLogs();
         statusNotification.status = status;
