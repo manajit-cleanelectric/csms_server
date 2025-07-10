@@ -1,7 +1,13 @@
 import {Request, Response, Router} from 'express';
-import {getSession, listAllUserSessions, sendRemoteStopTransaction} from '../controllers/sessionController';
-import {authenticate} from "../middleware/auth.middleware";
+import {
+    getSession,
+    listAllChargerSessions,
+    listAllUserSessions,
+    sendRemoteStopTransaction
+} from '../controllers/sessionController';
+import {authenticate, authorize} from "../middleware/auth.middleware";
 import {logger} from "../app";
+import {UserRoles} from "../models/users";
 
 
 const router: Router = Router();
@@ -23,8 +29,20 @@ router.get('/api/user/:userId/sessions', authenticate, async (req: Request, res:
         const sessions = await listAllUserSessions(userId);
         res.status(200).send({success: true, message: "User sessions retrieved", data: sessions});
     } catch (error: any) {
+        logger.error(`Error retrieving sessions for user ${req.params.userId}: ${error.message}`);
         res.status(500).send({error: error.message});
     }
+});
+
+router.get('/api/chargers/:chargerId/sessions', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+   try {
+       const {chargerId} = req.params;
+       const sessions = await listAllChargerSessions(chargerId);
+       res.status(200).send({success: true, message: "Charger sessions retrieved", data: sessions});
+   } catch (error: any) {
+       logger.error(`Error retrieving sessions for charger ${req.params.chargerId}: ${error.message}`);
+       res.status(500).send({error: error.message});
+   }
 });
 
 router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, async (req: Request, res: Response) => {

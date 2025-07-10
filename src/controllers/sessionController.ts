@@ -97,6 +97,39 @@ async function listAllUserSessions(userId: string) {
     }
 }
 
+async function listAllChargerSessions(chargerId: string) {
+    try {
+        const charger = await Chargers.findOneBy({ id: chargerId });
+        if (!charger) {
+            throw new Error("Charger not found");
+        }
+        const sessions = await Sessions.find({
+            where: { charger: { id: chargerId } },
+            relations: ["vehicle", "user", "connector"]
+        });
+        return sessions.map(session => ({
+            id: session.id,
+            startTime: session.startTime,
+            endTime: session.endTime,
+            meterStart: session.meterStart,
+            meterStop: session.meterStop,
+            energyUsed: session.energyUsed,
+            status: session.status,
+            vehicle: {
+                vin: session.vehicle?.vin,
+                model: session.vehicle?.model
+            },
+            user: {
+                id: session.user?.id,
+                name: session.user?.fullName
+            },
+            connectorId: session.connector?.chargerConnectorId
+        }));
+    } catch (error: any) {
+        throw new Error(`Error fetching sessions for charger ${chargerId}: ${error.message}`);
+    }
+}
+
 async function sendRemoteStopTransaction(chargerId: string, transactionId: number) {
     const rpcClient = ChargerWebsocketMap.get(String(chargerId));
 
@@ -127,4 +160,5 @@ export {
     getSession,
     listAllUserSessions,
     sendRemoteStopTransaction,
+    listAllChargerSessions,
 }
