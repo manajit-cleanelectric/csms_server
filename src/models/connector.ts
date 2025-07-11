@@ -36,6 +36,7 @@ class Connectors extends BaseEntity {
     @Column({
         type: "int",
         unsigned: true,
+        unique: false,
     })
     chargerConnectorId!: number;
 

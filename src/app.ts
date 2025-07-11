@@ -5,10 +5,7 @@ config();
 import cors from "cors";
 import express, {type Express} from "express";
 import {pino} from "pino";
-import {router as userRoutes} from "./routes/userRoutes";
-import {router as chargerRoutes} from "./routes/chargerRoutes";
-import {router as sessionRoutes} from "./routes/sessionRoutes";
-import {router as vehicleRoutes} from "./routes/vehicleRoutes";
+
 
 const app: Express = express();
 
@@ -19,7 +16,7 @@ const DATABASE_PORT = parseInt(process.env.DATABASE_PORT!, 10);
 const DATABASE_NAME = process.env.DATABASE_NAME!;
 const DATABASE_USERNAME = process.env.DATABASE_USERNAME!;
 const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD!;
-const SERVER_PORT = parseInt(process.env.SERVER_PORT!,10);
+const SERVER_PORT = parseInt(process.env.SERVER_PORT!, 10);
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -51,6 +48,10 @@ if (!SERVER_PORT) {
 app.set("trust proxy", true);
 const logger = pino({name: "server start"});
 
+import {router as userRoutes} from "./routes/userRoutes";
+import {router as chargerRoutes} from "./routes/chargerRoutes";
+import {router as sessionRoutes} from "./routes/sessionRoutes";
+import {router as vehicleRoutes} from "./routes/vehicleRoutes";
 
 // Middlewares
 app.use(express.json());
