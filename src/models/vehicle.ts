@@ -15,11 +15,8 @@ import {Sessions} from "./sessions";
 
 @Entity("vehicles")
 class Vehicles extends BaseEntity {
-    @PrimaryGeneratedColumn({
-        type: "int",
-        unsigned: true
-    })
-    id!: number;
+    @PrimaryGeneratedColumn("uuid")
+    id!: string;
 
     @ManyToOne(() => Users, (user) => user.vehicles, {
         onDelete: "SET NULL",

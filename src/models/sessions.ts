@@ -24,8 +24,11 @@ enum SessionStatus {
 
 @Entity("sessions")
 class Sessions extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
+    @PrimaryGeneratedColumn({
+        type: "int",
+        unsigned: true
+    })
+    id!: number;
 
     @ManyToOne(() => Chargers, (charger) => charger.sessions, {
         onDelete: "SET NULL",
