@@ -48,7 +48,7 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
     try {
         // TODO: Confirm 'vehicle' field is correct for VIN
         const vehicle = await Vehicles.findOne({
-            where: { vin: params.idTag },
+            where: {vin: params.idTag},
             relations: ["user"]
         })
         user = vehicle?.user;
@@ -59,11 +59,15 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
     //TODO add wallet validation
     if (user) {
         return {
-            status: "Accepted",
+            "idTagInfo": {
+                "status": "Accepted"
+            }
         };
     } else {
         return {
-            status: "Invalid",
+            "idTagInfo": {
+                "status": "Invalid"
+            }
         };
     }
 };
@@ -78,7 +82,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
         const currentMeterValue = new MeterValues();
         currentMeterValue.chargerId = chargerId;
         currentMeterValue.connectorId = connectorId;
-        currentMeterValue.sessionId = transactionId;
+        currentMeterValue.sessionId = Number(transactionId);
         meterValue.forEach((item: any) => {
             let {timestamp, sampledValue} = item;
             currentMeterValue.timestamp = timestamp;
@@ -135,7 +139,7 @@ const handleRemoteStopTransaction = async ({client, params}: { client: any; para
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Status Notification from ${client.identity}:`, params);
     // TODO handle status notification
-    let  {connectorId, errorCode, status} = params;
+    let {connectorId, errorCode, status} = params;
     let chargerId = client.identity!;
     try {
         const statusNotification = new StatusLogs();
@@ -161,7 +165,7 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
         const connector = await Connectors.findOne({
             where: {
                 chargerConnectorId: connectorId,
-                charger: { id: client.identity! }
+                charger: {id: client.identity!}
             },
             relations: ["charger"]
         });
@@ -170,7 +174,7 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
         }
         chargingSession.connector = connector;
         const vehicle = await Vehicles.findOne({
-            where:{vin: idTag},
+            where: {vin: idTag},
             relations: ["user"]
         });
         if (!vehicle) {
@@ -182,8 +186,10 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
         chargingSession.user = vehicle.user;
         await chargingSession.save();
         return {
-            transactionId: chargingSession.id,
-            status: "Accepted",
+            "idTagInfo": {
+                "status": "Accepted"
+            },
+            "transactionId": chargingSession.id
         };
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
@@ -211,7 +217,9 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
         throw createRPCError("InternalError", "Database update failed.");
     }
     return {
-        "status": "Accepted",
+        "idTagInfo": {
+            "status": "Accepted"
+        }
     };
 };
 

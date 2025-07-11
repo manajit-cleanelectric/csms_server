@@ -26,11 +26,11 @@ class MeterValues extends BaseEntity {
     timestamp!: Date;
 
     @Column({
-        type: "varchar",
+        type: "int",
         nullable: false,
-        length: 64
+        unsigned: true
     })
-    sessionId!: string;
+    sessionId!: number;
 
     @Column({
         type: "float",
