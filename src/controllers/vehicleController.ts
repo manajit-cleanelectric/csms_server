@@ -30,7 +30,7 @@ async function addVehicle(userId: any, data: any) {
     }
 }
 
-async function updateVehicle(vehicleId: number, data: any) {
+async function updateVehicle(vehicleId: string, data: any) {
     try {
         const vehicle = await Vehicles.findOneBy({id: vehicleId});
         if (!vehicle) {
@@ -52,7 +52,23 @@ async function updateVehicle(vehicleId: number, data: any) {
     }
 }
 
-async function approveVehicle(vehicleId: number) {
+async function getVehicleById(vehicleId: string) {
+    try {
+        const vehicle = await Vehicles.findOne({
+            where: {id: vehicleId},
+            relations: ["user"]
+        });
+        if (!vehicle) {
+            throw new Error("Vehicle not found");
+        }
+        return vehicle;
+    } catch (error) {
+        logger.error(`Error fetching vehicle by ID: ${error}`);
+        throw new Error(`Failed to fetch vehicle: ${error}`);
+    }
+}
+
+async function approveVehicle(vehicleId: string) {
     try {
         const vehicle = await Vehicles.findOne({
             where: {id: vehicleId},
@@ -88,7 +104,7 @@ async function listUnapprovedVehicles() {
     }
 }
 
-async function removeVehicle(vehicleId: number) {
+async function removeVehicle(vehicleId: string) {
     try {
         const vehicle = await Vehicles.findOneBy({id: vehicleId});
         if (!vehicle) {
@@ -105,6 +121,7 @@ async function removeVehicle(vehicleId: number) {
 export {
     addVehicle,
     updateVehicle,
+    getVehicleById,
     approveVehicle,
     listUnapprovedVehicles,
     removeVehicle,
