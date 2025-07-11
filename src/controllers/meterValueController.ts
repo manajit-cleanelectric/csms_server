@@ -20,7 +20,7 @@ async function addMeterValue(data: any) {
     }
 }
 
-async function getMeterValuesBySessionId(sessionId: string) {
+async function getMeterValuesBySessionId(sessionId: number) {
     try {
         return await MeterValues.find({where: {sessionId}});
     } catch (error: any) {

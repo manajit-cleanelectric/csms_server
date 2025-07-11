@@ -30,6 +30,14 @@ class InvalidUUIDError extends Error {
     }
 }
 
+class NoContentError extends Error {
+    constructor(message: string = "No content available") {
+        super(message);
+        this.name = "NoContentError";
+        Object.setPrototypeOf(this, NoContentError.prototype);
+    }
+}
+
 function handleError(error: any, res: any, logger: any) {
     switch (error.name) {
         case 'ResourceNotFoundError':
@@ -48,6 +56,10 @@ function handleError(error: any, res: any, logger: any) {
             res.status(400).send({success: false, error: error.message, data: null});
             logger.error(`Invalid UUID: ${error.message}`);
             break;
+        case 'NoContentError':
+            res.status(204).send({success: true, message: error.message, data: null});
+            logger.info(`No content available: ${error.message}`);
+            break;
         default:
             res.status(500).send({success: false, error: "An unexpected error occurred", data: null});
             logger.error(`Unexpected error: ${error.message}`);
@@ -60,5 +72,6 @@ export {
     ResourceAlreadyExistsError,
     MissingParameterError,
     InvalidUUIDError,
+    NoContentError,
     handleError,
 }

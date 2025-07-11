@@ -4,7 +4,7 @@ import {Vehicles} from "../models/vehicle";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {v7 as uuidv7, validate as uuidValidate} from "uuid";
 import {Users} from "../models/users";
-import {InvalidUUIDError, MissingParameterError, ResourceNotFoundError} from "../errors/customErrors";
+import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../app";
 import WebSocket from 'ws';
 
@@ -103,13 +103,42 @@ async function listAllUserSessions(userId: string) {
     }
     const user = await Users.findOne({
         where: { id: userId },
-        relations: ["sessions"]
     });
     if (!user) {
         logger.error(`User with ID ${userId} not found`);
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
-    return user.sessions;
+    const sessions = await Sessions.find({
+        where: { user: { id: userId } },
+        relations: ["vehicle", "charger", "connector"]
+    });
+    if (sessions.length === 0) {
+        logger.error(`No sessions found for user with ID ${userId}`);
+        throw new NoContentError(`No sessions found for user with ID ${userId}`);
+    }
+    return sessions.map(session => ({
+        id: session.id,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        meterStart: session.meterStart,
+        meterStop: session.meterStop,
+        energyUsed: session.energyUsed,
+        status: session.status,
+        location: session.location,
+        user: {
+            id: session.user?.id,
+            name: session.user?.fullName
+        },
+        vehicle: {
+            vin: session.vehicle?.vin,
+            model: session.vehicle?.model
+        },
+        charger: {
+            id: session.charger?.id,
+            model: session.charger?.model
+        },
+        connectorId: session.connector?.chargerConnectorId
+    }));
 }
 
 async function listAllChargerSessions(chargerId: string) {
@@ -128,9 +157,9 @@ async function listAllChargerSessions(chargerId: string) {
         where: { charger: { id: chargerId } },
         relations: ["vehicle", "user", "connector"]
     });
-    if (!sessions || sessions.length === 0) {
+    if (sessions.length === 0) {
         logger.error(`No sessions found for charger with ID ${chargerId}`);
-        throw new ResourceNotFoundError(`No sessions found for charger with ID ${chargerId}`);
+        throw new NoContentError(`No sessions found for charger with ID ${chargerId}`);
     }
     return sessions.map(session => ({
         id: session.id,
