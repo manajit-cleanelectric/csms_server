@@ -6,6 +6,7 @@ import {Vehicles} from "../models/vehicle";
 import {Heartbeats} from "../models/heartbeats";
 import {MeterValues} from "../models/meterValues";
 import {StatusLogs} from "../models/statusLogs";
+import {Connectors} from "../models/connector";
 
 const acceptedMeasurands: string[] = [
     "Energy.Active.Import.Register",
@@ -157,14 +158,28 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
     let {connectorId, idTag, meterStart, timestamp} = params;
     try {
         const chargingSession = new Sessions();
-        // chargingSession.connector = connectorId;
-        const vehicle = await Vehicles.findOneBy({vin: idTag});
+        const connector = await Connectors.findOne({
+            where: {
+                chargerConnectorId: connectorId,
+                charger: { id: client.identity! }
+            },
+            relations: ["charger"]
+        });
+        if (!connector) {
+            throw new Error('Connector not found');
+        }
+        chargingSession.connector = connector;
+        const vehicle = await Vehicles.findOne({
+            where:{vin: idTag},
+            relations: ["user"]
+        });
         if (!vehicle) {
             throw new Error('Vehicle not found');
         }
         chargingSession.vehicle = vehicle;
         chargingSession.meterStart = meterStart;
         chargingSession.startTime = timestamp;
+        chargingSession.user = vehicle.user;
         await chargingSession.save();
         return {
             transactionId: chargingSession.id,
