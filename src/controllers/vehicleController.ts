@@ -67,6 +67,20 @@ async function getVehicleById(vehicleId: string) {
     return vehicle;
 }
 
+async function getVehiclesByUserId(userId: string) {
+    if (!userId) {
+        throw new MissingParameterError(`User ID is required`);
+    }
+    const vehicles = await Vehicles.find({
+        where: {user: {id: userId}},
+        relations: ["user"]
+    });
+    if (vehicles.length === 0) {
+        throw new NoContentError(`No vehicles found for user with ID ${userId}`);
+    }
+    return vehicles;
+}
+
 async function approveVehicle(vehicleId: string) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
@@ -116,6 +130,7 @@ export {
     addVehicle,
     updateVehicle,
     getVehicleById,
+    getVehiclesByUserId,
     approveVehicle,
     listUnapprovedVehicles,
     removeVehicle,

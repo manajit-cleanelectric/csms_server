@@ -27,8 +27,8 @@ router.post('/api/auth/send-otp', async (req: Request, res: Response) => {
 router.post('/api/auth/login', async (req: Request, res: Response) => {
     const {phoneNumber, otp} = req.body;
     try {
-        const {accessToken, refreshToken} = await userLogin(phoneNumber, otp);
-        res.status(200).json({success: true, message: "Logged user successfully", accessToken: accessToken, refreshToken: refreshToken, data: null});
+        const {accessToken, refreshToken, user} = await userLogin(phoneNumber, otp);
+        res.status(200).json({success: true, message: "Logged user successfully", accessToken: accessToken, refreshToken: refreshToken, data: [user]});
         logger.info(`User with phone number ${phoneNumber} logged in successfully`);
     } catch (error: any) {
         handleError(error, res, logger);

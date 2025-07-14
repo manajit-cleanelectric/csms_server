@@ -93,7 +93,7 @@ async function login(phoneNumber: string, otp: string) {
     authToken.token = refreshToken;
     // TODO add other details
     await authToken.save()
-    return {accessToken, refreshToken};
+    return {accessToken, refreshToken, user};
 }
 
 async function getUserById(userId: string) {
