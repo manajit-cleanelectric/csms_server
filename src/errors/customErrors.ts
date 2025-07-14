@@ -38,6 +38,14 @@ class NoContentError extends Error {
     }
 }
 
+class InvalidAuthError extends Error {
+    constructor(message: string = "Invalid authentication credentials") {
+        super(message);
+        this.name = "InvalidAuthError";
+        Object.setPrototypeOf(this, InvalidAuthError.prototype);
+    }
+}
+
 function handleError(error: any, res: any, logger: any) {
     switch (error.name) {
         case 'ResourceNotFoundError':
@@ -60,6 +68,10 @@ function handleError(error: any, res: any, logger: any) {
             res.status(204).send({success: true, message: error.message, data: null});
             logger.info(`No content available: ${error.message}`);
             break;
+        case 'InvalidAuthError':
+            res.status(401).send({success: false, error: error.message, data: null});
+            logger.error(`Invalid Auth Credentials: ${error.message}`);
+            break;
         default:
             res.status(500).send({success: false, error: "An unexpected error occurred", data: null});
             logger.error(`Unexpected error: ${error.message}`);
@@ -73,5 +85,6 @@ export {
     MissingParameterError,
     InvalidUUIDError,
     NoContentError,
+    InvalidAuthError,
     handleError,
 }

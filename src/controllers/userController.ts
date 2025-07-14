@@ -3,27 +3,25 @@ import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/smsService"
 import {AuthTokens} from "../models/authTokens";
-import {Chargers, ChargerStatus} from "../models/charger";
+import {InvalidAuthError, MissingParameterError, ResourceNotFoundError} from "../errors/customErrors";
 
 async function addUserInfo(data: any) {
-    try {
-        // Validate input data
-        const {firstName, lastName, phoneNumber, city, state} = data;
-        // Check if user already exists
-        const user = await Users.findOneBy({phoneNumber: phoneNumber});
-        if (!user) {
-            throw new Error("User not found");
-        }
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.city = city;
-        user.state = state;
-        await user.save();
-        return user;
-    } catch (error) {
-        logger.error(`Error adding userInfo: ${error}`);
-        throw new Error(`Failed to add userInfo: ${error}`);
+    // Validate input data
+    if (!data.firstName || !data.lastName || !data.phoneNumber) {
+        throw new MissingParameterError("Missing required user information");
     }
+    const {firstName, lastName, phoneNumber, city, state} = data;
+    // Check if a user already exists
+    const user = await Users.findOneBy({phoneNumber: phoneNumber});
+    if (!user) {
+        throw new ResourceNotFoundError(`User with phone number ${phoneNumber} not found`);
+    }
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.city = city;
+    user.state = state;
+    await user.save();
+    return user;
 }
 
 // async function updateUserRC(userId: number, rcNumber: string, rcImageURL: string){
@@ -75,7 +73,7 @@ async function login(phoneNumber: string, otp: string) {
     // otp validation needs to be done
     if (otp != "1234") {
         // TODO proper validation of OTP
-        throw new Error("Invalid One Time Password");
+        throw new InvalidAuthError(`Invalid OTP provided`);
     }
     let user: Users | null = await Users.findOneBy({phoneNumber: phoneNumber});
     if (!user) {
@@ -112,36 +110,28 @@ async function getUserById(userId: string) {
 }
 
 async function generateAccessTokenViaRefreshToken(token: string) {
-    try {
-        const authToken = await AuthTokens.findOne({
-            where: {token: token, isRevoked: false},
-            relations: ['user'],
-        });
-        if (!authToken) {
-            throw new Error("Invalid Token");
-        }
-        const user = authToken.user;
-        if (!user) {
-            throw new Error("User not found");
-        }
-        return jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
-    } catch (error: any) {
-        throw new Error("Invalid refresh token");
+    const authToken = await AuthTokens.findOne({
+        where: {token: token, isRevoked: false},
+        relations: ['user'],
+    });
+    if (!authToken) {
+        throw new InvalidAuthError(`Invalid refresh token provided`);
     }
+    const user = authToken.user;
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found for the provided token`);
+    }
+    return jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
 }
 
 async function logout(token: string) {
-    try {
-        const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false});
-        if (!authToken) {
-            throw new Error("Invalid Token");
-        }
-        authToken.isRevoked = true;
-        await authToken.save();
-        return true;
-    } catch (error: any) {
-        throw new Error("Invalid refresh token");
+    const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false});
+    if (!authToken) {
+        throw new InvalidAuthError(`Invalid refresh token provided`);
     }
+    authToken.isRevoked = true;
+    await authToken.save();
+    return true;
 }
 
 async function sendOtpToPhoneNumber(phoneNumber: string) {
@@ -165,31 +155,25 @@ function generateRandomDigitString(size: number): string {
 }
 
 async function listUnApprovedUsers() {
-    try {
-        return await Users.find({
-            select: ["id", "firstName", "lastName", "phoneNumber"],
-            relations: ["vehicles"],
-            where: {isAccountApproved: false, isProfileComplete: true}
-        });
-    } catch (error) {
-        logger.error("Error fetching unapproved users:", error);
-        throw new Error("Failed to fetch unapproved users");
+    const users = await Users.find({
+        select: ["id", "firstName", "lastName", "phoneNumber"],
+        relations: ["vehicles"],
+        where: {isAccountApproved: false, isProfileComplete: true}
+    });
+    if (users.length === 0) {
+        throw new ResourceNotFoundError("No unapproved users found");
     }
+    return users;
 }
 
 async function approveUser(userId: string) {
-    try {
-        const user = await Users.findOneBy({id: userId});
-        if (!user) {
-            throw new Error("User not found");
-        }
-        user.isAccountApproved = true;
-        await user.save();
-        return user;
-    } catch (error) {
-        logger.error("Error approving user:", error);
-        throw new Error("Failed to approve user");
+    const user = await Users.findOneBy({id: userId});
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
     }
+    user.isAccountApproved = true;
+    await user.save();
+    return user;
 }
 
 export {
