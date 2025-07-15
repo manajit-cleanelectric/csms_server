@@ -1,12 +1,14 @@
 import {logger} from "../app";
 import {Chargers, ChargerStatus} from "../models/charger";
 import {createRPCError} from "ocpp-rpc";
-import {Sessions} from "../models/sessions";
+import {Sessions, SessionStatus} from "../models/sessions";
 import {Vehicles} from "../models/vehicle";
 import {Heartbeats} from "../models/heartbeats";
 import {MeterValues} from "../models/meterValues";
 import {StatusLogs} from "../models/statusLogs";
-import {Connectors} from "../models/connector";
+import {Connectors, ConnectorStatus} from "../models/connector";
+import {AppDataSource as dataSource} from "../database/datasource";
+
 
 const acceptedMeasurands: string[] = [
     "Energy.Active.Import.Register",
@@ -142,12 +144,45 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
     let {connectorId, errorCode, status} = params;
     let chargerId = client.identity!;
     try {
+        status = _getConnectorStatus(status);
         const statusNotification = new StatusLogs();
         statusNotification.status = status;
         statusNotification.chargerId = chargerId;
         statusNotification.connectorId = connectorId;
         statusNotification.errorCode = errorCode;
         await statusNotification.save();
+        if (status === ConnectorStatus.AVAILABLE) {
+            const connector = await dataSource
+                .getRepository(Connectors)
+                .createQueryBuilder("connector")
+                .where("connector.chargerId = :chargerId", {chargerId})
+                .andWhere("connector.chargerConnectorId = :connectorId", {connectorId})
+                .getOne();
+            if (connector) {
+                connector.status = ConnectorStatus.AVAILABLE;
+            }
+        } else {
+            const chargingSession = await dataSource
+                .getRepository(Sessions)
+                .createQueryBuilder("session")
+                .leftJoinAndSelect("session.connector", "connector")
+                .leftJoinAndSelect("session.charger", "charger")
+                .where("connector.chargerConnectorId = :connectorId", {connectorId})
+                .andWhere("charger.id = :chargerId", {chargerId})
+                .andWhere("session.status NOT IN (:...statuses)", {
+                    statuses: [SessionStatus.FAULTED, SessionStatus.FINISHED],
+                })
+                .getOne();
+
+            if (chargingSession) {
+                if (status === ConnectorStatus.PREPARING || status === ConnectorStatus.CHARGING || status === ConnectorStatus.FAULTED || status === ConnectorStatus.FINISHING) {
+                    chargingSession.status = status;
+                } else if (status === ConnectorStatus.SUSPENDED_EV || status === ConnectorStatus.SUSPENDED_EVSE || status === ConnectorStatus.UNAVAILABLE) {
+                    chargingSession.status = SessionStatus.FAULTED;
+                }
+                await chargingSession.save();
+            }
+        }
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
@@ -180,10 +215,15 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
         if (!vehicle) {
             throw new Error('Vehicle not found');
         }
+        const charger = await Chargers.findOneBy({id: client.identity!});
+        if (!charger) {
+            throw new Error('Charger not found');
+        }
         chargingSession.vehicle = vehicle;
         chargingSession.meterStart = meterStart;
         chargingSession.startTime = timestamp;
         chargingSession.user = vehicle.user;
+        chargingSession.charger = charger;
         await chargingSession.save();
         return {
             "idTagInfo": {
@@ -223,6 +263,29 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
     };
 };
 
+function _getConnectorStatus(status: string) {
+    switch (status) {
+        case ConnectorStatus.AVAILABLE:
+            return ConnectorStatus.AVAILABLE;
+        case ConnectorStatus.PREPARING:
+            return ConnectorStatus.PREPARING;
+        case ConnectorStatus.CHARGING:
+            return ConnectorStatus.CHARGING;
+        case ConnectorStatus.FAULTED:
+            return ConnectorStatus.FAULTED;
+        case ConnectorStatus.FINISHING:
+            return ConnectorStatus.FINISHING;
+        case ConnectorStatus.SUSPENDED_EV:
+            return ConnectorStatus.SUSPENDED_EV;
+        case ConnectorStatus.UNAVAILABLE:
+            return ConnectorStatus.UNAVAILABLE;
+        case ConnectorStatus.RESERVED:
+            return ConnectorStatus.RESERVED;
+        case ConnectorStatus.SUSPENDED_EVSE:
+            return ConnectorStatus.SUSPENDED_EVSE;
+    }
+    return ConnectorStatus.UNAVAILABLE;
+}
 
 export {
     handleBootNotification,
