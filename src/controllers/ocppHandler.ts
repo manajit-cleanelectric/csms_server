@@ -180,7 +180,9 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
         if (!vehicle) {
             throw new Error('Vehicle not found');
         }
-        chargingSession.vehicle = vehicle;
+        chargingSession.vehicleNo = vehicle.vehicleNo;
+        chargingSession.vehicleVendor = vehicle.vendor;
+        chargingSession.vehicleModel = vehicle.model;
         chargingSession.meterStart = meterStart;
         chargingSession.startTime = timestamp;
         chargingSession.user = vehicle.user;
