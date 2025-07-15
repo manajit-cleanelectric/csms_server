@@ -16,9 +16,8 @@ import {Users} from "./users";
 enum SessionStatus {
     PREPARING = 'Preparing',
     CHARGING = 'Charging',
-    SUSPENDED_EVSE = 'Suspended_EVSE',
-    SUSPENDED_EV = 'Suspended_EV',
     FINISHING = 'Finishing',
+    FINISHED = 'Finished',
     FAULTED = 'Faulted',
 }
 
@@ -100,6 +99,20 @@ class Sessions extends BaseEntity {
         length: 64
     })
     location!: string;
+
+    @Column({
+        type: "int",
+        unsigned: true,
+        default: 0
+    })
+    socStart!: number;
+
+    @Column({
+        type: "int",
+        unsigned: true,
+        nullable: true
+    })
+    socLast!: number;
 
     @Column({
         type: "enum",

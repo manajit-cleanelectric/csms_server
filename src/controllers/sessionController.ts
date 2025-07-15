@@ -1,4 +1,4 @@
-import {Sessions} from "../models/sessions";
+import {Sessions, SessionStatus} from "../models/sessions";
 import {Chargers} from "../models/charger";
 import {Vehicles} from "../models/vehicle";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
@@ -7,6 +7,7 @@ import {Users} from "../models/users";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../app";
 import WebSocket from 'ws';
+import {In} from "typeorm";
 
 async function addSession(data: any) {
     // Validate required fields
@@ -59,8 +60,9 @@ async function updateSession(sessionId: number, data: any) {
         logger.error(`Session with ID ${sessionId} not found`);
         throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
     }
-    session.status = data.status;
-    session.energyUsed = data.energyUsed;
+    session.status = data.status || session.status;
+    session.energyUsed = data.energyUsed || session.energyUsed;
+    session.socLast = data.soc || session.socLast;
     await session.save();
     return session;
 }
@@ -77,7 +79,7 @@ async function endSession(sessionId: number, data: any) {
     session.endTime = data.endTime;
     session.meterStop = data.meterStop;
     session.energyUsed = data.energyUsed;
-    session.status = data.status
+    session.status = SessionStatus.FINISHED;
     await session.save();
     return session;
 }
@@ -86,7 +88,11 @@ async function getSession(sessionId: number) {
     if (!sessionId) {
         throw new MissingParameterError(`Session ID is required`);
     }
-    const session = await Sessions.findOneBy({ id: sessionId });
+    // TODO: OPTIMIZE: Use query builder to partially fetch session data
+    const session = await Sessions.findOne({
+        where: { id: sessionId },
+        relations: ["vehicle", "charger", "connector", "user"]
+    });
     if (!session) {
         logger.error(`Session with ID ${sessionId} not found`);
         throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
@@ -139,6 +145,30 @@ async function listAllUserSessions(userId: string) {
         },
         connectorId: session.connector?.chargerConnectorId
     }));
+}
+
+// TODO: OPTIMIZE: Save ongoing session in cache to avoid multiple DB calls
+async function getOngoingSession(userId: string){
+    if (!userId) {
+        throw new MissingParameterError(`User ID is required`);
+    }
+    if (!uuidValidate(userId)) {
+        throw new InvalidUUIDError(`User ID ${userId} is not a valid UUID`);
+    }
+    const user = await Users.findOne({
+        where: { id: userId },
+    });
+    if (!user) {
+        throw new ResourceNotFoundError(`User with ID ${userId} not found`);
+    }
+    const session = await Sessions.findOne({
+        where: { user: { id: userId }, status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING]) },
+        relations: ["vehicle", "charger", "connector", "user"]
+    });
+    if (!session) {
+        throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
+    }
+    return session;
 }
 
 async function listAllChargerSessions(chargerId: string) {
@@ -210,6 +240,7 @@ export {
     endSession,
     getSession,
     listAllUserSessions,
+    getOngoingSession,
     sendRemoteStopTransaction,
     listAllChargerSessions,
 }

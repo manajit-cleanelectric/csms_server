@@ -1,5 +1,6 @@
 import {Request, Response, Router} from 'express';
 import {
+    getOngoingSession,
     getSession,
     listAllChargerSessions,
     listAllUserSessions,
@@ -57,6 +58,17 @@ router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, 
             });
         }
         res.status(200).send({success: true, message: "Transaction Stop Request Sent", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.get('/api/user/:userId/ongoing-sessions', authenticate, async (req: Request, res: Response) => {
+    try {
+        const {userId} = req.params;
+        const sessions = await getOngoingSession(userId);
+        res.status(200).send({success: true, message: "Ongoing sessions retrieved", data: [sessions]});
+        logger.info(`Sent ongoing session for User ID ${userId} successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
     }
