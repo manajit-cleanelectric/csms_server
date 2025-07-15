@@ -3,6 +3,7 @@ import {
     addCharger,
     getCharger,
     getChargerByCity,
+    getCities,
     listAllCharger,
     updateCharger
 } from '../controllers/chargerController';
@@ -55,16 +56,26 @@ router.get('/api/chargers/:chargerId', authenticate, async (req: Request, res: R
     }
 });
 
-router.get('/api/chargers/location/:location', authenticate, async (req: Request, res: Response) => {
+router.get('/api/chargers/city/:city', authenticate, async (req: Request, res: Response) => {
     try {
-        const {location} = req.params;
-        const chargers = await getChargerByCity(location);
+        const {city} = req.params;
+        const chargers = await getChargerByCity(city);
         res.status(200).send({success: true, message: "Charger Details by Location", data: chargers});
         logger.info(`Chargers in location ${location} retrieved successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
     }
-})
+});
+
+router.get('/api/cities', authenticate, async (req: Request, res: Response) => {
+   try {
+        const cities = await getCities();
+        res.status(200).send({success: true, message: "Cities with Chargers", data: cities});
+        logger.info(`Cities with chargers retrieved successfully`);
+   } catch (error: any) {
+         handleError(error, res, logger);
+   }
+});
 
 export {
     router,

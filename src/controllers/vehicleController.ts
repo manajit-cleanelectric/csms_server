@@ -15,7 +15,10 @@ async function addVehicle(userId: string, data: any) {
         where: {id: userId},
         relations: ['vehicles'],
     });
-    if (detailedUser && detailedUser?.vehicles.length > 0) {
+    if (!detailedUser) {
+        throw new ResourceNotFoundError(`User with ID ${userId} not found`);
+    }
+    if (detailedUser.vehicles.length > 0) {
         throw new ResourceAlreadyExistsError(`User with ID ${userId} already has a vehicle registered`);
     }
     if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin) {
@@ -28,6 +31,8 @@ async function addVehicle(userId: string, data: any) {
     vehicle.vin = data.vin;
     vehicle.vendor = data.vendor;
     vehicle.model = data.model || null;
+    detailedUser.isProfileComplete = true;
+    await detailedUser.save();
     vehicle.user = detailedUser;
     await vehicle.save();
     return vehicle;

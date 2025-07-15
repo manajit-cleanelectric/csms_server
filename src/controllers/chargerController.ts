@@ -44,7 +44,7 @@ async function getCharger(chargerId: string) {
     if (!chargerId) {
         throw new MissingParameterError(`Charger ID is required to fetch charger details`);
     }
-    if (uuidValidate(chargerId)) {
+    if (!uuidValidate(chargerId)) {
         throw new InvalidUUIDError(`Charger ID is invalid`);
     }
     const charger = await Chargers.findOneBy({id: chargerId});
@@ -58,7 +58,7 @@ async function updateCharger(chargerId: string, data: any) {
     if (!chargerId) {
         throw new MissingParameterError(`Charger ID is required to update charger details`);
     }
-    if (uuidValidate(chargerId)) {
+    if (!uuidValidate(chargerId)) {
         throw new InvalidUUIDError(`Charger ID is invalid`);
     }
     const charger = await Chargers.findOneBy({id: chargerId});
@@ -105,6 +105,16 @@ async function getChargerByCity(city: string) {
     }));
 }
 
+async function getCities() {
+    const cities = await Chargers.createQueryBuilder("charger")
+        .select("DISTINCT charger.city", "city")
+        .getRawMany();
+    if (cities.length === 0) {
+        throw new NoContentError(`No cities found with chargers`);
+    }
+    return cities.map(city => city.city);
+}
+
 
 export {
     addCharger,
@@ -112,4 +122,5 @@ export {
     getCharger,
     updateCharger,
     getChargerByCity,
+    getCities,
 };

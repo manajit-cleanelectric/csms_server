@@ -39,7 +39,7 @@ export class Chargers extends BaseEntity {
         nullable: false,
         length: 128
     })
-    model: string
+    model: string;
 
     @Column({
         type: "varchar",
@@ -47,7 +47,7 @@ export class Chargers extends BaseEntity {
         nullable: false,
         length: 128
     })
-    vendor: string
+    vendor: string;
 
     @Column({
         type: "varchar",
