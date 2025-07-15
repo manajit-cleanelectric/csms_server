@@ -20,6 +20,7 @@ async function addUserInfo(data: any) {
     user.lastName = lastName;
     user.city = city;
     user.state = state;
+    user.isProfileComplete = true;
     await user.save();
     return user;
 }
