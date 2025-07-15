@@ -46,7 +46,9 @@ async function addSession(data: any) {
         logger.error(`Vehicle with ID ${data.vin} not found`);
         throw new ResourceNotFoundError(`Vehicle with ID ${data.vin} not found`);
     }
-    session.vehicle = vehicle;
+    session.vehicleNo = vehicle.vehicleNo;
+    session.vehicleVendor = vehicle.vendor;
+    session.vehicleModel = vehicle.model;
     session.user = vehicle.user;
     session.startTime = data.startTime;
     session.meterStart = data.meterStart;
@@ -91,7 +93,7 @@ async function getSession(sessionId: number) {
     // TODO: OPTIMIZE: Use query builder to partially fetch session data
     const session = await Sessions.findOne({
         where: { id: sessionId },
-        relations: ["vehicle", "charger", "connector", "user"]
+        relations: ["charger", "connector", "user"]
     });
     if (!session) {
         logger.error(`Session with ID ${sessionId} not found`);
@@ -116,7 +118,7 @@ async function listAllUserSessions(userId: string) {
     }
     const sessions = await Sessions.find({
         where: { user: { id: userId } },
-        relations: ["vehicle", "charger", "connector"]
+        relations: ["charger", "connector"]
     });
     if (sessions.length === 0) {
         logger.error(`No sessions found for user with ID ${userId}`);
@@ -136,8 +138,9 @@ async function listAllUserSessions(userId: string) {
             name: session.user?.fullName
         },
         vehicle: {
-            vin: session.vehicle?.vin,
-            model: session.vehicle?.model
+            vehicleNo: session.vehicleNo,
+            vendor: session.vehicleVendor,
+            model: session.vehicleModel,
         },
         charger: {
             id: session.charger?.id,
@@ -200,8 +203,9 @@ async function listAllChargerSessions(chargerId: string) {
         energyUsed: session.energyUsed,
         status: session.status,
         vehicle: {
-            vin: session.vehicle?.vin,
-            model: session.vehicle?.model
+            vehicleNo: session.vehicleNo,
+            vendor: session.vehicleVendor,
+            model: session.vehicleModel,
         },
         user: {
             id: session.user?.id,
