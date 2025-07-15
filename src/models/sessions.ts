@@ -10,7 +10,6 @@ import {
 } from "typeorm";
 import {Chargers} from "./charger";
 import {Connectors} from "./connector";
-import {Vehicles} from "./vehicle";
 import {Users} from "./users";
 
 enum SessionStatus {
@@ -45,13 +44,26 @@ class Sessions extends BaseEntity {
     @JoinColumn({ name: "connectorId" })
     connector!: Connectors;
 
-    @ManyToOne(() => Vehicles, (vehicle) => vehicle.sessions, {
-        onDelete: "SET NULL",
+    @Column({
+        type : "varchar",
         nullable: true,
-        orphanedRowAction: "nullify"
+        length: 16
     })
-    @JoinColumn({ name: "vehicleId" })
-    vehicle!: Vehicles;
+    vehicleNo!: string | null;
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 64
+    })
+    vehicleVendor!: string | null;
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 64
+    })
+    vehicleModel!: string | null;
 
     @ManyToOne(() => Users, (user) => user.sessions, {
         onDelete: "SET NULL",

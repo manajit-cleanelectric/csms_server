@@ -5,12 +5,10 @@ import {
     Entity,
     JoinColumn,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Users} from "./users";
-import {Sessions} from "./sessions";
 
 
 @Entity("vehicles")
@@ -71,9 +69,6 @@ class Vehicles extends BaseEntity {
         length: 256
     })
     rcImageUrl!: string;
-
-    @OneToMany(() => Sessions, (session) => session.vehicle)
-    sessions!: Sessions[];
 
     @CreateDateColumn()
     createdAt!: Date;
