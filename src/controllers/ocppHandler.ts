@@ -80,7 +80,12 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
     let {connectorId, transactionId, meterValue} = params;
     let chargerId = client.identity!;
     try {
-        await Chargers.update({id: chargerId}, {status: ChargerStatus.AVAILABLE})
+        // TODO why updating the charger
+        await Chargers.update({id: chargerId}, {status: ChargerStatus.AVAILABLE});
+        const chargingSession = await Sessions.findOneBy({id: transactionId});
+        if (!chargingSession) {
+            throw new Error("Could not find session with ID " + transactionId);
+        }
         const currentMeterValue = new MeterValues();
         currentMeterValue.chargerId = chargerId;
         currentMeterValue.connectorId = connectorId;
@@ -107,6 +112,11 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
                         break;
                     case 'SoC':
                         currentMeterValue.soc = sample.value;
+                        if (!chargingSession.socStart) {
+                            chargingSession.socStart = sample.value;
+                        } else {
+                            chargingSession.socStart = sample.value;
+                        }
                         break;
                     default:
                         logger.info(`Received Meter Values for measurand ${sample.measurand}`,);
