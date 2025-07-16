@@ -61,7 +61,7 @@ router.get('/api/chargers/city/:city', authenticate, async (req: Request, res: R
         const {city} = req.params;
         const chargers = await getChargerByCity(city);
         res.status(200).send({success: true, message: "Charger Details by Location", data: chargers});
-        logger.info(`Chargers in location ${location} retrieved successfully`);
+        logger.info(`Chargers in location ${city} retrieved successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
     }
