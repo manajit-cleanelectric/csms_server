@@ -3,10 +3,12 @@ import {
     addUserInfo,
     generateAccessTokenViaRefreshToken,
     getUserById,
+    isPhoneNoAvailable,
     login as userLogin,
     logout as userLogout,
     sendOtpToPhoneNumber,
-    updateUser
+    updateUser,
+    updateUserPhoneNo
 } from '../controllers/userController';
 import {authenticate, UserPayload} from "../middleware/auth.middleware";
 import {logger} from "../app";
@@ -93,6 +95,34 @@ router.put('/api/users/me', authenticate, async (req: Request, res: Response) =>
         const updatedUser = await updateUser(user!.id, req.body);
         res.status(200).send({success: true, message: "User information updated successfully", data: updatedUser});
         logger.info(`User with ID ${user?.id} updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.get('/api/users/is-phone-available', authenticate, async (req: Request, res: Response) => {
+    const {phoneNumber} = req.body;
+    try {
+        const isAvailable = await isPhoneNoAvailable(phoneNumber);
+        if (isAvailable) {
+            res.status(200).send({success: true, message: "Phone number is available", data: null});
+            logger.info(`User with phone number ${phoneNumber} is available`);
+        } else {
+            res.status(400).send({success: false, message: "Phone number is already in use", data: null});
+            logger.warn(`Phone number ${phoneNumber} is already in use`);
+        }
+    } catch (error: any) {
+        return handleError(error, res, logger);
+    }
+});
+
+router.put('/api/users/me/update-phone', authenticate, async (req: Request, res: Response) => {
+    const user = req.user as UserPayload | undefined;
+    const {phoneNumber, otp} = req.body;
+    try {
+        const userWithUpdatedPhone = await updateUserPhoneNo(user!.id, phoneNumber, otp);
+        res.status(200).send({success: true, message: "Phone number updated successfully", data: userWithUpdatedPhone});
+        logger.info(`Phone number for user with ID ${user?.id} updated successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
     }

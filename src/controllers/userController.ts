@@ -3,7 +3,12 @@ import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/smsService"
 import {AuthTokens} from "../models/authTokens";
-import {InvalidAuthError, MissingParameterError, ResourceNotFoundError} from "../errors/customErrors";
+import {
+    InvalidAuthError,
+    MissingParameterError,
+    ResourceAlreadyExistsError,
+    ResourceNotFoundError
+} from "../errors/customErrors";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
@@ -127,6 +132,36 @@ function generateRandomDigitString(size: number): string {
     return num.toString();
 }
 
+async function isPhoneNoAvailable(phoneNumber: string) {
+    const user = await Users.findOneBy({phoneNumber: phoneNumber});
+    if (user) {
+        throw new ResourceAlreadyExistsError(`Phone number ${phoneNumber} is already registered`);
+    }
+    return true;
+}
+
+async function updateUserPhoneNo(userId: string, newPhoneNumber: string, otp: string) {
+    if (!userId || !newPhoneNumber) {
+        throw new MissingParameterError("User ID is required");
+    }
+    if (otp != "1234") {
+        // TODO proper validation of OTP
+        throw new InvalidAuthError(`Invalid OTP provided`);
+    }
+    // Check if the new phone number is already registered
+    const existingUser = await Users.findOneBy({phoneNumber: newPhoneNumber});
+    if (existingUser) {
+        throw new ResourceAlreadyExistsError(`Phone number ${newPhoneNumber} is already registered`);
+    }
+    const user = await Users.findOneBy({id: userId});
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    user.phoneNumber = newPhoneNumber;
+    await user.save();
+    return user;
+}
+
 async function listUnApprovedUsers() {
     const users = await Users.find({
         select: ["id", "firstName", "lastName", "phoneNumber"],
@@ -159,4 +194,6 @@ export {
     getUserById,
     generateAccessTokenViaRefreshToken,
     logout,
+    isPhoneNoAvailable,
+    updateUserPhoneNo,
 }
