@@ -63,7 +63,7 @@ router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, 
     }
 });
 
-router.get('/api/user/:userId/ongoing-sessions', authenticate, async (req: Request, res: Response) => {
+router.get('/api/user/:userId/ongoing-session', authenticate, async (req: Request, res: Response) => {
     try {
         const {userId} = req.params;
         const session = await getOngoingSession(userId);
