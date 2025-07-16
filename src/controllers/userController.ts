@@ -110,6 +110,22 @@ async function getUserById(userId: string) {
     }
 }
 
+async function getUserByIdWithVehicles(userId: string) {
+    try {
+        const user = await Users.findOne({
+            where: {id: userId},
+            relations: ['vehicles'],
+        });
+        if (!user) {
+            throw new Error("User not found with id " + userId);
+        }
+        return user;
+    } catch (error) {
+        logger.error(error);
+        throw new Error("Could not find user with id " + userId);
+    }
+}
+
 async function generateAccessTokenViaRefreshToken(token: string) {
     const authToken = await AuthTokens.findOne({
         where: {token: token, isRevoked: false},
@@ -186,6 +202,7 @@ export {
     approveUser,
     sendOtpToPhoneNumber,
     getUserById,
+    getUserByIdWithVehicles,
     generateAccessTokenViaRefreshToken,
     logout,
 }

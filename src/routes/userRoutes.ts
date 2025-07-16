@@ -1,7 +1,7 @@
 import {Request, Response, Router} from 'express';
 import {
     generateAccessTokenViaRefreshToken,
-    getUserById,
+    getUserById, getUserByIdWithVehicles,
     login as userLogin,
     logout as userLogout,
     sendOtpToPhoneNumber
@@ -60,7 +60,7 @@ router.get('/api/users/me', authenticate, async (req: Request, res: Response) =>
     const user = req.user as UserPayload | undefined;
     try {
         if (user?.id){
-            const myUser = await getUserById(user?.id);
+            const myUser = await getUserByIdWithVehicles(user?.id);
             res.status(200).send({success: true, message: "OTP Sent Successfully", data: myUser});
             logger.info(`User with ID ${user.id} retrieved successfully`);
         } else {
