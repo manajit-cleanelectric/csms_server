@@ -1,27 +1,20 @@
 import {Users} from "../models/users";
 import {Vehicles} from "../models/vehicle";
-import {
-    MissingParameterError,
-    NoContentError,
-    ResourceAlreadyExistsError,
-    ResourceNotFoundError
-} from "../errors/customErrors";
+import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
+import {validate} from "uuid";
 
 async function addVehicle(userId: string, data: any) {
     if (!userId) {
         throw new MissingParameterError(`User ID is required`);
     }
-    const detailedUser = await Users.findOne({
-        where: {id: userId},
-        relations: ['vehicles'],
-    });
-    if (!detailedUser) {
+    if (!validate(userId)) {
+        throw new InvalidUUIDError(`Invalid User ID format`);
+    }
+    const user = await Users.findOneBy({id: userId});
+    if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
-    if (detailedUser.vehicles.length > 0) {
-        throw new ResourceAlreadyExistsError(`User with ID ${userId} already has a vehicle registered`);
-    }
-    if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin) {
+    if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
         throw new MissingParameterError(`All vehicle details are required`);
     }
     const vehicle = new Vehicles();
@@ -31,9 +24,9 @@ async function addVehicle(userId: string, data: any) {
     vehicle.vin = data.vin;
     vehicle.vendor = data.vendor;
     vehicle.model = data.model || null;
-    detailedUser.isProfileComplete = true;
-    await detailedUser.save();
-    vehicle.user = detailedUser;
+    user.isVehicleRegistered = true;
+    await user.save();
+    vehicle.user = user;
     await vehicle.save();
     return vehicle;
 }
@@ -42,25 +35,55 @@ async function updateVehicle(vehicleId: string, data: any) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
     }
-    const vehicle = await Vehicles.findOneBy({id: vehicleId});
+    if (!validate(vehicleId)) {
+        throw new InvalidUUIDError(`Invalid Vehicle ID format`);
+    }
+    const vehicle = await Vehicles.findOne({
+        where: {id: vehicleId},
+        relations: ["user"]
+    });
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
-    if (vehicle.isApproved){
-        throw new ResourceAlreadyExistsError(`Vehicle with ID ${vehicleId} already has approved`);
+    const user = vehicle.user;
+    if (!user) {
+        throw new ResourceNotFoundError(`User associated with vehicle ID ${vehicleId} not found`);
     }
-    vehicle.vehicleNo = data.vehicleNo || vehicle.vehicleNo;
-    vehicle.rcNumber = data.rcNumber || vehicle.rcNumber;
-    vehicle.rcImageUrl = data.rcImageUrl || vehicle.rcImageUrl;
-    vehicle.vin = data.vin || vehicle.vin;
-    vehicle.vendor = data.vendor || vehicle.vendor;
-    await vehicle.save();
-    return vehicle;
+    if (data.rcNumber || data.vin || data.rcImageUrl){
+        await vehicle.remove();
+        if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
+            throw new MissingParameterError(`All vehicle details are required`);
+        }
+        const newVehicle = new Vehicles();
+        newVehicle.vehicleNo = data.vehicleNo;
+        newVehicle.rcNumber = data.rcNumber;
+        newVehicle.rcImageUrl = data.rcImageUrl;
+        newVehicle.vin = data.vin;
+        newVehicle.vendor = data.vendor;
+        newVehicle.model = data.model;
+        user.isAccountApproved = false;
+        await user.save();
+        newVehicle.user = user;
+        await newVehicle.save();
+        return newVehicle;
+    } else {
+        vehicle.vehicleNo = data.vehicleNo || vehicle.vehicleNo;
+        vehicle.rcImageUrl = data.rcImageUrl || vehicle.rcImageUrl;
+        vehicle.model = data.model || vehicle.model;
+        vehicle.vendor = data.vendor || vehicle.vendor;
+        vehicle.vin = data.vin || vehicle.vin;
+        vehicle.rcNumber = data.rcNumber || vehicle.rcNumber;
+        await vehicle.save();
+        return vehicle;
+    }
 }
 
 async function getVehicleById(vehicleId: string) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
+    }
+    if (!validate(vehicleId)) {
+        throw new InvalidUUIDError(`Invalid Vehicle ID format`);
     }
     const vehicle = await Vehicles.findOne({
         where: {id: vehicleId},
@@ -76,6 +99,9 @@ async function getVehiclesByUserId(userId: string) {
     if (!userId) {
         throw new MissingParameterError(`User ID is required`);
     }
+    if (!validate(userId)) {
+        throw new InvalidUUIDError(`Invalid User ID format`);
+    }
     const vehicles = await Vehicles.find({
         where: {user: {id: userId}},
         relations: ["user"]
@@ -89,6 +115,9 @@ async function getVehiclesByUserId(userId: string) {
 async function approveVehicle(vehicleId: string) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
+    }
+    if (!validate(vehicleId)) {
+        throw new InvalidUUIDError(`Invalid Vehicle ID format`);
     }
     const vehicle = await Vehicles.findOne({
         where: {id: vehicleId},
@@ -122,6 +151,9 @@ async function listUnapprovedVehicles() {
 async function removeVehicle(vehicleId: string) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
+    }
+    if (!validate(vehicleId)) {
+        throw new InvalidUUIDError(`Invalid Vehicle ID format`);
     }
     const vehicle = await Vehicles.findOneBy({id: vehicleId});
     if (!vehicle) {

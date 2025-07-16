@@ -55,6 +55,7 @@ class Vehicles extends BaseEntity {
 
     @Column({
         type: "varchar",
+        unique: true,
         nullable: true,
         length: 64
     })

@@ -1,5 +1,5 @@
 import {Request, Response, Router} from 'express';
-import {addVehicle, getVehicleById, getVehiclesByUserId} from "../controllers/vehicleController";
+import {addVehicle, getVehicleById, getVehiclesByUserId, updateVehicle} from "../controllers/vehicleController";
 import {authenticate} from "../middleware/auth.middleware";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
@@ -38,6 +38,18 @@ router.get('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: R
         handleError(error, res, logger);
     }
 })
+
+router.put('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: Response) => {
+    const vehicleId = req.params.vehicleId;
+    const data = req.body;
+    try {
+        const vehicle = await updateVehicle(vehicleId, data);
+        res.status(200).send({status: true, message: "Vehicle updated successfully", data: [vehicle]});
+        logger.info(`Vehicle with ID ${vehicleId} updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
 
 
 export {

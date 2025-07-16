@@ -73,6 +73,9 @@ class Users extends BaseEntity {
     @Column({type: "boolean", default: false})
     isProfileComplete: boolean;
 
+    @Column({type: "boolean", default: false})
+    isVehicleRegistered: boolean;
+
     @Column({type: "boolean", default: true})
     isActive!: boolean;
 
