@@ -25,50 +25,22 @@ async function addUserInfo(userId: string, data: any) {
     return user;
 }
 
-// async function updateUserRC(userId: number, rcNumber: string, rcImageURL: string){
-//     try {
-//         const user = await Users.findOneBy({id: userId});
-//         if (!user) {
-//             throw new Error("User not found");
-//         }
-//         user.rcNumber = rcNumber;
-//         user.rcImageURL = rcImageURL;
-//         user.isProfileComplete = true; // Assuming RC update means profile is complete
-//         await user.save();
-//         return user;
-//     } catch (error) {
-//         logger.error("Error updating user RC:", error);
-//         throw new Error("Failed to update user RC");
-//     }
-// }
-
-// async function updateUser(userId: number, firstName: string, lastName: string, vehicle: string, phoneNumber: string) {
-//     try {
-//         const user = await Users.findOneBy({id: userId});
-//         if (!user) {
-//             throw new Error("User not found");
-//         }
-//         user.firstName = firstName || user.firstName;
-//         user.lastName = lastName || user.lastName;
-//         user.phoneNumber = phoneNumber || user.phoneNumber;
-//         if (vehicle) {
-//             // Check if the vehicle already exists for another user
-//             const existingUser = await Users.findOneBy({ vehicle: vehicle, id: Not(userId) });
-//             if (existingUser) {
-//                 throw new Error("Vehicle already registered to another user");
-//             }
-//             user.vehicle = vehicle;
-//             user.isProfileComplete = false; // Reset profile completion if vehicle is updated
-//             user.isAccountApproved = false;
-//             user.rcNumber = ""; // Reset RC number if vehicle is updated
-//             user.rcImageURL = ""; // Reset RC image URL if vehicle is updated
-//
-//         }
-//     } catch (error) {
-//         logger.error("Error updating user:", error);
-//         throw new Error("Failed to update user");
-//     }
-// }
+async function updateUser(userId: string, data: any) {
+    const user = await Users.findOneBy({id: userId});
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    // Update user information
+    user.firstName = data.firstName || user.firstName;
+    user.lastName = data.lastName || user.lastName;
+    user.city = data.city || user.city;
+    user.state = data.state || user.state;
+    if (!user.firstName || !user.lastName) {
+        user.isProfileComplete = false;
+    }
+    await user.save();
+    return user;
+}
 
 async function login(phoneNumber: string, otp: string) {
     // otp validation needs to be done
@@ -179,8 +151,7 @@ async function approveUser(userId: string) {
 
 export {
     addUserInfo,
-    // updateUserRC,
-    // updateUser,
+    updateUser,
     login,
     listUnApprovedUsers,
     approveUser,

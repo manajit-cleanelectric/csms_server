@@ -5,7 +5,8 @@ import {
     getUserById,
     login as userLogin,
     logout as userLogout,
-    sendOtpToPhoneNumber
+    sendOtpToPhoneNumber,
+    updateUser
 } from '../controllers/userController';
 import {authenticate, UserPayload} from "../middleware/auth.middleware";
 import {logger} from "../app";
@@ -79,6 +80,17 @@ router.post('/api/users/me', authenticate, async (req: Request, res: Response) =
     const user = req.user as UserPayload | undefined;
     try {
         const updatedUser = await addUserInfo(user!.id, req.body);
+        res.status(200).send({success: true, message: "User information added successfully", data: updatedUser});
+        logger.info(`UserInfo for ID ${user?.id} added successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.put('/api/users/me', authenticate, async (req: Request, res: Response) => {
+    const user = req.user as UserPayload | undefined;
+    try {
+        const updatedUser = await updateUser(user!.id, req.body);
         res.status(200).send({success: true, message: "User information updated successfully", data: updatedUser});
         logger.info(`User with ID ${user?.id} updated successfully`);
     } catch (error: any) {
