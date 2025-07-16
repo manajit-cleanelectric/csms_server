@@ -33,7 +33,7 @@ class Sessions extends BaseEntity {
         nullable: true,
         orphanedRowAction: "nullify"
     })
-    @JoinColumn({ name: "chargerId" })
+    @JoinColumn({name: "chargerId"})
     charger!: Chargers;
 
     @ManyToOne(() => Connectors, (connector) => connector.sessions, {
@@ -41,11 +41,11 @@ class Sessions extends BaseEntity {
         nullable: true,
         orphanedRowAction: "nullify"
     })
-    @JoinColumn({ name: "connectorId" })
+    @JoinColumn({name: "connectorId"})
     connector!: Connectors;
 
     @Column({
-        type : "varchar",
+        type: "varchar",
         nullable: true,
         length: 16
     })
@@ -70,18 +70,18 @@ class Sessions extends BaseEntity {
         nullable: true,
         orphanedRowAction: "nullify"
     })
-    @JoinColumn({ name: "userId" })
+    @JoinColumn({name: "userId"})
     user!: Users | null;
 
     @Column({
-        type: "timestamp",
+        type: "timestamptz",
         nullable: false,
         default: () => "CURRENT_TIMESTAMP"
     })
     startTime!: Date;
 
     @Column({
-        type: "timestamp",
+        type: "timestamptz",
         nullable: true
     })
     endTime!: Date;
@@ -133,10 +133,10 @@ class Sessions extends BaseEntity {
     })
     status!: SessionStatus;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 }
 

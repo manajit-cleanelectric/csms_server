@@ -65,7 +65,7 @@ export class Chargers extends BaseEntity {
     city: string;
 
     @OneToOne(() => Addresses, (address) => address.charger, {cascade: true})
-    @JoinColumn({ name: "addressId" })
+    @JoinColumn({name: "addressId"})
     address: Addresses;
 
     @Column({
@@ -111,10 +111,10 @@ export class Chargers extends BaseEntity {
     @OneToMany(() => Connectors, (connector) => connector.charger)
     connectors: Connectors[];
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 
 }

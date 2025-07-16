@@ -30,7 +30,7 @@ class Connectors extends BaseEntity {
     id!: string;
 
     @ManyToOne(() => Chargers, (charger) => charger.connectors)
-    @JoinColumn({ name: "chargerId" })
+    @JoinColumn({name: "chargerId"})
     charger!: Chargers;
 
     @Column({
@@ -50,10 +50,10 @@ class Connectors extends BaseEntity {
     @OneToMany(() => Sessions, (session) => session.connector)
     sessions!: Sessions[];
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 
 }

@@ -12,16 +12,16 @@ class Heartbeats extends BaseEntity {
     chargerId!: string;
 
     @Column({
-        type: "timestamp",
+        type: "timestamptz",
         nullable: false,
-        default: () => "CURRENT_TIMESTAMP"
+        default: () => "CURRENT_TIMESTAMP",
     })
     timestamp!: Date;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 }
 

@@ -19,7 +19,7 @@ class MeterValues extends BaseEntity {
     connectorId!: number;
 
     @Column({
-        type: "timestamp",
+        type: "timestamptz",
         nullable: false,
         default: () => "CURRENT_TIMESTAMP"
     })
@@ -74,10 +74,10 @@ class MeterValues extends BaseEntity {
     })
     temperature!: number;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 }
 
