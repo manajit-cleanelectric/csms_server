@@ -5,16 +5,16 @@ import {sendOtp} from "../services/smsService"
 import {AuthTokens} from "../models/authTokens";
 import {InvalidAuthError, MissingParameterError, ResourceNotFoundError} from "../errors/customErrors";
 
-async function addUserInfo(data: any) {
+async function addUserInfo(userId: string, data: any) {
     // Validate input data
-    if (!data.firstName || !data.lastName || !data.phoneNumber) {
+    if (!data.firstName || !data.lastName) {
         throw new MissingParameterError("Missing required user information");
     }
-    const {firstName, lastName, phoneNumber, city, state} = data;
+    const {firstName, lastName, city, state} = data;
     // Check if a user already exists
-    const user = await Users.findOneBy({phoneNumber: phoneNumber});
+    const user = await Users.findOneBy({id: userId});
     if (!user) {
-        throw new ResourceNotFoundError(`User with phone number ${phoneNumber} not found`);
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
     }
     user.firstName = firstName;
     user.lastName = lastName;

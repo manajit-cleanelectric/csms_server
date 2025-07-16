@@ -1,5 +1,6 @@
 import {Request, Response, Router} from 'express';
 import {
+    addUserInfo,
     generateAccessTokenViaRefreshToken,
     getUserById,
     login as userLogin,
@@ -28,7 +29,7 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
     const {phoneNumber, otp} = req.body;
     try {
         const {accessToken, refreshToken, user} = await userLogin(phoneNumber, otp);
-        res.status(200).json({success: true, message: "Logged user successfully", accessToken: accessToken, refreshToken: refreshToken, data: [user]});
+        res.status(200).json({success: true, message: "Logged user successfully", accessToken: accessToken, refreshToken: refreshToken, data: user});
         logger.info(`User with phone number ${phoneNumber} logged in successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
@@ -56,6 +57,7 @@ router.post('/api/auth/refresh', async (req: Request, res: Response) => {
         handleError(error, res, logger);
     }
 });
+
 router.get('/api/users/me', authenticate, async (req: Request, res: Response) => {
     const user = req.user as UserPayload | undefined;
     try {
@@ -70,6 +72,17 @@ router.get('/api/users/me', authenticate, async (req: Request, res: Response) =>
     } catch (error: any) {
         res.status(500).send({success: false, message: error.message, data: null});
         logger.error(`Error retrieving user with ID ${user?.id}: ${error.message}`);
+    }
+});
+
+router.post('/api/users/me', authenticate, async (req: Request, res: Response) => {
+    const user = req.user as UserPayload | undefined;
+    try {
+        const updatedUser = await addUserInfo(user!.id, req.body);
+        res.status(200).send({success: true, message: "User information updated successfully", data: updatedUser});
+        logger.info(`User with ID ${user?.id} updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
     }
 });
 
