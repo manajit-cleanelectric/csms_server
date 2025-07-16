@@ -27,7 +27,7 @@ router.get('/api/chargers', authenticate, async (req: Request, res: Response) =>
 router.post('/api/chargers', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
     try {
         const charger = await addCharger(req.body);
-        res.status(201).send({success: true, message: "New Charger Added", data: [charger]});
+        res.status(201).send({success: true, message: "New Charger Added", data: charger});
         logger.info(`Charger with ID ${charger.id} added successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
@@ -38,7 +38,7 @@ router.put('/api/chargers/:chargerId', authenticate, authorize(UserRoles.ADMINIS
     try {
         const {chargerId} = req.params;
         const updatedCharger  = await updateCharger(chargerId, req.body);
-        res.status(200).send({success: true, message: "Charger Updated", data: [updatedCharger]});
+        res.status(200).send({success: true, message: "Charger Updated", data: updatedCharger});
         logger.info(`Charger with ID ${chargerId} updated successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
@@ -48,8 +48,8 @@ router.put('/api/chargers/:chargerId', authenticate, authorize(UserRoles.ADMINIS
 router.get('/api/chargers/:chargerId', authenticate, async (req: Request, res: Response) => {
     try {
         const {chargerId} = req.params;
-        const chargers = await getCharger(chargerId);
-        res.status(200).send({success: true, message: "Charger Details", data: [chargers]});
+        const charger = await getCharger(chargerId);
+        res.status(200).send({success: true, message: "Charger Details", data: charger});
         logger.info(`Charger with ID ${chargerId} retrieved successfully`);
     } catch (error: any) {
         handleError(error, res, logger);

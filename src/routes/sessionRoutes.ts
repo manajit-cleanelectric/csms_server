@@ -18,7 +18,7 @@ router.get('/api/sessions/:sessionId', authenticate, async (req: Request, res: R
     try {
         const {sessionId} = req.params;
         const session = await getSession(Number(sessionId));
-        res.status(200).send({success: true, message: "Session details retrieved", data: [session]});
+        res.status(200).send({success: true, message: "Session details retrieved", data: session});
         logger.info(`Sent session with ID ${sessionId} successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
@@ -66,8 +66,8 @@ router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, 
 router.get('/api/user/:userId/ongoing-sessions', authenticate, async (req: Request, res: Response) => {
     try {
         const {userId} = req.params;
-        const sessions = await getOngoingSession(userId);
-        res.status(200).send({success: true, message: "Ongoing sessions retrieved", data: [sessions]});
+        const session = await getOngoingSession(userId);
+        res.status(200).send({success: true, message: "Ongoing sessions retrieved", data: session});
         logger.info(`Sent ongoing session for User ID ${userId} successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
