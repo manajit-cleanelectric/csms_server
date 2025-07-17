@@ -47,9 +47,10 @@ router.post('/api/auth/logout', authenticate, async (req: Request, res: Response
 });
 
 router.post('/api/auth/refresh', async (req: Request, res: Response) => {
-    const {token} = req.body;
+
     try {
-        const accessToken = await generateAccessTokenViaRefreshToken(token);
+        const {refreshToken} = req.body;
+        const accessToken = await generateAccessTokenViaRefreshToken(refreshToken);
         res.status(200).json({success: true, message: "Access token generated successfully", accessToken: accessToken, data: null});
         logger.info(`Access token generated successfully using refresh token`);
     } catch (error: any) {

@@ -127,6 +127,9 @@ async function getUserByIdWithVehicles(userId: string) {
 }
 
 async function generateAccessTokenViaRefreshToken(token: string) {
+    if(token!="" && !token) {
+        throw new InvalidAuthError(`Token not provided.`);
+    }
     const authToken = await AuthTokens.findOne({
         where: {token: token, isRevoked: false},
         relations: ['user'],

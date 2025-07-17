@@ -72,6 +72,10 @@ function handleError(error: any, res: any, logger: any) {
             res.status(401).send({success: false, error: error.message, data: null});
             logger.error(`Invalid Auth Credentials: ${error.message}`);
             break;
+        case 'TypeError':
+            res.status(400).send({success: false, error: error.message, data: null});
+            logger.error(`Malformed request body: ${error.message}`);
+            break;
         default:
             res.status(500).send({success: false, error: "An unexpected error occurred", data: null});
             logger.error(`Unexpected error: ${error.message}`);
