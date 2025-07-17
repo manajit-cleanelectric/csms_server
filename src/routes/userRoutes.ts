@@ -2,8 +2,7 @@ import {Request, Response, Router} from 'express';
 import {
     addUserInfo,
     generateAccessTokenViaRefreshToken,
-    getUserById, getUserByIdWithVehicles,
-    getUserById,
+    getUserByIdWithVehicles,
     isPhoneNoAvailable,
     login as userLogin,
     logout as userLogout,
