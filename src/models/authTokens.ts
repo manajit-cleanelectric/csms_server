@@ -51,10 +51,10 @@ class AuthTokens extends BaseEntity {
     @Column({type: "boolean", default: false})
     isRevoked: boolean;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 }
 

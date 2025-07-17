@@ -89,10 +89,10 @@ class Users extends BaseEntity {
     })
     role!: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 
     public get fullName() {

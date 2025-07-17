@@ -100,7 +100,8 @@ async function getChargerByCity(city: string) {
         latitude: charger.latitude,
         connectors: charger.connectors.map(connector => ({
             id: connector.id,
-            connectorId: connector.chargerConnectorId
+            connectorId: connector.chargerConnectorId,
+            status: connector.status,
         }))
     }));
 }

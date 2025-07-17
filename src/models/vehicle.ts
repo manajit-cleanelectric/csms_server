@@ -21,7 +21,7 @@ class Vehicles extends BaseEntity {
         nullable: true,
         orphanedRowAction: "nullify"
     })
-    @JoinColumn({ name: "userId" })
+    @JoinColumn({name: "userId"})
     user!: Users | null;
 
     @Column({
@@ -61,7 +61,7 @@ class Vehicles extends BaseEntity {
     })
     rcNumber!: string;
 
-    @Column({ type: "boolean", default: false })
+    @Column({type: "boolean", default: false})
     isApproved!: boolean;
 
     @Column({
@@ -71,10 +71,10 @@ class Vehicles extends BaseEntity {
     })
     rcImageUrl!: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
 }
 
