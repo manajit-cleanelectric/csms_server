@@ -1,6 +1,12 @@
 import {Users} from "../models/users";
 import {Vehicles} from "../models/vehicle";
-import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
+import {
+    InvalidUUIDError,
+    MissingParameterError,
+    NoContentError,
+    ResourceAlreadyExistsError,
+    ResourceNotFoundError
+} from "../errors/customErrors";
 import {validate} from "uuid";
 
 async function addVehicle(userId: string, data: any) {
@@ -16,6 +22,15 @@ async function addVehicle(userId: string, data: any) {
     }
     if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
         throw new MissingParameterError(`All vehicle details are required`);
+    }
+    const existingVehicle = await Vehicles.findOne({
+        where: [
+            {rcNumber: data.rcNumber},
+            {vin: data.vin},
+        ]
+    })
+    if (existingVehicle) {
+        throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
     }
     const vehicle = new Vehicles();
     vehicle.vehicleNo = data.vehicleNo;
@@ -54,6 +69,15 @@ async function updateVehicle(vehicleId: string, data: any) {
         if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
             throw new MissingParameterError(`All vehicle details are required`);
         }
+        const existingVehicle = await Vehicles.findOne({
+            where: [
+                {rcNumber: data.rcNumber},
+                {vin: data.vin},
+            ]
+        });
+        if (existingVehicle) {
+            throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
+        }
         const newVehicle = new Vehicles();
         newVehicle.vehicleNo = data.vehicleNo;
         newVehicle.rcNumber = data.rcNumber;
@@ -67,12 +91,8 @@ async function updateVehicle(vehicleId: string, data: any) {
         await newVehicle.save();
         return newVehicle;
     } else {
-        vehicle.vehicleNo = data.vehicleNo || vehicle.vehicleNo;
-        vehicle.rcImageUrl = data.rcImageUrl || vehicle.rcImageUrl;
         vehicle.model = data.model || vehicle.model;
         vehicle.vendor = data.vendor || vehicle.vendor;
-        vehicle.vin = data.vin || vehicle.vin;
-        vehicle.rcNumber = data.rcNumber || vehicle.rcNumber;
         await vehicle.save();
         return vehicle;
     }

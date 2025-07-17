@@ -166,7 +166,7 @@ async function getOngoingSession(userId: string){
     }
     const session = await Sessions.findOne({
         where: { user: { id: userId }, status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING]) },
-        relations: ["vehicle", "charger", "connector", "user"]
+        relations: ["charger", "connector", "user"]
     });
     if (!session) {
         throw new NoContentError(`No ongoing session found for user with ID ${userId}`);

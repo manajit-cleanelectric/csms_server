@@ -65,7 +65,7 @@ function handleError(error: any, res: any, logger: any) {
             logger.error(`Invalid UUID: ${error.message}`);
             break;
         case 'NoContentError':
-            res.status(204).send({success: true, message: error.message, data: null});
+            res.status(200).send({success: true, message: error.message, data: null});
             logger.info(`No content available: ${error.message}`);
             break;
         case 'InvalidAuthError':

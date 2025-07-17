@@ -31,10 +31,10 @@ const authenticate = (req: Request, res: Response, next: NextFunction): void => 
         next();
     } catch (error: any) {
         if (error.name === 'TokenExpiredError') {
-            res.status(401).json({ message: 'Token expired' });
+            res.status(401).json({ success: false, message: 'Token expired', data: null });
             return;
         }
-        res.status(401).json({ message: 'Invalid or missing token' });
+        res.status(401).json({ success: false, message: 'Invalid or missing token', data: null });
         return;
     }
 };
@@ -43,7 +43,7 @@ const authorize = (...allowedRoles: UserRoles[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
         const user = req.user as UserPayload | undefined;
         if (!user || !allowedRoles.includes(user.role as UserRoles)) {
-            res.status(403).json({ message: 'Forbidden: Access denied' });
+            res.status(403).json({ success: false, message: 'Forbidden: Access denied', data: null });
             return;
         }
         next();
