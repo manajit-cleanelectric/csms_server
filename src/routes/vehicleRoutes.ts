@@ -1,8 +1,25 @@
 import {Request, Response, Router} from 'express';
 import {addVehicle, getVehicleById, getVehiclesByUserId, updateVehicle} from "../controllers/vehicleController";
 import {authenticate} from "../middleware/auth.middleware";
+import {uploadRcImage} from "../middleware/image.middleware";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
+import * as fs from "node:fs";
+import path from "path";
+
+function deleteImageFromDisk(imagePath: string): void {
+    // Implement the logic to delete the image from disk
+    // This is a placeholder function; actual implementation will depend on your file storage setup
+    if (!imagePath) return;
+    imagePath = path.join(__dirname, '..', '..', imagePath);
+    fs.unlink(imagePath, (err) => {
+        if (err) {
+            logger.error(`Failed to delete image from disk: ${err.message}`);
+        } else {
+            logger.info(`Image deleted successfully from disk: ${imagePath}`);
+        }
+    });
+}
 
 const router: Router = Router();
 
@@ -39,7 +56,7 @@ router.get('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: R
     }
 })
 
-router.put('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: Response) => {
+router.put('/api/vehicles/:vehicleId', authenticate, uploadRcImage, async (req: Request, res: Response) => {
     try {
         const vehicleId = req.params.vehicleId;
         const data = req.body;
@@ -47,6 +64,7 @@ router.put('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: R
         res.status(200).send({status: true, message: "Vehicle updated successfully", data: vehicle});
         logger.info(`Vehicle with ID ${vehicleId} updated successfully`);
     } catch (error: any) {
+        deleteImageFromDisk(req.body.rcImageUrl);
         handleError(error, res, logger);
     }
 });
