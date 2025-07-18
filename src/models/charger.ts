@@ -111,6 +111,13 @@ export class Chargers extends BaseEntity {
     @OneToMany(() => Connectors, (connector) => connector.charger)
     connectors: Connectors[];
 
+    @Column({
+        type: "timestamptz",
+        nullable: true,
+        default: () => "CURRENT_TIMESTAMP",
+    })
+    lastHeartBeat!: Date;
+
     @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
