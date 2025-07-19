@@ -13,7 +13,7 @@ AppDataSource.initialize()
             cron.schedule('* * * * *', async () => {
                 const minutes = 5;
                 const currentTime = new Date(new Date().getTime() - minutes * 60 * 1000);
-                logger.info(`Started cron job with schedule every minutes`);
+                logger.info(`Running cron job`);
                 await AppDataSource
                     .getRepository(Chargers)
                     .createQueryBuilder()

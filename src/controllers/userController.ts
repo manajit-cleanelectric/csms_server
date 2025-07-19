@@ -1,6 +1,6 @@
 import {Users} from "../models/users";
 import jwt from 'jsonwebtoken';
-import {JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY} from "../app";
+import {redisClient, JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY, OTP_LENGTH} from "../app";
 import {sendOtp} from "../services/smsService"
 import {AuthTokens} from "../models/authTokens";
 import {
@@ -48,9 +48,8 @@ async function updateUser(userId: string, data: any) {
 }
 
 async function login(phoneNumber: string, otp: string) {
-    // otp validation needs to be done
-    if (otp != "1234") {
-        // TODO proper validation of OTP
+    const storedOTP = await getOTP(phoneNumber);
+    if (!storedOTP || String(storedOTP) !== String(otp)) {
         throw new InvalidAuthError(`Invalid OTP provided`);
     }
     let user: Users | null = await Users.findOneBy({phoneNumber: phoneNumber});
@@ -104,7 +103,7 @@ async function getUserByIdWithVehicles(userId: string) {
 }
 
 async function generateAccessTokenViaRefreshToken(token: string) {
-    if(token!="" && !token) {
+    if (token != "" && !token) {
         throw new InvalidAuthError(`Token not provided.`);
     }
     const authToken = await AuthTokens.findOne({
@@ -132,7 +131,11 @@ async function logout(token: string) {
 }
 
 async function sendOtpToPhoneNumber(phoneNumber: string) {
-    const otp = generateRandomDigitString(4);
+    let otp = await getOTP(phoneNumber);
+    if (!otp) {
+        otp = generateRandomDigitString(OTP_LENGTH);
+        await storeOTP(phoneNumber, otp);
+    }
     try {
         await sendOtp(phoneNumber, otp);
         return true;
@@ -148,7 +151,21 @@ function generateRandomDigitString(size: number): string {
     const min = Math.pow(10, size - 1);
     const max = Math.pow(10, size) - 1;
     const num = Math.floor(min + Math.random() * (max - min + 1));
-    return num.toString();
+    // return num.toString();
+    // TODO remove next line and uncomment previous line
+    return "1234"
+}
+
+// Store OTP
+async function storeOTP(phoneNumber: string, otp: string) {
+    const key = `otp:${phoneNumber}`;
+    await redisClient.set(key, otp, 'EX', 300); // EX 300 = 5 minutes
+}
+
+// Retrieve OTP
+async function getOTP(phoneNumber: string) {
+    const key = `otp:${phoneNumber}`;
+    return redisClient.get(key);
 }
 
 async function isPhoneNoAvailable(phoneNumber: string) {
