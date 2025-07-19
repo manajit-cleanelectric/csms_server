@@ -13,10 +13,12 @@ import {
 import {authenticate, UserPayload} from "../middleware/auth.middleware";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
+import {apiLimiter} from "../app";
 
 
 const router: Router = Router();
 
+router.post('/api/auth/send-otp', apiLimiter);
 router.post('/api/auth/send-otp', async (req: Request, res: Response) => {
     try {
         const {phoneNumber} = req.body;
@@ -32,7 +34,13 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
         const {phoneNumber, otp} = req.body;
         const {accessToken, refreshToken, user} = await userLogin(phoneNumber, otp);
-        res.status(200).json({success: true, message: "Logged user successfully", accessToken: accessToken, refreshToken: refreshToken, data: user});
+        res.status(200).json({
+            success: true,
+            message: "Logged user successfully",
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            data: user
+        });
         logger.info(`User with phone number ${phoneNumber} logged in successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
@@ -54,7 +62,12 @@ router.post('/api/auth/refresh', async (req: Request, res: Response) => {
     try {
         const {refreshToken} = req.body;
         const accessToken = await generateAccessTokenViaRefreshToken(refreshToken);
-        res.status(200).json({success: true, message: "Access token generated successfully", accessToken: accessToken, data: null});
+        res.status(200).json({
+            success: true,
+            message: "Access token generated successfully",
+            accessToken: accessToken,
+            data: null
+        });
         logger.info(`Access token generated successfully using refresh token`);
     } catch (error: any) {
         handleError(error, res, logger);
@@ -64,7 +77,7 @@ router.post('/api/auth/refresh', async (req: Request, res: Response) => {
 router.get('/api/users/me', authenticate, async (req: Request, res: Response) => {
     const user = req.user as UserPayload | undefined;
     try {
-        if (user?.id){
+        if (user?.id) {
             const myUser = await getUserByIdWithVehicles(user?.id);
             res.status(200).send({success: true, message: "OTP Sent Successfully", data: myUser});
             logger.info(`User with ID ${user.id} retrieved successfully`);
