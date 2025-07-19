@@ -8,6 +8,21 @@ import {
     ResourceNotFoundError
 } from "../errors/customErrors";
 import {validate} from "uuid";
+import * as fs from "node:fs";
+import path from "path";
+import {logger} from "../app";
+
+function deleteImageFromDisk(imagePath: string): void {
+    if (!imagePath) return;
+    imagePath = path.join(__dirname, '..', '..', imagePath);
+    fs.unlink(imagePath, (err) => {
+        if (err) {
+            logger.error(`Failed to delete image from disk: ${err.message}`);
+        } else {
+            logger.info(`Image deleted successfully from disk: ${imagePath}`);
+        }
+    });
+}
 
 async function addVehicle(userId: string, data: any) {
     if (!userId) {
@@ -40,6 +55,7 @@ async function addVehicle(userId: string, data: any) {
     vehicle.vendor = data.vendor;
     vehicle.model = data.model || null;
     user.isVehicleRegistered = true;
+    user.isAccountApproved = false;
     await user.save();
     vehicle.user = user;
     await vehicle.save();
@@ -53,49 +69,14 @@ async function updateVehicle(vehicleId: string, data: any) {
     if (!validate(vehicleId)) {
         throw new InvalidUUIDError(`Invalid Vehicle ID format`);
     }
-    const vehicle = await Vehicles.findOne({
-        where: {id: vehicleId},
-        relations: ["user"]
-    });
+    const vehicle = await Vehicles.findOneBy({id: vehicleId});
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
-    const user = vehicle.user;
-    if (!user) {
-        throw new ResourceNotFoundError(`User associated with vehicle ID ${vehicleId} not found`);
-    }
-    if (data.rcNumber || data.vin || data.rcImageUrl){
-        await vehicle.remove();
-        if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
-            throw new MissingParameterError(`All vehicle details are required`);
-        }
-        const existingVehicle = await Vehicles.findOne({
-            where: [
-                {rcNumber: data.rcNumber},
-                {vin: data.vin},
-            ]
-        });
-        if (existingVehicle) {
-            throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
-        }
-        const newVehicle = new Vehicles();
-        newVehicle.vehicleNo = data.vehicleNo;
-        newVehicle.rcNumber = data.rcNumber;
-        newVehicle.rcImageUrl = data.rcImageUrl;
-        newVehicle.vin = data.vin;
-        newVehicle.vendor = data.vendor;
-        newVehicle.model = data.model;
-        user.isAccountApproved = false;
-        await user.save();
-        newVehicle.user = user;
-        await newVehicle.save();
-        return newVehicle;
-    } else {
-        vehicle.model = data.model || vehicle.model;
-        vehicle.vendor = data.vendor || vehicle.vendor;
-        await vehicle.save();
-        return vehicle;
-    }
+    vehicle.model = data.model || vehicle.model;
+    vehicle.vendor = data.vendor || vehicle.vendor;
+    await vehicle.save();
+    return vehicle;
 }
 
 async function getVehicleById(vehicleId: string) {
@@ -170,20 +151,25 @@ async function listUnapprovedVehicles() {
 
 async function removeVehicle(vehicleId: string) {
     if (!vehicleId) {
-        throw new MissingParameterError(`Vehicle ID is required`);
+        throw new MissingParameterError(`Vehicle ID is required for deletion`);
     }
     if (!validate(vehicleId)) {
-        throw new InvalidUUIDError(`Invalid Vehicle ID format`);
+        throw new InvalidUUIDError(`Invalid Vehicle ID format for deletion`);
     }
     const vehicle = await Vehicles.findOneBy({id: vehicleId});
     if (!vehicle) {
-        throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
+        throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found for deletion`);
+    }
+    if (vehicle.rcImageUrl) {
+        deleteImageFromDisk(vehicle.rcImageUrl);
     }
     await vehicle.remove();
+    logger.info(`Vehicle with ID ${vehicleId} removed successfully`);
     return true;
 }
 
 export {
+    deleteImageFromDisk,
     addVehicle,
     updateVehicle,
     getVehicleById,

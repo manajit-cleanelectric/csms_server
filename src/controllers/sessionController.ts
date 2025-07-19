@@ -93,7 +93,7 @@ async function getSession(sessionId: number) {
     // TODO: OPTIMIZE: Use query builder to partially fetch session data
     const session = await Sessions.findOne({
         where: { id: sessionId },
-        relations: ["charger", "connector", "user"]
+        relations: ["charger", "connector"]
     });
     if (!session) {
         logger.error(`Session with ID ${sessionId} not found`);
@@ -166,7 +166,7 @@ async function getOngoingSession(userId: string){
     }
     const session = await Sessions.findOne({
         where: { user: { id: userId }, status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING]) },
-        relations: ["charger", "connector", "user"]
+        relations: ["charger", "connector"]
     });
     if (!session) {
         throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
