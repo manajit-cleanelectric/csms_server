@@ -21,7 +21,7 @@ declare global {
 const authenticate = (req: Request, res: Response, next: NextFunction): void => {
     try {
         const authHeader = req.header('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if ( !authHeader?.startsWith('Bearer ')) {
             res.status(401).json({ message: 'Authorization header missing or malformed' });
             return;
         }
@@ -41,7 +41,7 @@ const authenticate = (req: Request, res: Response, next: NextFunction): void => 
 
 const authorize = (...allowedRoles: UserRoles[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        const user = req.user as UserPayload | undefined;
+        const user = req.user;
         if (!user || !allowedRoles.includes(user.role as UserRoles)) {
             res.status(403).json({ success: false, message: 'Forbidden: Access denied', data: null });
             return;

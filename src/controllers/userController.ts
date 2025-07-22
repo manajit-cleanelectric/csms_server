@@ -1,6 +1,6 @@
 import {Users} from "../models/users";
 import jwt from 'jsonwebtoken';
-import {redisClient, JWT_SECRET_KEY, logger, REFRESH_TOKEN_SECRET_KEY, OTP_LENGTH} from "../app";
+import {JWT_SECRET_KEY, logger, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/smsService"
 import {AuthTokens} from "../models/authTokens";
 import {
@@ -36,10 +36,10 @@ async function updateUser(userId: string, data: any) {
         throw new ResourceNotFoundError(`User not found with id ${userId}`);
     }
     // Update user information
-    user.firstName = data.firstName || user.firstName;
-    user.lastName = data.lastName || user.lastName;
-    user.city = data.city || user.city;
-    user.state = data.state || user.state;
+    user.firstName = data.firstName ?? user.firstName;
+    user.lastName = data.lastName ?? user.lastName;
+    user.city = data.city ?? user.city;
+    user.state = data.state ?? user.state;
     if (!user.firstName || !user.lastName) {
         user.isProfileComplete = false;
     }

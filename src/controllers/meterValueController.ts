@@ -10,7 +10,7 @@ async function addMeterValue(data: any) {
         meterValue.currentImport = data.currentImport;
         meterValue.energyActiveImportRegister = data.energyActiveImportRegister;
         meterValue.powerActiveImport = data.powerActiveImport;
-        meterValue.soc = data.soc || 0; // Default to 0 if not provided
+        meterValue.soc = data.soc ?? 0; // Default to 0 if not provided
         meterValue.voltage = data.voltage;
         meterValue.temperature = data.temperature;
         await meterValue.save();

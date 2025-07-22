@@ -62,9 +62,9 @@ async function updateSession(sessionId: number, data: any) {
         logger.error(`Session with ID ${sessionId} not found`);
         throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
     }
-    session.status = data.status || session.status;
-    session.energyUsed = data.energyUsed || session.energyUsed;
-    session.socLast = data.soc || session.socLast;
+    session.status = data.status ?? session.status;
+    session.energyUsed = data.energyUsed ?? session.energyUsed;
+    session.socLast = data.soc ?? session.socLast;
     await session.save();
     return session;
 }

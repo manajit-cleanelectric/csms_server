@@ -10,10 +10,9 @@ import {
     updateUser,
     updateUserPhoneNo
 } from '../controllers/userController';
-import {authenticate, UserPayload} from "../middleware/auth.middleware";
-import {logger} from "../app";
+import {authenticate} from "../middleware/auth.middleware";
+import {apiLimiter, logger} from "../app";
 import {handleError} from "../errors/customErrors";
-import {apiLimiter} from "../app";
 
 
 const router: Router = Router();
@@ -75,7 +74,7 @@ router.post('/api/auth/refresh', async (req: Request, res: Response) => {
 });
 
 router.get('/api/users/me', authenticate, async (req: Request, res: Response) => {
-    const user = req.user as UserPayload | undefined;
+    const user = req.user;
     try {
         if (user?.id) {
             const myUser = await getUserByIdWithVehicles(user?.id);
@@ -92,7 +91,7 @@ router.get('/api/users/me', authenticate, async (req: Request, res: Response) =>
 });
 
 router.post('/api/users/me', authenticate, async (req: Request, res: Response) => {
-    const user = req.user as UserPayload | undefined;
+    const user = req.user;
     try {
         const updatedUser = await addUserInfo(user!.id, req.body);
         res.status(200).send({success: true, message: "User information added successfully", data: updatedUser});
@@ -103,7 +102,7 @@ router.post('/api/users/me', authenticate, async (req: Request, res: Response) =
 });
 
 router.put('/api/users/me', authenticate, async (req: Request, res: Response) => {
-    const user = req.user as UserPayload | undefined;
+    const user = req.user;
     try {
         const updatedUser = await updateUser(user!.id, req.body);
         res.status(200).send({success: true, message: "User information updated successfully", data: updatedUser});
@@ -130,7 +129,7 @@ router.get('/api/users/is-phone-available', authenticate, async (req: Request, r
 });
 
 router.put('/api/users/me/update-phone', authenticate, async (req: Request, res: Response) => {
-    const user = req.user as UserPayload | undefined;
+    const user = req.user;
     try {
         const {phoneNumber, otp} = req.body;
         const userWithUpdatedPhone = await updateUserPhoneNo(user!.id, phoneNumber, otp);

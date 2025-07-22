@@ -53,7 +53,7 @@ async function addVehicle(userId: string, data: any) {
     vehicle.rcImageUrl = data.rcImageUrl;
     vehicle.vin = data.vin;
     vehicle.vendor = data.vendor;
-    vehicle.model = data.model || null;
+    vehicle.model = data.model ?? null;
     user.isVehicleRegistered = true;
     user.isAccountApproved = false;
     await user.save();
@@ -73,8 +73,8 @@ async function updateVehicle(vehicleId: string, data: any) {
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
-    vehicle.model = data.model || vehicle.model;
-    vehicle.vendor = data.vendor || vehicle.vendor;
+    vehicle.model = data.model ?? vehicle.model;
+    vehicle.vendor = data.vendor ?? vehicle.vendor;
     await vehicle.save();
     return vehicle;
 }

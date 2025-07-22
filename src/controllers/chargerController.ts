@@ -65,13 +65,13 @@ async function updateCharger(chargerId: string, data: any) {
     if (!charger) {
         throw new ResourceNotFoundError(`Charger with ID ${chargerId} not found`);
     }
-    charger.type = data.type || charger.type;
-    charger.model = data.model || charger.model;
-    charger.address = data.address || charger.address;
-    charger.city = data.city || charger.city;
-    charger.noOfConnector = data.noOfConnector || charger.noOfConnector;
-    charger.vendor = data.vendor || charger.vendor;
-    charger.serialNumber = data.serialNumber || charger.serialNumber;
+    charger.type = data.type ?? charger.type;
+    charger.model = data.model ?? charger.model;
+    charger.address = data.address ?? charger.address;
+    charger.city = data.city ?? charger.city;
+    charger.noOfConnector = data.noOfConnector ?? charger.noOfConnector;
+    charger.vendor = data.vendor ?? charger.vendor;
+    charger.serialNumber = data.serialNumber ?? charger.serialNumber;
     await charger.save();
     return charger;
 }
