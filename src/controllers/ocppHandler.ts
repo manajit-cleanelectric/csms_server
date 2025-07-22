@@ -113,7 +113,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
                     case 'SoC':
                         currentMeterValue.soc = sample.value;
                         if (!chargingSession.socStart) {
-                            chargingSession.socStart = sample.value;
+                            chargingSession.socLast = sample.value;
                         } else {
                             chargingSession.socStart = sample.value;
                         }

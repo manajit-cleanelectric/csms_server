@@ -36,7 +36,7 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
         const {accessToken, refreshToken, user} = await userLogin(phoneNumber, otp);
         res.status(200).json({
             success: true,
-            message: "Logged user successfully",
+            message: "OTP verified successfully",
             accessToken: accessToken,
             refreshToken: refreshToken,
             data: user
