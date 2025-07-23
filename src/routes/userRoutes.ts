@@ -1,6 +1,6 @@
 import {Request, Response, Router} from 'express';
 import {
-    addUserInfo,
+    addUserInfo, approveUser,
     generateAccessTokenViaRefreshToken,
     getUserByIdWithVehicles,
     isPhoneNoAvailable,
@@ -10,9 +10,10 @@ import {
     updateUser,
     updateUserPhoneNo
 } from '../controllers/userController';
-import {authenticate} from "../middleware/auth.middleware";
+import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter, logger} from "../app";
 import {handleError} from "../errors/customErrors";
+import {UserRoles} from "../models/users";
 
 
 const router: Router = Router();
@@ -139,6 +140,17 @@ router.put('/api/users/me/update-phone', authenticate, async (req: Request, res:
         handleError(error, res, logger);
     }
 });
+
+router.get('api/users/:userId/approve', authenticate, authorize(UserRoles.SUPERVISOR, UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const userId  =req.params.userId;
+        await approveUser(userId);
+        res.status(200).send({success: true, message: "User approved successfully", data: null });
+        logger.info(`User with ID ${userId} approved successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
 
 export {
     router,

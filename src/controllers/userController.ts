@@ -40,9 +40,7 @@ async function updateUser(userId: string, data: any) {
     user.lastName = data.lastName ?? user.lastName;
     user.city = data.city ?? user.city;
     user.state = data.state ?? user.state;
-    if (!user.firstName || !user.lastName) {
-        user.isProfileComplete = false;
-    }
+    user.isProfileComplete = !(!user.firstName || !user.lastName);
     await user.save();
     return user;
 }

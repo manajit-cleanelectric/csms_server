@@ -257,10 +257,10 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
     try {
         chargingSession = await Sessions.findOneBy({id: transactionId});
         if (chargingSession) {
-            chargingSession!.meterStop = meterStop;
-            chargingSession!.endTime = timestamp;
+            chargingSession.meterStop = meterStop;
+            chargingSession.endTime = timestamp;
             // TODO log reason in sessions
-            await chargingSession!.save();
+            await chargingSession.save();
         } else {
             throw new Error("No such session was found.");
         }
