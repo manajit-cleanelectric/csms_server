@@ -1,15 +1,17 @@
-import {RPCServer, RPCClient, createRPCError} from "ocpp-rpc";
+import {createRPCError, RPCClient, RPCServer} from "ocpp-rpc";
 import {logger} from "../app";
 import {
-    handleHeartbeat,
-    handleBootNotification,
     handleAuthorize,
+    handleBootNotification,
+    handleHeartbeat,
     handleMeterValues,
-    handleStatusNotification,
-    handleStopTransaction,
+    handleRemoteStopTransaction,
     handleStartTransaction,
-    handleRemoteStopTransaction
+    handleStatusNotification,
+    handleStopTransaction
 } from "../controllers/ocppHandler"
+import {Chargers} from "../models/charger";
+import {v7 as uuidv7} from "uuid";
 
 const ChargerWebsocketMap = new Map<string, RPCClient>();
 
@@ -20,8 +22,24 @@ const rpcServer = new RPCServer({
     callConcurrency: 10
 });
 
+// TODO test and uncomment next line
+// rpcServer.auth(async (accept, reject, handshake) => {
+//     const {identity} = handshake;
+//     const charger = await Chargers.findOneBy({id: identity});
+//     if (!charger) {
+//         reject(401,"Unauthorized");
+//     } else {
+//         accept({
+//             // anything passed to accept() will be attached as a 'session' property of the client.
+//             sessionId: uuidv7()
+//         });
+//     }
+// });
+
 rpcServer.on("client", async (client: RPCClient) => {
+    ChargerWebsocketMap.set(String(client.identity), client);
     client.handle("BootNotification", async ({params}) => {
+        // TODO remove ChargerWebsocket map from below
         ChargerWebsocketMap.set(String(client.identity), client);
         return await handleBootNotification({client, params});
     });
