@@ -5,6 +5,7 @@ import {pino} from "pino";
 import {rateLimit} from 'express-rate-limit'
 import {RedisStore} from 'rate-limit-redis';
 import Redis from "ioredis";
+// Import routes
 import {router as userRoutes} from "./routes/userRoutes";
 import {router as chargerRoutes} from "./routes/chargerRoutes";
 import {router as sessionRoutes} from "./routes/sessionRoutes";
@@ -112,7 +113,6 @@ const logger = pino({
         }
     }
 });
-
 
 // Middlewares
 app.use(express.json());
