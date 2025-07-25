@@ -2,6 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import {NextFunction, Request, Response} from 'express';
 import * as fs from "node:fs";
+import sharp from 'sharp';
 
 // Set up a storage engine
 const upload = multer({ storage: multer.memoryStorage() });

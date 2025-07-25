@@ -113,6 +113,7 @@ const logger = pino({
     }
 });
 
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
