@@ -1,48 +1,36 @@
-import multer, {StorageEngine} from 'multer';
+import multer from 'multer';
 import path from 'path';
 import {NextFunction, Request, Response} from 'express';
 import * as fs from "node:fs";
 
 // Set up a storage engine
-const storage: StorageEngine = multer.diskStorage({
-    destination: function (
-        req: Express.Request,
-        file: Express.Multer.File,
-        cb: (error: Error | null, destination: string) => void
-    ) {
-        const uploadPath = path.join(__dirname, '../../uploads/rcImages');
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: function (
-        req: Express.Request,
-        file: Express.Multer.File,
-        cb: (error: Error | null, filename: string) => void
-    ) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
-    }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
-const upload = multer({ storage: storage });
-
-// Extend a Request type to include a file property
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
 }
 
-const uploadRcImage = (req: MulterRequest, res: Response, next: NextFunction) => {
+const uploadRcImage = async (req: MulterRequest, res: Response, next: NextFunction) => {
     const singleUpload = upload.single('rcImage');
-    singleUpload(req, res, function (err: any) {
+    singleUpload(req, res, async function (err: any) {
         if (err) {
             return res.status(400).json({ status: false, message: 'Image upload failed', error: err.message });
         }
         if (req.file) {
-            req.body.rcImageUrl = `/uploads/rcImages/${req.file.filename}`;
+            const uploadPath = path.join(__dirname, '../../uploads/rcImages');
+            if (!fs.existsSync(uploadPath)) {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            }
+            const uniqueSuffix = Date.now() + '_' + req.user?.firstName + '_' + req.user?.lastName + '.jpeg';
+            const filePath = path.join(uploadPath, uniqueSuffix);
+
+            await sharp(req.file.buffer)
+                .resize({ width: 800, height: 600, fit: 'inside', withoutEnlargement: true }) // Reduce resolution, preserve aspect ratio
+                .toFile(filePath);
+
+            req.body.rcImageUrl = `/uploads/rcImages/${uniqueSuffix}`;
         } else {
-            req.body.rcImageUrl = null; // Handle case where no file is uploaded
+            req.body.rcImageUrl = null;
         }
         next();
     });

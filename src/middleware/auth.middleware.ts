@@ -6,6 +6,8 @@ import {JWT_SECRET_KEY} from "../app";
 interface UserPayload {
     id: string;
     phoneNumber: string;
+    firstName: string;
+    lastName: string;
     role: string;
 }
 
@@ -26,8 +28,8 @@ const authenticate = (req: Request, res: Response, next: NextFunction): void => 
             return;
         }
         const token = authHeader.replace('Bearer ', '').trim();
-        const { user } = jwt.verify(token, JWT_SECRET_KEY) as { user: UserPayload; iat: number; exp: number };
-        req.user = user;
+        const { trimmedUser } = jwt.verify(token, JWT_SECRET_KEY) as { trimmedUser: UserPayload; iat: number; exp: number };
+        req.user = trimmedUser;
         next();
     } catch (error: any) {
         if (error.name === 'TokenExpiredError') {

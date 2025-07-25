@@ -60,9 +60,17 @@ async function login(phoneNumber: string, otp: string) {
         // TODO to allow concurrent login change the login here
         await AuthTokens.update({user: user}, {isRevoked: true});
     }
+    // Trim a user object to remove sensitive information
+    const trimmedUser = {
+        id: user.id,
+        phoneNumber: user.phoneNumber,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+    };
     // return jwt token
-    const accessToken = jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
-    const refreshToken = jwt.sign({user}, REFRESH_TOKEN_SECRET_KEY, {expiresIn: '7d'});
+    const accessToken = jwt.sign({trimmedUser}, JWT_SECRET_KEY, {expiresIn: '3h'});
+    const refreshToken = jwt.sign({trimmedUser}, REFRESH_TOKEN_SECRET_KEY, {expiresIn: '7d'});
     const authToken = new AuthTokens()
     authToken.user = user;
     authToken.token = refreshToken;

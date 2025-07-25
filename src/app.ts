@@ -1,14 +1,16 @@
 import {config} from "dotenv";
-
-config();
-
 import cors from "cors";
 import express, {type Express} from "express";
 import {pino} from "pino";
 import {rateLimit} from 'express-rate-limit'
 import {RedisStore} from 'rate-limit-redis';
 import Redis from "ioredis";
+import {router as userRoutes} from "./routes/userRoutes";
+import {router as chargerRoutes} from "./routes/chargerRoutes";
+import {router as sessionRoutes} from "./routes/sessionRoutes";
+import {router as vehicleRoutes} from "./routes/vehicleRoutes";
 
+config();
 
 
 const app: Express = express();
@@ -99,12 +101,17 @@ const apiLimiter = rateLimit({
 
 // Set the application to trust the reverse proxy
 app.set("trust proxy", 'loopback');
-const logger = pino({name: "server start"});
-
-import {router as userRoutes} from "./routes/userRoutes";
-import {router as chargerRoutes} from "./routes/chargerRoutes";
-import {router as sessionRoutes} from "./routes/sessionRoutes";
-import {router as vehicleRoutes} from "./routes/vehicleRoutes";
+const logger = pino({
+    name: "server start",
+    transport: {
+        target: "pino-pretty",
+        options: {
+            colorize: true,
+            ignore: 'pid,hostname,name',
+            translateTime: 'SYS:standard',
+        }
+    }
+});
 
 // Middlewares
 app.use(express.json());
