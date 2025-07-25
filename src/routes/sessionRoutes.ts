@@ -56,6 +56,7 @@ router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, 
                 message: "Transaction Stop Request could not be send Sent.",
                 data: null
             });
+            return;
         }
         res.status(200).send({success: true, message: "Transaction Stop Request Sent", data: null});
     } catch (error: any) {
