@@ -5,11 +5,25 @@ import {pino} from "pino";
 import {rateLimit} from 'express-rate-limit'
 import {RedisStore} from 'rate-limit-redis';
 import Redis from "ioredis";
+import * as fs from 'fs';
+import * as path from 'path';
 
 config();
 
 
 const app: Express = express();
+
+const logger = pino({
+    name: "server start",
+    transport: {
+        target: "pino-pretty",
+        options: {
+            colorize: true,
+            ignore: 'pid,hostname,name',
+            translateTime: 'SYS:standard',
+        }
+    }
+});
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY!;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY!;
@@ -25,6 +39,9 @@ const REDIS_PASSWORD = process.env.REDIS_PASSWORD!;
 const RATE_LIMITER_WINDOW_SIZE = parseInt(process.env.RATE_LIMITER_WINDOW_SIZE!, 10);
 const RATE_LIMITER_LIMIT = parseInt(process.env.RATE_LIMITER_LIMIT!, 10);
 const OTP_LENGTH = parseInt(process.env.OTP_LENGTH!, 10);
+const STATIC_FOLDER = process.env.STATIC_FOLDER!;
+const MEDIA_FOLDER = process.env.MEDIA_FOLDER!;
+const RC_IMAGE_FOLDER = process.env.RC_IMAGE_FOLDER!;
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -68,6 +85,33 @@ if (!RATE_LIMITER_LIMIT) {
 if (!OTP_LENGTH) {
     throw new Error('OTP_LENGTH is not defined in environment variables.');
 }
+if (!STATIC_FOLDER) {
+    throw new Error('STATIC_FOLDER is not defined in environment variables.');
+} else {
+    const dirPath = path.join(__dirname, '../', STATIC_FOLDER);
+    ensureDirExistsSync(dirPath);
+}
+if (!MEDIA_FOLDER) {
+    throw new Error('MEDIA_FOLDER is not defined in environment variables.');
+} else {
+    const dirPath = path.join(__dirname, '../', STATIC_FOLDER, MEDIA_FOLDER);
+    ensureDirExistsSync(dirPath);
+}
+if (!RC_IMAGE_FOLDER) {
+    throw new Error('RC_IMAGE_FOLDER is not defined in environment variables.');
+} else {
+    const dirPath = path.join(__dirname, '../', STATIC_FOLDER, MEDIA_FOLDER, RC_IMAGE_FOLDER);
+    ensureDirExistsSync(dirPath);
+}
+
+function ensureDirExistsSync(dirPath: string): void {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, {recursive: true});
+        logger.info(`Directory created: ${dirPath}`);
+    } else {
+        logger.info(`Directory already exists: ${dirPath}`);
+    }
+}
 
 
 // Set up Redis client
@@ -97,17 +141,7 @@ const apiLimiter = rateLimit({
 
 // Set the application to trust the reverse proxy
 app.set("trust proxy", 'loopback');
-const logger = pino({
-    name: "server start",
-    transport: {
-        target: "pino-pretty",
-        options: {
-            colorize: true,
-            ignore: 'pid,hostname,name',
-            translateTime: 'SYS:standard',
-        }
-    }
-});
+
 
 // Import routes
 import {router as userRoutes} from "./routes/userRoutes";
@@ -124,6 +158,9 @@ app.use(userRoutes);
 app.use(chargerRoutes);
 app.use(sessionRoutes);
 app.use(vehicleRoutes);
+app.use(express.static(path.join(__dirname, '../', STATIC_FOLDER)));
+const STATIC_FOLDER_PATH = path.join(__dirname, '../', STATIC_FOLDER);
+logger.info(path.join(__dirname, '../', STATIC_FOLDER));
 
 export {
     app,
@@ -139,4 +176,8 @@ export {
     apiLimiter,
     redisClient,
     OTP_LENGTH,
+    STATIC_FOLDER,
+    STATIC_FOLDER_PATH,
+    MEDIA_FOLDER,
+    RC_IMAGE_FOLDER,
 };
