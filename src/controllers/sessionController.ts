@@ -2,11 +2,10 @@ import {Sessions, SessionStatus} from "../models/sessions";
 import {Chargers} from "../models/charger";
 import {Vehicles} from "../models/vehicle";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
-import {v7 as uuidv7, validate as uuidValidate} from "uuid";
+import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/users";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../app";
-import WebSocket from 'ws';
 import {In} from "typeorm";
 
 async function addSession(data: any) {
@@ -218,23 +217,20 @@ async function listAllChargerSessions(chargerId: string) {
 async function sendRemoteStopTransaction(chargerId: string, transactionId: number) {
     const rpcClient = ChargerWebsocketMap.get(String(chargerId));
 
-    // @ts-ignore
-    if (!rpcClient || rpcClient._ws.readyState !== WebSocket.OPEN) {
-        logger.error(`WebSocket not open for charger ${chargerId}`);
+    if (!rpcClient) {
+        logger.error(`Charger with ID ${chargerId} not connected`);
+        throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
+    }
+
+    const response: any = await rpcClient.call("RemoteStopTransaction", {
+        transactionId: transactionId
+    });
+
+    if (response?.status !== "Accepted") {
+        logger.error(`Failed to Stop Transaction Remotely to charger ${chargerId}: ${response.status}`);
         return false;
     }
 
-    const messageId = uuidv7(); // Unique ID for tracking
-    const message = [
-        2, // CALL message
-        messageId,
-        "RemoteStopTransaction",
-        {
-            transactionId: transactionId
-        }
-    ];
-    rpcClient.sendRaw(JSON.stringify(message));
-    logger.info(`Sent RemoteStopTransaction to charger ${chargerId}`);
     return true;
 }
 

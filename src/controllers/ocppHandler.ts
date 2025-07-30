@@ -77,20 +77,6 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
     }
 };
 
-const handleRemoteStopTransaction = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Remote Stop Transaction from ${client.identity}: ${JSON.stringify(params)}`);
-    // TODO implement remote stop transactions
-    try {
-        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
-    } catch (err) {
-        logger.error(`Failed to update charger status:`, err);
-        throw createRPCError("InternalError", "Database update failed.");
-    }
-    return {
-        currentTime: new Date().toISOString(),
-    };
-};
-
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received StatusNotification from ${client.identity}: ${JSON.stringify(params)}`);
     // TODO handle status notification
@@ -247,7 +233,6 @@ export {
     handleHeartbeat,
     handleAuthorize,
     handleMeterValues,
-    handleRemoteStopTransaction,
     handleStatusNotification,
     handleStopTransaction,
     handleStartTransaction,

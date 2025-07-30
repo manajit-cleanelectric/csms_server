@@ -1,19 +1,17 @@
-import {createRPCError, RPCClient, RPCServer} from "ocpp-rpc";
+import {createRPCError, RPCServer} from "ocpp-rpc";
 import {logger} from "../app";
 import {
     handleAuthorize,
     handleBootNotification,
     handleHeartbeat,
     handleMeterValues,
-    handleRemoteStopTransaction,
     handleStartTransaction,
     handleStatusNotification,
     handleStopTransaction
 } from "../controllers/ocppHandler"
-import {Chargers} from "../models/charger";
-import {v7 as uuidv7} from "uuid";
+import RpcServerClient from "ocpp-rpc/lib/server-client";
 
-const ChargerWebsocketMap = new Map<string, RPCClient>();
+const ChargerWebsocketMap = new Map<string, RpcServerClient>();
 
 const rpcServer = new RPCServer({
     protocols: ['ocpp1.6'],
@@ -36,7 +34,7 @@ const rpcServer = new RPCServer({
 //     }
 // });
 
-rpcServer.on("client", async (client: RPCClient) => {
+rpcServer.on("client", async (client: RpcServerClient) => {
     ChargerWebsocketMap.set(String(client.identity), client);
     client.handle("BootNotification", async ({params}) => {
         // TODO remove ChargerWebsocket map from below
@@ -54,10 +52,6 @@ rpcServer.on("client", async (client: RPCClient) => {
 
     client.handle("MeterValues", async ({params}) => {
         return await handleMeterValues({client, params});
-    });
-
-    client.handle("RemoteStopTransaction", async ({params}) => {
-        return await handleRemoteStopTransaction({client, params});
     });
 
     client.handle("StartTransaction", async ({params}) => {
