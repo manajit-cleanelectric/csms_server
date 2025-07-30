@@ -4,23 +4,14 @@ import {createRPCError} from "ocpp-rpc";
 import {Sessions, SessionStatus} from "../models/sessions";
 import {Vehicles} from "../models/vehicle";
 import {Heartbeats} from "../models/heartbeats";
-import {MeterValues} from "../models/meterValues";
 import {StatusLogs} from "../models/statusLogs";
 import {Connectors, ConnectorStatus} from "../models/connector";
 import {AppDataSource as dataSource} from "../database/datasource";
+import {addMeterValue} from "./meterValueController";
 
-
-const acceptedMeasurands: string[] = [
-    "Energy.Active.Import.Register",
-    "Power.Active.Import",
-    "Current.Import",
-    "Voltage",
-    "Temperature",
-    "SoC",
-];
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received BootNotification from ${client.identity}:`, params);
+    logger.info(`Received BootNotification from ${client.identity}`);
     return {
         status: "Accepted",
         interval: 5,
@@ -29,7 +20,7 @@ const handleBootNotification = async ({client, params}: { client: any; params: a
 };
 
 const handleHeartbeat = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Heartbeat from ${client.identity}:`, params);
+    logger.info(`Received Heartbeat from ${client.identity}`);
     try {
         await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE});
         const heartBeat = new Heartbeats();
@@ -45,7 +36,7 @@ const handleHeartbeat = async ({client, params}: { client: any; params: any }) =
 };
 
 const handleAuthorize = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Authorize from ${client.identity}:`, params);
+    logger.info(`Received Authorize from ${client.identity}: ${JSON.stringify(params)}`);
     let user = null;
     try {
         // TODO: Confirm 'vehicle' field is correct for VIN
@@ -75,67 +66,19 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
 };
 
 const handleMeterValues = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Meter Values from ${client.identity}:`, params);
-    // TODO implement meter values
-    let {connectorId, transactionId, meterValue} = params;
+    logger.info(`Received MeterValues from ${client.identity}`);
     let chargerId = client.identity!;
     try {
-        // TODO why updating the charger
-        await Chargers.update({id: chargerId}, {status: ChargerStatus.AVAILABLE});
-        const chargingSession = await Sessions.findOneBy({id: transactionId});
-        if (!chargingSession) {
-            throw new Error("Could not find session with ID " + transactionId);
-        }
-        const currentMeterValue = new MeterValues();
-        currentMeterValue.chargerId = chargerId;
-        currentMeterValue.connectorId = connectorId;
-        currentMeterValue.sessionId = Number(transactionId);
-        meterValue.forEach((item: any) => {
-            let {timestamp, sampledValue} = item;
-            currentMeterValue.timestamp = timestamp;
-            sampledValue.forEach((sample: any) => {
-                switch (sample.measurand) {
-                    case 'Energy.Active.Import.Register':
-                        currentMeterValue.energyActiveImportRegister = sample.value;
-                        break;
-                    case 'Power.Active.Import':
-                        currentMeterValue.powerActiveImport = sample.value;
-                        break;
-                    case 'Current.Import':
-                        currentMeterValue.currentImport = sample.value;
-                        break;
-                    case 'Voltage':
-                        currentMeterValue.voltage = sample.value;
-                        break;
-                    case 'Temperature':
-                        currentMeterValue.temperature = sample.value;
-                        break;
-                    case 'SoC':
-                        currentMeterValue.soc = sample.value;
-                        if (!chargingSession.socStart) {
-                            chargingSession.socLast = sample.value;
-                        } else {
-                            chargingSession.socStart = sample.value;
-                        }
-                        break;
-                    default:
-                        logger.info(`Received Meter Values for measurand ${sample.measurand}`,);
-                }
-            });
-
-        });
-        await currentMeterValue.save();
+        await addMeterValue(chargerId, params);
+        return {};
     } catch (err) {
-        logger.error(`Failed to update charger status:`, err);
+        logger.error(`Failed to add meterValues: ${err}` );
         throw createRPCError("InternalError", "Database update failed.");
     }
-    return {
-        currentTime: new Date().toISOString(),
-    };
 };
 
 const handleRemoteStopTransaction = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Remote Stop Transaction from ${client.identity}:`, params);
+    logger.info(`Received Remote Stop Transaction from ${client.identity}: ${JSON.stringify(params)}`);
     // TODO implement remote stop transactions
     try {
         await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE})
@@ -149,7 +92,7 @@ const handleRemoteStopTransaction = async ({client, params}: { client: any; para
 };
 
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Status Notification from ${client.identity}:`, params);
+    logger.info(`Received StatusNotification from ${client.identity}: ${JSON.stringify(params)}`);
     // TODO handle status notification
     let {connectorId, errorCode, status} = params;
     let chargerId = client.identity!;
@@ -203,7 +146,7 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
 };
 
 const handleStartTransaction = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Start Transaction from ${client.identity}:`, params);
+    logger.info(`Received Start Transaction from ${client.identity}: ${JSON.stringify(params)}`);
     let {connectorId, idTag, meterStart, timestamp} = params;
     try {
         const chargingSession = new Sessions();
@@ -251,7 +194,7 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
 };
 
 const handleStopTransaction = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Stop Transaction from ${client.identity}:`, params);
+    logger.info(`Received Stop Transaction from ${client.identity}: ${JSON.stringify(params)}`);
     let {idTag, meterStop, timestamp, transactionId, reason} = params;
     let chargingSession: Sessions | null = null;
     try {

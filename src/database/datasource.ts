@@ -4,6 +4,7 @@ import {Users} from "../models/users";
 import {Chargers} from "../models/charger";
 import {DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_USERNAME} from "../app";
 import {MeterValues} from "../models/meterValues";
+import {SampledValues} from "../models/sampledValues";
 import {Sessions} from "../models/sessions";
 import {Heartbeats} from "../models/heartbeats";
 import {StatusLogs} from "../models/statusLogs";
@@ -19,7 +20,19 @@ const AppDataSource = new DataSource({
     username: DATABASE_USERNAME,
     password: DATABASE_PASSWORD,
     database: DATABASE_NAME,
-    entities: [Users, AuthTokens, Vehicles, Chargers, Connectors, Addresses, Sessions, MeterValues, Heartbeats, StatusLogs],
+    entities: [
+        Users,
+        AuthTokens,
+        Vehicles,
+        Chargers,
+        Connectors,
+        Addresses,
+        Sessions,
+        MeterValues,
+        SampledValues,
+        Heartbeats,
+        StatusLogs
+    ],
     synchronize: true,
     logging: false,
 })

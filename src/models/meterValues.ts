@@ -1,4 +1,5 @@
-import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {SampledValues} from "./sampledValues";
 
 @Entity("meterValues")
 class MeterValues extends BaseEntity {
@@ -32,47 +33,8 @@ class MeterValues extends BaseEntity {
     })
     sessionId!: number;
 
-    @Column({
-        type: "float",
-        nullable: false,
-        default: 0.0
-    })
-    currentImport!: number;
-
-    @Column({
-        type: "float",
-        nullable: false,
-        default: 0.0
-    })
-    energyActiveImportRegister!: number;
-
-    @Column({
-        type: "float",
-        nullable: false,
-        default: 0.0
-    })
-    powerActiveImport!: number;
-
-    @Column({
-        type: "float",
-        nullable: false,
-        default: 0.0
-    })
-    soc!: number;
-
-    @Column({
-        type: "float",
-        nullable: false,
-        default: 0.0
-    })
-    voltage!: number;
-
-    @Column({
-        type: "float",
-        nullable: false,
-        default: 0.0
-    })
-    temperature!: number;
+    @OneToMany(() => SampledValues, (sampledValue) => sampledValue.meterValue, {cascade: ["insert"]})
+    sampledValues!: SampledValues[];
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
