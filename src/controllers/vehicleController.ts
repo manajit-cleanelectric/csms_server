@@ -10,11 +10,11 @@ import {
 import {validate} from "uuid";
 import * as fs from "node:fs";
 import path from "path";
-import {logger} from "../app";
+import {logger, STATIC_FOLDER_PATH} from "../app";
 
 function deleteImageFromDisk(imagePath: string): void {
     if (!imagePath) return;
-    imagePath = path.join(__dirname, '..', '..', imagePath);
+    imagePath = path.join(STATIC_FOLDER_PATH, imagePath);
     fs.unlink(imagePath, (err) => {
         if (err) {
             logger.error(`Failed to delete image from disk: ${err.message}`);

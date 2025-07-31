@@ -178,5 +178,5 @@ fabric.properties
 /sonar-project.properties
 
 #static media files
-/public/*
+public/
 
