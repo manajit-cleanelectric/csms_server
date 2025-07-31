@@ -20,6 +20,20 @@ enum SessionStatus {
     FAULTED = 'Faulted',
 }
 
+enum Reason {
+    DEAUTHORIZED = 'DeAuthorized',
+    EMERGENCY_STOP = 'EmergencyStop',
+    EV_DISCONNECTED = 'EVDisconnected',
+    HARD_RESET = 'HardReset',
+    LOCAL = 'Local',
+    OTHER = 'Other',
+    POWER_LOSS = 'PowerLoss',
+    REBOOT = 'Reboot',
+    REMOTE = 'Remote',
+    SOFT_RESET = 'SoftReset',
+    UNLOCK_COMMAND = 'UnlockCommand',
+}
+
 @Entity("sessions")
 class Sessions extends BaseEntity {
     @PrimaryGeneratedColumn({
@@ -125,6 +139,13 @@ class Sessions extends BaseEntity {
         nullable: true
     })
     socLast!: number;
+
+    @Column({
+        type: "enum",
+        enum: Reason,
+        nullable: true
+    })
+    reason!: Reason | null;
 
     @Column({
         type: "enum",
