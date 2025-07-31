@@ -8,6 +8,7 @@ import {StatusLogs} from "../models/statusLogs";
 import {Connectors, ConnectorStatus} from "../models/connector";
 import {AppDataSource as dataSource} from "../database/datasource";
 import {addMeterValue} from "./meterValueController";
+import {addSession} from "./sessionController";
 
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
@@ -134,38 +135,10 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
 const handleStartTransaction = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Start Transaction from ${client.identity}: ${JSON.stringify(params)}`);
     let {connectorId, idTag, meterStart, timestamp} = params;
+    let chargerId = client.identity!;
     try {
-        const chargingSession = new Sessions();
-        const connector = await Connectors.findOne({
-            where: {
-                chargerConnectorId: connectorId,
-                charger: {id: client.identity!}
-            },
-            relations: ["charger"]
-        });
-        if (!connector) {
-            throw new Error('Connector not found');
-        }
-        chargingSession.connector = connector;
-        const vehicle = await Vehicles.findOne({
-            where: {vin: idTag},
-            relations: ["user"]
-        });
-        if (!vehicle) {
-            throw new Error('Vehicle not found');
-        }
-        const charger = await Chargers.findOneBy({id: client.identity!});
-        if (!charger) {
-            throw new Error('Charger not found');
-        }
-        chargingSession.vehicleNo = vehicle.vehicleNo;
-        chargingSession.vehicleVendor = vehicle.vendor;
-        chargingSession.vehicleModel = vehicle.model;
-        chargingSession.meterStart = meterStart;
-        chargingSession.startTime = timestamp;
-        chargingSession.user = vehicle.user;
-        chargingSession.charger = charger;
-        await chargingSession.save();
+        const chargingSession = await addSession(chargerId, connectorId, idTag, meterStart, timestamp);
+        // TODO: Add Session to Redis cache
         return {
             "idTagInfo": {
                 "status": "Accepted"
@@ -189,6 +162,7 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
             chargingSession.meterStop = meterStop;
             chargingSession.endTime = timestamp;
             chargingSession.reason = reason;
+            chargingSession.status = SessionStatus.FINISHED;
             await chargingSession.save();
         } else {
             throw new Error("No such session was found.");
