@@ -42,6 +42,8 @@ const OTP_LENGTH = parseInt(process.env.OTP_LENGTH!, 10);
 const STATIC_FOLDER = process.env.STATIC_FOLDER!;
 const MEDIA_FOLDER = process.env.MEDIA_FOLDER!;
 const RC_IMAGE_FOLDER = process.env.RC_IMAGE_FOLDER!;
+const SMS_SERVICE_PROVIDER_URL = process.env.SMS_SERVICE_PROVIDER_URL;
+const SMS_SERVICE_PROVIDER_API_KEY = process.env.SMS_SERVICE_PROVIDER_API_KEY;
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -103,6 +105,13 @@ if (!RC_IMAGE_FOLDER) {
     const dirPath = path.join(__dirname, '../', STATIC_FOLDER, MEDIA_FOLDER, RC_IMAGE_FOLDER);
     ensureDirExistsSync(dirPath);
 }
+if (!SMS_SERVICE_PROVIDER_URL) {
+    throw new Error('SMS_SERVICE_PROVIDER_URL is not defined in environment variables.');
+}
+if (!SMS_SERVICE_PROVIDER_API_KEY) {
+    throw new Error('SMS_SERVICE_PROVIDER_API_KEY is not defined in environment variables.');
+}
+
 
 function ensureDirExistsSync(dirPath: string): void {
     if (!fs.existsSync(dirPath)) {
@@ -180,4 +189,6 @@ export {
     STATIC_FOLDER_PATH,
     MEDIA_FOLDER,
     RC_IMAGE_FOLDER,
+    SMS_SERVICE_PROVIDER_URL,
+    SMS_SERVICE_PROVIDER_API_KEY,
 };
