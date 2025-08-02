@@ -1,4 +1,4 @@
-import {Users} from "../models/users";
+import {UserRoles, Users} from "../models/users";
 import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/sms.services"
@@ -230,6 +230,16 @@ async function approveUser(userId: string) {
     return user;
 }
 
+async function listCustomers() {
+    try {
+        return await Users.find({
+            where: {role: UserRoles.CUSTOMER}
+        });
+    } catch (error) {
+        logger.error(`Error occurred while listing customers: ${error}`);
+    }
+}
+
 export {
     addUserInfo,
     updateUser,
@@ -243,4 +253,5 @@ export {
     logout,
     isPhoneNoAvailable,
     updateUserPhoneNo,
+    listCustomers,
 }

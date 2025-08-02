@@ -1,6 +1,7 @@
 import {Request, Response, Router} from 'express';
 import {
-    addUserInfo, approveUser,
+    addUserInfo,
+    approveUser,
     generateAccessTokenViaRefreshToken,
     getUserByIdWithVehicles,
     isPhoneNoAvailable,
@@ -8,7 +9,8 @@ import {
     logout as userLogout,
     sendOtpToPhoneNumber,
     updateUser,
-    updateUserPhoneNo
+    updateUserPhoneNo,
+    listCustomers
 } from '../controllers/userController';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter, logger} from "../app";
@@ -147,6 +149,15 @@ router.get('api/users/:userId/approve', authenticate, authorize(UserRoles.SUPERV
         await approveUser(userId);
         res.status(200).send({success: true, message: "User approved successfully", data: null });
         logger.info(`User with ID ${userId} approved successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
+router.get('api/users', authenticate, authorize(UserRoles.SUPERVISOR, UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const customers = await listCustomers()
+        res.status(200).send({success: true, message: "User approved successfully", data: customers });
     } catch (error: any) {
         handleError(error, res, logger);
     }
