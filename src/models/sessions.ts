@@ -88,8 +88,7 @@ class Sessions extends BaseEntity {
 
     @Column({
         type: "float",
-        nullable: false,
-        default: 0.0
+        nullable: true
     })
     meterStart!: number;
 
@@ -115,7 +114,7 @@ class Sessions extends BaseEntity {
     @Column({
         type: "int",
         unsigned: true,
-        default: 0
+        nullable: true
     })
     socStart!: number;
 

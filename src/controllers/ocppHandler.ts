@@ -97,6 +97,12 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
                 switch (sample.measurand) {
                     case 'Energy.Active.Import.Register':
                         currentMeterValue.energyActiveImportRegister = sample.value;
+                        if (!chargingSession.meterStart) {
+                            chargingSession.meterStart = sample.value;
+                            chargingSession.meterStop = sample.value;
+                        } else {
+                            chargingSession.meterStop = sample.value;
+                        }
                         break;
                     case 'Power.Active.Import':
                         currentMeterValue.powerActiveImport = sample.value;
@@ -114,6 +120,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
                         currentMeterValue.soc = sample.value;
                         if (!chargingSession.socStart) {
                             chargingSession.socLast = sample.value;
+                            chargingSession.socStart = sample.value;
                         } else {
                             chargingSession.socStart = sample.value;
                         }
