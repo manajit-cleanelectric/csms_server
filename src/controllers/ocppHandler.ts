@@ -97,7 +97,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
                 switch (sample.measurand) {
                     case 'Energy.Active.Import.Register':
                         currentMeterValue.energyActiveImportRegister = sample.value;
-                        if (!chargingSession.meterStart) {
+                        if (chargingSession.meterStart == null) {
                             chargingSession.meterStart = sample.value;
                             chargingSession.meterStop = sample.value;
                         } else {
@@ -118,7 +118,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
                         break;
                     case 'SoC':
                         currentMeterValue.soc = sample.value;
-                        if (!chargingSession.socStart) {
+                        if (chargingSession.socStart == null) {
                             chargingSession.socLast = sample.value;
                             chargingSession.socStart = sample.value;
                         } else {
@@ -132,6 +132,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
 
         });
         await currentMeterValue.save();
+        await chargingSession.save();
     } catch (err) {
         logger.error(`Failed to update charger status:`, err);
         throw createRPCError("InternalError", "Database update failed.");
