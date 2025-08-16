@@ -176,3 +176,7 @@ fabric.properties
 # modules.xml
 /.scannerwork/
 /sonar-project.properties
+
+#static media files
+public/
+

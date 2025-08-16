@@ -1,5 +1,5 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert, BeforeUpdate,
     Check,
     Column,
     CreateDateColumn,
@@ -13,6 +13,7 @@ import {
 import {Sessions} from "./sessions";
 import {Connectors} from "./connector";
 import {Addresses} from "./address";
+import {toTitleCase} from "../services/titleCase.services";
 
 export enum ChargerTypes {
     TYPE_6 = 'type_6',
@@ -123,5 +124,14 @@ export class Chargers extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    transformFields() {
+        this.model = toTitleCase(this.model);
+        this.vendor = toTitleCase(this.vendor);
+        this.serialNumber = this.serialNumber.toUpperCase();
+        this.city = toTitleCase(this.city);
+    }
 
 }

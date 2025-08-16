@@ -10,11 +10,12 @@ import {
 import {validate} from "uuid";
 import * as fs from "node:fs";
 import path from "path";
-import {logger} from "../app";
+import {logger, STATIC_FOLDER_PATH} from "../app";
+import {AppDataSource} from "../database/datasource";
 
 function deleteImageFromDisk(imagePath: string): void {
     if (!imagePath) return;
-    imagePath = path.join(__dirname, '..', '..', imagePath);
+    imagePath = path.join(STATIC_FOLDER_PATH, imagePath);
     fs.unlink(imagePath, (err) => {
         if (err) {
             logger.error(`Failed to delete image from disk: ${err.message}`);
@@ -31,20 +32,23 @@ async function addVehicle(userId: string, data: any) {
     if (!validate(userId)) {
         throw new InvalidUUIDError(`Invalid User ID format`);
     }
-    const user = await Users.findOneBy({id: userId});
+    const user = await Users.findOne({where: [{id: userId}], relations: ["vehicles"]});
+    if ((user?.vehicles?.length ?? 0) > 1) {
+        throw new ResourceAlreadyExistsError(`User has already registered a vehicle.`);
+    }
     if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
     if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
         throw new MissingParameterError(`All vehicle details are required`);
     }
-    const existingVehicle = await Vehicles.findOne({
-        where: [
-            {rcNumber: data.rcNumber},
-            {vin: data.vin},
-        ]
-    })
-    if (existingVehicle) {
+    const existingVehicle = await AppDataSource.getRepository(Vehicles)
+        .createQueryBuilder('vehicle')
+        .where('vehicle.rcNumber = :rcNumber', {rcNumber: data.rcNumber})
+        .orWhere('vehicle.vin = :vin', {vin: data.vin})
+        .getMany();
+
+    if (existingVehicle.length > 0) {
         throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
     }
     const vehicle = new Vehicles();
@@ -128,7 +132,7 @@ async function approveVehicle(vehicleId: string) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
     vehicle.isApproved = true;
-    if (vehicle.user){
+    if (vehicle.user) {
         vehicle.user.isAccountApproved = true;
         await vehicle.user.save();
     } else {

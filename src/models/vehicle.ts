@@ -1,5 +1,5 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert, BeforeRemove, BeforeUpdate,
     Column,
     CreateDateColumn,
     Entity,
@@ -9,6 +9,7 @@ import {
     UpdateDateColumn
 } from "typeorm";
 import {Users} from "./users";
+import {toTitleCase} from "../services/titleCase.services";
 
 
 @Entity("vehicles")
@@ -76,6 +77,21 @@ class Vehicles extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    transformFields() {
+        this.model = toTitleCase(this.model);
+        this.vendor = toTitleCase(this.vendor);
+        this.vin = this.vin.toUpperCase();
+        this.vehicleNo = this.vehicleNo.toUpperCase();
+        this.rcNumber = this.rcNumber.toUpperCase();
+    }
+
+    @BeforeRemove()
+    performCleanup() {
+        // delete rc image file
+    }
 }
 
 export {

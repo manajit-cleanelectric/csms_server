@@ -23,7 +23,7 @@ const handleBootNotification = async ({client, params}: { client: any; params: a
 const handleHeartbeat = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Heartbeat from ${client.identity}`);
     try {
-        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE});
+        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE, lastHeartBeat: new Date().toISOString()});
         const heartBeat = new Heartbeats();
         heartBeat.chargerId = client.identity!;
         await heartBeat.save();
