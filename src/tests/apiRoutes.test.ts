@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { app, redisClient } from '../src/app';
-import { AppDataSource } from '../src/database/datasource';
+import { app, redisClient } from '../app';
+import { AppDataSource } from '../database/datasource';
 
 // Create a server variable to reference the running server instance
 let server: ReturnType<typeof app.listen>;
