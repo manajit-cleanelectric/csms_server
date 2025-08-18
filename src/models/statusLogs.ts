@@ -51,6 +51,27 @@ class StatusLogs extends BaseEntity {
     })
     status!: ConnectorStatus;
 
+    @Column({
+        type: "varchar",
+        length: 50,
+        nullable: true
+    })
+    info!: string;
+
+    @Column({
+        type: "varchar",
+        length: 255,
+        nullable: true
+    })
+    vendorId!: string;
+
+    @Column({
+        type: "varchar",
+        length: 50,
+        nullable: true
+    })
+    vendorErrorCode!: string;
+
     @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 

@@ -81,7 +81,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received StatusNotification from ${client.identity}: ${JSON.stringify(params)}`);
     // TODO handle status notification
-    let {connectorId, errorCode, status} = params;
+    let {connectorId, errorCode, status, info, vendorId, vendorErrorCode} = params;
     let chargerId = client.identity!;
     try {
         status = _getConnectorStatus(status);
@@ -90,6 +90,9 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
         statusNotification.chargerId = chargerId;
         statusNotification.connectorId = connectorId;
         statusNotification.errorCode = errorCode;
+        statusNotification.info = info;
+        statusNotification.vendorId = vendorId;
+        statusNotification.vendorErrorCode = vendorErrorCode;
         await statusNotification.save();
         if (status === ConnectorStatus.AVAILABLE) {
             const connector = await dataSource
