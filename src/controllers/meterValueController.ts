@@ -14,8 +14,7 @@ import {logger} from "../app";
 function parseSampledValue(sample: any) {
     let parsedSample: any = {};
     parsedSample.stringValue = undefined;
-    parsedSample.decimalValue = undefined;
-    parsedSample.integerValue = undefined;
+    parsedSample.numericValue = undefined;
     parsedSample.context = sample.context ?? ReadingContext.SAMPLE_PERIODIC;
     parsedSample.format = sample.format ?? ValueFormat.RAW;
     parsedSample.measurand = sample.measurand ?? Measurand.ENERGY_ACTIVE_IMPORT_REGISTER;
@@ -25,11 +24,8 @@ function parseSampledValue(sample: any) {
 
 
     if (sample.format == "Raw" || sample.format == undefined) {
-        // Try to parse as integer or decimal
-        if (/^-?\d+$/.test(sample.value)) {
-            parsedSample.integerValue = parseInt(sample.value, 10);
-        } else if (/^-?\d+\.\d+$/.test(sample.value)) {
-            parsedSample.decimalValue = parseFloat(sample.value);
+        if (/^-?\d+(\.\d+)?$/.test(sample.value)) {
+            parsedSample.numericValue = parseFloat(sample.value);
         } else {
             parsedSample.stringValue = sample.value;
         }
@@ -59,9 +55,17 @@ async function addMeterValue(chargerId: any, params: any) {
         meterValueEntity.sampledValues = sampledValue.map((sample: any) => {
             const parsedSample = parseSampledValue(sample);
             if (parsedSample.measurand == Measurand.ENERGY_ACTIVE_IMPORT_REGISTER) {
-                session.meterStop = parsedSample.integerValue ?? parsedSample.decimalValue ?? session.meterStop;
+                if (parsedSample.unit == UnitOfMeasure.KILOWATT_HOUR) {
+                    session.meterStop = parsedSample.numericValue ? parsedSample.numericValue * 1000 : session.meterStop;
+                } else {
+                    session.meterStop = parsedSample.numericValue ?? session.meterStop;
+                }
             } else if (parsedSample.measurand == Measurand.SoC){
-                session.socLast = parsedSample.integerValue ?? parsedSample.decimalValue ?? session.socLast;
+                if (!session.socStart){
+                    session.socStart = parsedSample.numericValue ?? session.socStart;
+                    session.socLast = parsedSample.numericValue ?? session.socLast;
+                }
+                session.socLast = parsedSample.numericValue ?? session.socLast;
             }
             return SampledValues.create(parsedSample);
         });

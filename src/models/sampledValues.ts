@@ -105,13 +105,7 @@ class SampledValues extends BaseEntity{
         scale: 2,
         nullable: true
     })
-    decimalValue?: number;
-
-    @Column({
-        type: "int",
-        nullable: true,
-    })
-    integerValue?: number;
+    numericValue?: number;
 
     @Column({
         type: "enum",

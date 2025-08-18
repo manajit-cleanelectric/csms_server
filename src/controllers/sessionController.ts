@@ -13,7 +13,7 @@ async function addSession(chargerId: string, connectorId: number, vin: string, m
     const session = new Sessions();
     const charger = await Chargers.findOne({
         where: { id: chargerId },
-        relations: ["connectors"]
+        relations: ["connectors", "address"]
     });
     if (!charger) {
         logger.error(`Charger with ID ${chargerId} not found`);
@@ -40,6 +40,7 @@ async function addSession(chargerId: string, connectorId: number, vin: string, m
     session.user = vehicle.user;
     session.startTime = timestamp;
     session.meterStart = meterStart;
+    session.location = charger.address?.location;
     await session.save();
     return session;
 }
