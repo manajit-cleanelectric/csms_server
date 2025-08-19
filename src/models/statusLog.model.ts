@@ -1,5 +1,5 @@
 import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {ConnectorStatus} from "./connector";
+import {ConnectorStatus} from "./connector.model";
 
 enum ErrorCode {
     CONNECTOR_LOCK_FAILURE = "ConnectorLockFailure",
@@ -21,7 +21,7 @@ enum ErrorCode {
 }
 
 @Entity("statusLogs")
-class StatusLogs extends BaseEntity {
+class StatusLogsModel extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
@@ -80,5 +80,5 @@ class StatusLogs extends BaseEntity {
 }
 
 export {
-    StatusLogs
+    StatusLogsModel
 };

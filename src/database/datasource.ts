@@ -1,17 +1,17 @@
 import "reflect-metadata"
 import {DataSource} from "typeorm"
-import {Users} from "../models/users";
-import {Chargers} from "../models/charger";
+import {Users} from "../models/user.model";
+import {Chargers} from "../models/charger.model";
 import {DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_USERNAME} from "../app";
-import {MeterValues} from "../models/meterValues";
-import {SampledValues} from "../models/sampledValues";
-import {Sessions} from "../models/sessions";
-import {Heartbeats} from "../models/heartbeats";
-import {StatusLogs} from "../models/statusLogs";
-import {Vehicles} from "../models/vehicle";
-import {Connectors} from "../models/connector";
-import {Addresses} from "../models/address";
-import {AuthTokens} from "../models/authTokens";
+import {MeterValues} from "../models/meterValue.model";
+import {SampledValuesModel} from "../models/sampledValue.model";
+import {Sessions} from "../models/session.model";
+import {Heartbeats} from "../models/heartbeat.model";
+import {StatusLogsModel} from "../models/statusLog.model";
+import {Vehicles} from "../models/vehicle.model";
+import {Connectors} from "../models/connector.model";
+import {Addresses} from "../models/address.model";
+import {AuthTokens} from "../models/authToken.model";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -29,9 +29,9 @@ const AppDataSource = new DataSource({
         Addresses,
         Sessions,
         MeterValues,
-        SampledValues,
+        SampledValuesModel,
         Heartbeats,
-        StatusLogs
+        StatusLogsModel
     ],
     synchronize: true,
     logging: false,

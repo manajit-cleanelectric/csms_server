@@ -1,14 +1,14 @@
-import {MeterValues} from "../models/meterValues";
+import {MeterValues} from "../models/meterValue.model";
 import {
     Location,
     Measurand,
     Phase,
     ReadingContext,
-    SampledValues,
+    SampledValuesModel,
     UnitOfMeasure,
     ValueFormat
-} from "../models/sampledValues";
-import {Sessions} from "../models/sessions";
+} from "../models/sampledValue.model";
+import {Sessions} from "../models/session.model";
 import {logger} from "../app";
 
 function parseSampledValue(sample: any) {
@@ -67,7 +67,7 @@ async function addMeterValue(chargerId: any, params: any) {
                 }
                 session.socLast = parsedSample.numericValue ?? session.socLast;
             }
-            return SampledValues.create(parsedSample);
+            return SampledValuesModel.create(parsedSample);
         });
         await meterValueEntity.save();
     }

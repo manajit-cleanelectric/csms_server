@@ -1,5 +1,5 @@
-import {Users} from "../models/users";
-import {Vehicles} from "../models/vehicle";
+import {Users} from "../models/user.model";
+import {Vehicles} from "../models/vehicle.model";
 import {
     InvalidUUIDError,
     MissingParameterError,

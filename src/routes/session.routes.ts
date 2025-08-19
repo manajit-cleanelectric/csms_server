@@ -5,10 +5,10 @@ import {
     listAllChargerSessions,
     listAllUserSessions,
     sendRemoteStopTransaction
-} from '../controllers/sessionController';
+} from '../controllers/session.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {logger} from "../app";
-import {UserRoles} from "../models/users";
+import {UserRoles} from "../models/user.model";
 import {handleError} from "../errors/customErrors";
 
 

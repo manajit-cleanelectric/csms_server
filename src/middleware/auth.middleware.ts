@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import jwt from 'jsonwebtoken';
-import {UserRoles} from '../models/users';
+import {UserRoles} from '../models/user.model';
 import {JWT_SECRET_KEY} from "../app";
 
 interface UserPayload {

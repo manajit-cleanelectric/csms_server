@@ -1,6 +1,6 @@
-import {Chargers} from "../models/charger";
+import {Chargers} from "../models/charger.model";
 import {AppDataSource as dataSource} from "../database/datasource";
-import {Connectors} from "../models/connector";
+import {Connectors} from "../models/connector.model";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {validate as uuidValidate} from "uuid";
 

@@ -6,7 +6,7 @@ import {
     getVehiclesByUserId,
     removeVehicle,
     updateVehicle
-} from "../controllers/vehicleController";
+} from "../controllers/vehicle.controller";
 import {authenticate} from "../middleware/auth.middleware";
 import {uploadRcImage} from "../middleware/image.middleware";
 import {logger} from "../app";

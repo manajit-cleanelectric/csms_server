@@ -9,8 +9,8 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import {Chargers} from "./charger";
-import {Sessions} from "./sessions";
+import {Chargers} from "./charger.model";
+import {Sessions} from "./session.model";
 import {toTitleCase} from "../services/titleCase.services";
 
 enum ConnectorStatus {

@@ -8,9 +8,9 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import {Chargers} from "./charger";
-import {Connectors} from "./connector";
-import {Users} from "./users";
+import {Chargers} from "./charger.model";
+import {Connectors} from "./connector.model";
+import {Users} from "./user.model";
 
 enum SessionStatus {
     PREPARING = 'Preparing',

@@ -153,10 +153,10 @@ app.set("trust proxy", 'loopback');
 
 
 // Import routes
-import {router as userRoutes} from "./routes/userRoutes";
-import {router as chargerRoutes} from "./routes/chargerRoutes";
-import {router as sessionRoutes} from "./routes/sessionRoutes";
-import {router as vehicleRoutes} from "./routes/vehicleRoutes";
+import {router as userRoutes} from "./routes/user.routes";
+import {router as chargerRoutes} from "./routes/charger.routes";
+import {router as sessionRoutes} from "./routes/session.routes";
+import {router as vehicleRoutes} from "./routes/vehicle.routes";
 
 // Middlewares
 app.use(express.json());

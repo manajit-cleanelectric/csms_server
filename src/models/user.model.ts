@@ -7,9 +7,9 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import {Vehicles} from "./vehicle";
-import {AuthTokens} from "./authTokens";
-import {Sessions} from "./sessions";
+import {Vehicles} from "./vehicle.model";
+import {AuthTokens} from "./authToken.model";
+import {Sessions} from "./session.model";
 import {toTitleCase} from "../services/titleCase.services";
 
 enum UserRoles {

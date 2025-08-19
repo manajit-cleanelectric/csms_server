@@ -1,14 +1,14 @@
 import {logger} from "../app";
-import {Chargers, ChargerStatus} from "../models/charger";
+import {Chargers, ChargerStatus} from "../models/charger.model";
 import {createRPCError} from "ocpp-rpc";
-import {Sessions, SessionStatus} from "../models/sessions";
-import {Vehicles} from "../models/vehicle";
-import {Heartbeats} from "../models/heartbeats";
-import {StatusLogs} from "../models/statusLogs";
-import {Connectors, ConnectorStatus} from "../models/connector";
+import {Sessions, SessionStatus} from "../models/session.model";
+import {Vehicles} from "../models/vehicle.model";
+import {Heartbeats} from "../models/heartbeat.model";
+import {StatusLogsModel} from "../models/statusLog.model";
+import {Connectors, ConnectorStatus} from "../models/connector.model";
 import {AppDataSource as dataSource} from "../database/datasource";
-import {addMeterValue} from "./meterValueController";
-import {addSession} from "./sessionController";
+import {addMeterValue} from "./meterValue.controller";
+import {addSession} from "./session.controller";
 
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
@@ -85,7 +85,7 @@ const handleStatusNotification = async ({client, params}: { client: any; params:
     let chargerId = client.identity!;
     try {
         status = _getConnectorStatus(status);
-        const statusNotification = new StatusLogs();
+        const statusNotification = new StatusLogsModel();
         statusNotification.status = status;
         statusNotification.chargerId = chargerId;
         statusNotification.connectorId = connectorId;

@@ -1,8 +1,8 @@
 import {AppDataSource} from "../database/datasource";
-import {Chargers, ChargerStatus} from "../models/charger";
+import {Chargers, ChargerStatus} from "../models/charger.model";
 import {logger} from "../app";
 import cron from "node-cron";
-import {SessionStatus} from "../models/sessions";
+import {SessionStatus} from "../models/session.model";
 import {parentPort} from "worker_threads";
 import {LessThan} from "typeorm";
 

@@ -9,7 +9,7 @@ import {
     BeforeInsert,
     BeforeUpdate
 } from "typeorm"
-import {Chargers} from "./charger";
+import {Chargers} from "./charger.model";
 import {toTitleCase} from "../services/titleCase.services";
 
 @Entity("addresses")

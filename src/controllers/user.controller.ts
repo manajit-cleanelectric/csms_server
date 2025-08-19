@@ -1,8 +1,8 @@
-import {UserRoles, Users} from "../models/users";
+import {UserRoles, Users} from "../models/user.model";
 import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
 import {sendOtp} from "../services/sms.services"
-import {AuthTokens} from "../models/authTokens";
+import {AuthTokens} from "../models/authToken.model";
 import {
     InvalidAuthError,
     MissingParameterError,

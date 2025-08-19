@@ -11,11 +11,11 @@ import {
     updateUser,
     updateUserPhoneNo,
     listCustomers
-} from '../controllers/userController';
+} from '../controllers/user.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter, logger} from "../app";
 import {handleError} from "../errors/customErrors";
-import {UserRoles} from "../models/users";
+import {UserRoles} from "../models/user.model";
 
 
 const router: Router = Router();

@@ -1,9 +1,9 @@
-import {Sessions, SessionStatus} from "../models/sessions";
-import {Chargers} from "../models/charger";
-import {Vehicles} from "../models/vehicle";
+import {Sessions, SessionStatus} from "../models/session.model";
+import {Chargers} from "../models/charger.model";
+import {Vehicles} from "../models/vehicle.model";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {validate as uuidValidate} from "uuid";
-import {Users} from "../models/users";
+import {Users} from "../models/user.model";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../app";
 import {In} from "typeorm";

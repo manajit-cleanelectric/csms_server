@@ -10,9 +10,9 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm"
-import {Sessions} from "./sessions";
-import {Connectors} from "./connector";
-import {Addresses} from "./address";
+import {Sessions} from "./session.model";
+import {Connectors} from "./connector.model";
+import {Addresses} from "./address.model";
 import {toTitleCase} from "../services/titleCase.services";
 
 export enum ChargerTypes {

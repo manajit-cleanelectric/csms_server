@@ -1,4 +1,4 @@
-import {Heartbeats} from "../models/heartbeats";
+import {Heartbeats} from "../models/heartbeat.model";
 
 async function addHeartbeat(data: any) {
     try {

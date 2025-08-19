@@ -1,5 +1,5 @@
 import {BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
-import {MeterValues} from "./meterValues";
+import {MeterValues} from "./meterValue.model";
 
 enum ReadingContext {
     INTERUPPTION_BEGIN = "Interruption.Begin",
@@ -84,7 +84,7 @@ enum UnitOfMeasure {
 }
 
 @Entity("sampledValues")
-class SampledValues extends BaseEntity{
+class SampledValuesModel extends BaseEntity{
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
@@ -151,7 +151,7 @@ class SampledValues extends BaseEntity{
 }
 
 export {
-    SampledValues,
+    SampledValuesModel,
     ReadingContext,
     ValueFormat,
     Measurand,

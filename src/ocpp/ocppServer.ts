@@ -8,7 +8,7 @@ import {
     handleStartTransaction,
     handleStatusNotification,
     handleStopTransaction
-} from "../controllers/ocppHandler"
+} from "../controllers/ocpp.controller"
 import RpcServerClient from "ocpp-rpc/lib/server-client";
 
 const ChargerWebsocketMap = new Map<string, RpcServerClient>();

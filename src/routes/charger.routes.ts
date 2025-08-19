@@ -6,9 +6,9 @@ import {
     getCities,
     listAllCharger,
     updateCharger
-} from '../controllers/chargerController';
+} from '../controllers/charger.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
-import {UserRoles} from "../models/users";
+import {UserRoles} from "../models/user.model";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
 

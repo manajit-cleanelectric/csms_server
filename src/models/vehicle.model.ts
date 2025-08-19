@@ -8,7 +8,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import {Users} from "./users";
+import {Users} from "./user.model";
 import {toTitleCase} from "../services/titleCase.services";
 
 
