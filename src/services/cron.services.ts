@@ -1,22 +1,20 @@
 import {AppDataSource} from "../database/datasource";
 import {Chargers, ChargerStatus} from "../models/charger.model";
-import {logger} from "../app";
 import cron from "node-cron";
 import {SessionStatus} from "../models/session.model";
 import {parentPort} from "worker_threads";
 import {LessThan} from "typeorm";
 
-
 const scheduleHeartbeatJob = () => {
     AppDataSource.initialize().then(() => {
-        logger.info("Database Connection initialized in worker thread");
+        parentPort?.postMessage("Database Connection initialized in worker thread");
     })
     .catch((err) => {
-        logger.error(`Database Connection initialization failed in worker thread: ${err}`);
+        parentPort?.postMessage(`Database Connection initialization failed in worker thread: ${err}`);
         process.exit(1);
     });
     cron.schedule('* * * * *', async () => {
-        logger.info(`Starting cleanup job`);
+        parentPort?.postMessage(`Starting cleanup job`);
         const minutes = 5;
         const currentTime = new Date(new Date().getTime() - minutes * 60 * 1000);
 
@@ -28,7 +26,7 @@ const scheduleHeartbeatJob = () => {
         })
 
         if (unavailableChargers?.length !== 0) {
-            logger.info(`Found ${unavailableChargers.length} unavailable charger(s)`);
+            parentPort?.postMessage(`Found ${unavailableChargers.length} unavailable charger(s)`);
 
             await AppDataSource
                 .getRepository(Chargers)
@@ -60,18 +58,17 @@ const scheduleHeartbeatJob = () => {
 const cleanup = () => {
     try {
         AppDataSource.destroy().then(() => {
-            logger.info('Database connection closed successfully in worker thread');
+            parentPort?.postMessage('Database connection closed successfully in worker thread');
         });
         process.exit(0);
     } catch (err) {
-        logger.error(`Error during cleanup in worker thread: ${err}`);
+        parentPort?.postMessage(`Error during cleanup in worker thread: ${err}`);
         process.exit(1);
     }
 };
 
 parentPort?.on('message', (msg) => {
     if (msg?.action === 'shutdown') {
-        logger.info('Shutdown signal received in worker thread');
         cleanup();
     }
 });

@@ -2,7 +2,6 @@ import "reflect-metadata"
 import {DataSource} from "typeorm"
 import {Users} from "../models/user.model";
 import {Chargers} from "../models/charger.model";
-import {DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_USERNAME} from "../app";
 import {MeterValues} from "../models/meterValue.model";
 import {SampledValuesModel} from "../models/sampledValue.model";
 import {Sessions} from "../models/session.model";
@@ -15,11 +14,11 @@ import {AuthTokens} from "../models/authToken.model";
 
 const AppDataSource = new DataSource({
     type: "postgres",
-    host: DATABASE_HOST,
-    port: DATABASE_PORT,
-    username: DATABASE_USERNAME,
-    password: DATABASE_PASSWORD,
-    database: DATABASE_NAME,
+    host: process.env.DATABASE_HOST,
+    port: parseInt(process.env.DATABASE_PORT!, 10),
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
     entities: [
         Users,
         AuthTokens,
@@ -31,7 +30,7 @@ const AppDataSource = new DataSource({
         MeterValues,
         SampledValuesModel,
         Heartbeats,
-        StatusLogsModel
+        StatusLogsModel,
     ],
     synchronize: true,
     logging: false,
