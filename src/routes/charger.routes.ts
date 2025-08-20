@@ -5,7 +5,7 @@ import {
     getChargerByCity,
     getCities,
     listAllCharger,
-    updateCharger
+    updateCharger, updateChargerAddress, updateChargerData, updateChargerTariff
 } from '../controllers/charger.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {UserRoles} from "../models/user.model";
@@ -44,6 +44,41 @@ router.put('/api/chargers/:chargerId', authenticate, authorize(UserRoles.ADMINIS
         handleError(error, res, logger);
     }
 });
+
+router.patch('/api/chargers/:chargerId/address', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const {chargerId} = req.params;
+        const updatedCharger = await updateChargerAddress(chargerId, req.body);
+        res.status(200).send({success: true, message: "Charger Address Updated", data: updatedCharger});
+        logger.info(`Charger with ID ${chargerId} address updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.patch('/api/chargers/:chargerId/tariff', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const {chargerId} = req.params;
+        const updatedCharger = await updateChargerTariff(chargerId, req.body);
+        res.status(200).send({success: true, message: "Charger Tariff Updated", data: updatedCharger});
+        logger.info(`Charger with ID ${chargerId} tariff updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.patch('/api/chargers/:chargerId/data', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const {chargerId} = req.params;
+        const updatedCharger = await updateChargerData(chargerId, req.body);
+        res.status(200).send({success: true, message: "Charger Data Updated", data: updatedCharger});
+        logger.info(`Charger with ID ${chargerId} data updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+
 
 router.get('/api/chargers/:chargerId', authenticate, async (req: Request, res: Response) => {
     try {
