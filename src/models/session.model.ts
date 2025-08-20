@@ -126,17 +126,13 @@ class Sessions extends BaseEntity {
     location!: string;
 
     @Column({
-        type: "decimal",
-        precision: 5,
-        scale: 2,
+        type: "float",
         nullable: true
     })
     socStart!: number;
 
     @Column({
-        type: "decimal",
-        precision: 5,
-        scale: 2,
+        type: "float",
         nullable: true
     })
     socLast!: number;

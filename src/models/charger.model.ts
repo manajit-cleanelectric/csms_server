@@ -4,7 +4,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    JoinColumn,
+    JoinColumn, ManyToOne,
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
@@ -14,6 +14,7 @@ import {Sessions} from "./session.model";
 import {Connectors} from "./connector.model";
 import {Addresses} from "./address.model";
 import {toTitleCase} from "../services/titleCase.services";
+import {Tariffs} from "./tariff.model";
 
 export enum ChargerTypes {
     TYPE_6 = 'type_6',
@@ -109,8 +110,12 @@ export class Chargers extends BaseEntity {
     @OneToMany(() => Sessions, (session) => session.charger)
     sessions: Sessions[];
 
-    @OneToMany(() => Connectors, (connector) => connector.charger)
+    @OneToMany(() => Connectors, (connector) => connector.charger, {cascade: true})
     connectors: Connectors[];
+
+    @ManyToOne(() => Tariffs, (tariff) => tariff.chargers, {cascade: true})
+    @JoinColumn({name: "tariffId"})
+    tariff: Tariffs;
 
     @Column({
         type: "timestamptz",

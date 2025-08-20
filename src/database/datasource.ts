@@ -11,6 +11,7 @@ import {Vehicles} from "../models/vehicle.model";
 import {Connectors} from "../models/connector.model";
 import {Addresses} from "../models/address.model";
 import {AuthTokens} from "../models/authToken.model";
+import {Tariffs} from "../models/tariff.model";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -31,6 +32,7 @@ const AppDataSource = new DataSource({
         SampledValuesModel,
         Heartbeats,
         StatusLogsModel,
+        Tariffs,
     ],
     synchronize: true,
     logging: false,
