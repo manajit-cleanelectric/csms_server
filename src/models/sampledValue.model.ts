@@ -2,8 +2,8 @@ import {BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColum
 import {MeterValues} from "./meterValue.model";
 
 enum ReadingContext {
-    INTERUPPTION_BEGIN = "Interruption.Begin",
-    INTERUPPTION_END = "Interruption.End",
+    INTERRUPTION_BEGIN = "Interruption.Begin",
+    INTERRUPTION_END = "Interruption.End",
     OTHER = "Other",
     SAMPLE_CLOCK = "Sample.Clock",
     SAMPLE_PERIODIC = "Sample.Periodic",
