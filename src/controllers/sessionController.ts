@@ -2,69 +2,45 @@ import {Sessions, SessionStatus} from "../models/sessions";
 import {Chargers} from "../models/charger";
 import {Vehicles} from "../models/vehicle";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
-import {v7 as uuidv7, validate as uuidValidate} from "uuid";
+import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/users";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../app";
-import WebSocket from 'ws';
 import {In} from "typeorm";
 
-async function addSession(data: any) {
-    // Validate required fields
-    if (!data.chargerId || !data.connectorId || !data.vin || !data.startTime || !data.meterStart) {
-        switch (true) {
-            case !data.chargerId:
-                throw new MissingParameterError("Charger ID is required to create a session");
-            case !data.connectorId:
-                throw new MissingParameterError("Connector ID is required to create a session");
-            case !data.vin:
-                throw new MissingParameterError("Vehicle VIN is required to create a session");
-            case !data.startTime:
-                throw new MissingParameterError("Start time is required to create a session");
-            case !data.meterStart:
-                throw new MissingParameterError("Meter start value is required to create a session");
-            default:
-                throw new MissingParameterError("Missing required parameters to create a session");
-        }
-    }
+async function addSession(chargerId: string, connectorId: number, vin: string, meterStart: number, timestamp: any) {
     // Create a new session
     const session = new Sessions();
-    const charger = await Chargers.findOneBy({ id: data.chargerId });
+    const charger = await Chargers.findOne({
+        where: { id: chargerId },
+        relations: ["connectors", "address"]
+    });
     if (!charger) {
-        logger.error(`Charger with ID ${data.chargerId} not found`);
-        throw new ResourceNotFoundError(`Charger with ID ${data.chargerId} not found`);
+        logger.error(`Charger with ID ${chargerId} not found`);
+        throw new ResourceNotFoundError(`Charger with ID ${chargerId} not found`);
     }
     session.charger = charger;
-    const connector = charger.connectors.find(conn => conn.chargerConnectorId === data.connectorId);
+    const connector = charger.connectors.find(conn => conn.chargerConnectorId === connectorId);
     if (!connector) {
-        logger.error(`Connector with ID ${data.connectorId} not found in charger ${data.chargerId}`);
-        throw new ResourceNotFoundError(`Connector with ID ${data.connectorId} not found`);
+        logger.error(`Connector with ID ${connectorId} not found in charger ${chargerId}`);
+        throw new ResourceNotFoundError(`Connector with ID ${connectorId} not found`);
     }
     session.connector = connector;
-    const vehicle = await Vehicles.findOneBy({ id: data.vin });
+    const vehicle = await Vehicles.findOne({
+        where: { vin: vin },
+        relations: ["user"]
+    });
     if (!vehicle) {
-        logger.error(`Vehicle with ID ${data.vin} not found`);
-        throw new ResourceNotFoundError(`Vehicle with ID ${data.vin} not found`);
+        logger.error(`Vehicle with ID ${vin} not found`);
+        throw new ResourceNotFoundError(`Vehicle with ID ${vin} not found`);
     }
     session.vehicleNo = vehicle.vehicleNo;
     session.vehicleVendor = vehicle.vendor;
     session.vehicleModel = vehicle.model;
     session.user = vehicle.user;
-    session.startTime = data.startTime;
-    session.meterStart = data.meterStart;
-    await session.save();
-    return session;
-}
-
-async function updateSession(sessionId: number, data: any) {
-    const session = await Sessions.findOneBy({ id: sessionId });
-    if (!session) {
-        logger.error(`Session with ID ${sessionId} not found`);
-        throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
-    }
-    session.status = data.status ?? session.status;
-    session.energyUsed = data.energyUsed ?? session.energyUsed;
-    session.socLast = data.soc ?? session.socLast;
+    session.startTime = timestamp;
+    session.meterStart = meterStart;
+    session.location = charger.address?.location;
     await session.save();
     return session;
 }
@@ -218,29 +194,25 @@ async function listAllChargerSessions(chargerId: string) {
 async function sendRemoteStopTransaction(chargerId: string, transactionId: number) {
     const rpcClient = ChargerWebsocketMap.get(String(chargerId));
 
-    // @ts-ignore
-    if (!rpcClient || rpcClient._ws.readyState !== WebSocket.OPEN) {
-        logger.error(`WebSocket not open for charger ${chargerId}`);
+    if (!rpcClient) {
+        logger.error(`Charger with ID ${chargerId} not connected`);
+        throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
+    }
+
+    const response: any = await rpcClient.call("RemoteStopTransaction", {
+        transactionId: transactionId
+    });
+
+    if (response?.status !== "Accepted") {
+        logger.error(`Failed to Stop Transaction Remotely to charger ${chargerId}: ${response.status}`);
         return false;
     }
 
-    const messageId = uuidv7(); // Unique ID for tracking
-    const message = [
-        2, // CALL message
-        messageId,
-        "RemoteStopTransaction",
-        {
-            transactionId: transactionId
-        }
-    ];
-    rpcClient.sendRaw(JSON.stringify(message));
-    logger.info(`Sent RemoteStopTransaction to charger ${chargerId}`);
     return true;
 }
 
 export {
     addSession,
-    updateSession,
     endSession,
     getSession,
     listAllUserSessions,

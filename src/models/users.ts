@@ -1,5 +1,5 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert, BeforeUpdate,
     Column,
     CreateDateColumn,
     Entity,
@@ -11,6 +11,7 @@ import {Vehicles} from "./vehicle";
 import {AuthTokens} from "./authTokens";
 import {Sessions} from "./sessions";
 import {Wallet} from "./wallets";
+import {toTitleCase} from "../services/titleCase.services";
 
 enum UserRoles {
     ADMINISTRATOR = 'administrator',
@@ -101,6 +102,15 @@ class Users extends BaseEntity {
 
     public get fullName() {
         return this.firstName + " " + this.lastName;
+    }
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    transformFields() {
+        this.phoneNumber = toTitleCase(this.phoneNumber);
+        this.firstName = toTitleCase(this.firstName);
+        this.city = toTitleCase(this.city);
+        this.state = toTitleCase(this.state);
     }
 }
 

@@ -1,7 +1,7 @@
 import {UserRoles, Users} from "../models/users";
 import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
-import {sendOtp} from "../services/smsService"
+import {sendOtp} from "../services/sms.services"
 import {AuthTokens} from "../models/authTokens";
 import {
     InvalidAuthError,
@@ -143,6 +143,10 @@ async function sendOtpToPhoneNumber(phoneNumber: string) {
     let otp = await getOTP(phoneNumber);
     if (!otp) {
         otp = generateRandomDigitString(OTP_LENGTH);
+        // TODO remove if block once DLT message is implemented as it prevents from sending the message
+        if (/^[0-5]/.test(phoneNumber)) {
+            otp = "1234";
+        }
         await storeOTP(phoneNumber, otp);
     }
     try {
@@ -160,9 +164,9 @@ function generateRandomDigitString(size: number): string {
     const min = Math.pow(10, size - 1);
     const max = Math.pow(10, size) - 1;
     const num = Math.floor(min + Math.random() * (max - min + 1));
-    // return num.toString();
+    return num.toString();
     // TODO remove next line and uncomment previous line
-    return "1234"
+    // return "1234"
 }
 
 // Store OTP
@@ -229,6 +233,16 @@ async function approveUser(userId: string) {
     return user;
 }
 
+async function listCustomers() {
+    try {
+        return await Users.find({
+            where: {role: UserRoles.CUSTOMER}
+        });
+    } catch (error) {
+        logger.error(`Error occurred while listing customers: ${error}`);
+    }
+}
+
 async function changeUserRole(userId: string, role: UserRoles) {
     let user = await Users.findOneBy({id: userId});
     if (!user) {
@@ -274,6 +288,7 @@ export {
     logout,
     isPhoneNoAvailable,
     updateUserPhoneNo,
+    listCustomers,
     changeUserRole,
     addMoney
 }

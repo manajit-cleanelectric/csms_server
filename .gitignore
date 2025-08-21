@@ -76,7 +76,6 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
 .env.test
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -128,6 +127,9 @@ dist
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
+.idea/.gitignore
+.idea/csms_server.iml
+.idea/modules.xml
 .idea/workspace.xml
 .idea/tasks.xml
 .idea/dictionaries
@@ -176,3 +178,7 @@ fabric.properties
 # modules.xml
 /.scannerwork/
 /sonar-project.properties
+
+#static media files
+public/
+

@@ -1,5 +1,5 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert, BeforeUpdate,
     Column,
     CreateDateColumn,
     Entity,
@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import {Chargers} from "./charger";
 import {Sessions} from "./sessions";
+import {toTitleCase} from "../services/titleCase.services";
 
 enum ConnectorStatus {
     AVAILABLE = 'Available',
@@ -55,6 +56,12 @@ class Connectors extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    transformFields() {
+        //Can be used to transform fields
+    }
 
 }
 

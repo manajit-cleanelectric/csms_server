@@ -11,7 +11,8 @@ import {
     logout as userLogout,
     sendOtpToPhoneNumber,
     updateUser,
-    updateUserPhoneNo
+    updateUserPhoneNo,
+    listCustomers
 } from '../controllers/userController';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter, logger} from "../app";
@@ -82,7 +83,7 @@ router.get('/api/users/me', authenticate, async (req: Request, res: Response) =>
     try {
         if (user?.id) {
             const myUser = await getUserByIdWithVehicles(user?.id);
-            res.status(200).send({success: true, message: "OTP Sent Successfully", data: myUser});
+            res.status(200).send({success: true, message: "User details fetched.", data: myUser});
             logger.info(`User with ID ${user.id} retrieved successfully`);
         } else {
             res.status(400).send({success: false, message: "User not found", data: null});
@@ -150,6 +151,15 @@ router.get('/api/users/:userId/approve', authenticate, authorize(UserRoles.SUPER
         await approveUser(userId);
         res.status(200).send({success: true, message: "User approved successfully", data: null});
         logger.info(`User with ID ${userId} approved successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
+router.get('/api/users', authenticate, authorize(UserRoles.SUPERVISOR, UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const customers = await listCustomers()
+        res.status(200).send({success: true, message: "User approved successfully", data: customers});
     } catch (error: any) {
         handleError(error, res, logger);
     }
