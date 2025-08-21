@@ -1,6 +1,9 @@
 import {Request, Response, Router} from 'express';
 import {
-    addUserInfo, approveUser,
+    addMoney,
+    addUserInfo,
+    approveUser,
+    changeUserRole,
     generateAccessTokenViaRefreshToken,
     getUserByIdWithVehicles,
     isPhoneNoAvailable,
@@ -141,16 +144,37 @@ router.put('/api/users/me/update-phone', authenticate, async (req: Request, res:
     }
 });
 
-router.get('api/users/:userId/approve', authenticate, authorize(UserRoles.SUPERVISOR, UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.get('/api/users/:userId/approve', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
-        const userId  =req.params.userId;
+        const userId = req.params.userId;
         await approveUser(userId);
-        res.status(200).send({success: true, message: "User approved successfully", data: null });
+        res.status(200).send({success: true, message: "User approved successfully", data: null});
         logger.info(`User with ID ${userId} approved successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
     }
 })
+
+router.post('/api/upgrade-user-to-supervisor', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const {userId} = req.body;
+        await changeUserRole(userId, UserRoles.SUPERVISOR)
+        res.status(200).send({success: true, message: "Upgraded user to Supervisor", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
+router.post('/api/add-money', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
+    try {
+        const {userId, amount, transactionId, upiId} = req.body;
+        await addMoney(userId, amount, transactionId, upiId);
+        res.status(200).send({success: true, message: "Money Added Successfully", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
 
 export {
     router,

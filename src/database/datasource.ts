@@ -11,6 +11,9 @@ import {Vehicles} from "../models/vehicle";
 import {Connectors} from "../models/connector";
 import {Addresses} from "../models/address";
 import {AuthTokens} from "../models/authTokens";
+import {LedgerEntry} from "../models/LedgerEntry";
+import {Wallet} from "../models/wallets";
+import {Transaction} from "../models/Transaction";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -19,7 +22,7 @@ const AppDataSource = new DataSource({
     username: DATABASE_USERNAME,
     password: DATABASE_PASSWORD,
     database: DATABASE_NAME,
-    entities: [Users, AuthTokens, Vehicles, Chargers, Connectors, Addresses, Sessions, MeterValues, Heartbeats, StatusLogs],
+    entities: [Users, AuthTokens, Vehicles, Chargers, Connectors, Addresses, Sessions, MeterValues, Heartbeats, StatusLogs, LedgerEntry, Transaction, Wallet],
     synchronize: true,
     logging: false,
 })

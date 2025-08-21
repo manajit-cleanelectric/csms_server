@@ -3,13 +3,14 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    OneToMany,
+    OneToMany, OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Vehicles} from "./vehicle";
 import {AuthTokens} from "./authTokens";
 import {Sessions} from "./sessions";
+import {Wallet} from "./wallets";
 
 enum UserRoles {
     ADMINISTRATOR = 'administrator',
@@ -46,6 +47,9 @@ class Users extends BaseEntity {
 
     @OneToMany(() => Vehicles, (vehicle) => vehicle.user)
     vehicles!: Vehicles[];
+
+    @OneToOne(() => Wallet, (w) => w.user)
+    wallet!: Wallet;
 
     @OneToMany(() => Sessions, (session) => session.user)
     sessions!: Sessions[];
