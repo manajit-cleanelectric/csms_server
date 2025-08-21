@@ -3,10 +3,10 @@ import {DataSource} from "typeorm"
 import {Users} from "../models/user.model";
 import {Chargers} from "../models/charger.model";
 import {MeterValues} from "../models/meterValue.model";
-import {SampledValuesModel} from "../models/sampledValue.model";
+import {SampledValues} from "../models/sampledValue.model";
 import {Sessions} from "../models/session.model";
 import {Heartbeats} from "../models/heartbeat.model";
-import {StatusLogsModel} from "../models/statusLog.model";
+import {StatusLogs} from "../models/statusLog.model";
 import {Vehicles} from "../models/vehicle.model";
 import {Connectors} from "../models/connector.model";
 import {Addresses} from "../models/address.model";
@@ -29,9 +29,9 @@ const AppDataSource = new DataSource({
         Addresses,
         Sessions,
         MeterValues,
-        SampledValuesModel,
+        SampledValues,
         Heartbeats,
-        StatusLogsModel,
+        StatusLogs,
         Tariffs,
     ],
     synchronize: true,

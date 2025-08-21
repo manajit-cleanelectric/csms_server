@@ -84,7 +84,7 @@ enum UnitOfMeasure {
 }
 
 @Entity("sampledValues")
-class SampledValuesModel extends BaseEntity{
+class SampledValues extends BaseEntity{
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
@@ -151,7 +151,7 @@ class SampledValuesModel extends BaseEntity{
 }
 
 export {
-    SampledValuesModel,
+    SampledValues,
     ReadingContext,
     ValueFormat,
     Measurand,

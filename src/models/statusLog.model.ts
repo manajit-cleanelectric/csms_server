@@ -21,7 +21,7 @@ enum ErrorCode {
 }
 
 @Entity("statusLogs")
-class StatusLogsModel extends BaseEntity {
+class StatusLogs extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
@@ -80,5 +80,6 @@ class StatusLogsModel extends BaseEntity {
 }
 
 export {
-    StatusLogsModel
+    StatusLogs,
+    ErrorCode,
 };

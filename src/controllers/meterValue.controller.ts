@@ -4,7 +4,7 @@ import {
     Measurand,
     Phase,
     ReadingContext,
-    SampledValuesModel,
+    SampledValues,
     UnitOfMeasure,
     ValueFormat
 } from "../models/sampledValue.model";
@@ -67,7 +67,7 @@ async function addMeterValue(chargerId: any, params: any) {
                 }
                 session.socLast = parsedSample.numericValue ?? session.socLast;
             }
-            return SampledValuesModel.create(parsedSample);
+            return SampledValues.create(parsedSample);
         });
         await meterValueEntity.save();
     }

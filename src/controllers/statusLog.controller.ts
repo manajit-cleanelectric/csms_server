@@ -1,8 +1,8 @@
-import {StatusLogsModel} from "../models/statusLog.model";
+import {StatusLogs} from "../models/statusLog.model";
 
 async function addStatusLog(data: any) {
     try {
-        const statusLog = new StatusLogsModel();
+        const statusLog = new StatusLogs();
         statusLog.chargerId = data.ChargerId;
         statusLog.connectorId = data.connectorId;
         statusLog.errorCode = data.errorCode
@@ -16,7 +16,7 @@ async function addStatusLog(data: any) {
 
 async function getStatusLogsByChargerId(chargerId: string) {
     try {
-        return await StatusLogsModel.find({ where: { chargerId } });
+        return await StatusLogs.find({ where: { chargerId } });
     } catch (error: any) {
         throw new Error(error.message);
     }
@@ -24,7 +24,7 @@ async function getStatusLogsByChargerId(chargerId: string) {
 
 async function getStatusLogsByChargerIdAndConnectorId(chargerId: string, connectorId: number) {
     try {
-        return await StatusLogsModel.find({ where: { chargerId, connectorId } });
+        return await StatusLogs.find({ where: { chargerId, connectorId } });
     } catch (error: any) {
         throw new Error(error.message);
     }

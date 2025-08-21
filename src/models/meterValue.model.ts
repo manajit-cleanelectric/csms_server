@@ -1,5 +1,5 @@
 import {BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {SampledValuesModel} from "./sampledValue.model";
+import {SampledValues} from "./sampledValue.model";
 
 @Entity("meterValues")
 class MeterValues extends BaseEntity {
@@ -33,8 +33,8 @@ class MeterValues extends BaseEntity {
     })
     sessionId!: number;
 
-    @OneToMany(() => SampledValuesModel, (sampledValue) => sampledValue.meterValue, {cascade: ["insert"]})
-    sampledValues!: SampledValuesModel[];
+    @OneToMany(() => SampledValues, (sampledValue) => sampledValue.meterValue, {cascade: ["insert"]})
+    sampledValues!: SampledValues[];
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
