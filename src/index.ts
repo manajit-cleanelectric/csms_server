@@ -14,7 +14,6 @@ AppDataSource.initialize()
         });
         server = app.listen(SERVER_PORT, () => {
             logger.info(`Server started on port ${SERVER_PORT}`);
-            scheduleHeartbeatJob();
         });
         server.on('upgrade', rpcServer.handleUpgrade);
     })
@@ -50,7 +49,7 @@ const onCloseSignal = () => {
         logger.info('Server closed');
         try {
             // Send a shutdown message to a worker and wait for it to exit
-            worker.postMessage({ action: 'shutdown' });
+            worker.postMessage({action: 'shutdown'});
 
             // Wait for the worker to exit before proceeding
             await new Promise<void>((resolve, reject) => {
