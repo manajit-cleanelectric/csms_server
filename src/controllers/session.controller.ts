@@ -24,6 +24,9 @@ async function addSession(chargerId: string, connectorId: number, vin: string, m
     if (!connector) {
         logger.error(`Connector with ID ${connectorId} not found in charger ${chargerId}`);
         throw new ResourceNotFoundError(`Connector with ID ${connectorId} not found`);
+    } else {
+        connector.currentSession = session;
+        await connector.save();
     }
     session.connector = connector;
     const vehicle = await Vehicles.findOne({

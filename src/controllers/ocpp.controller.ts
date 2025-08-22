@@ -4,11 +4,11 @@ import {createRPCError} from "ocpp-rpc";
 import {Sessions, SessionStatus} from "../models/session.model";
 import {Vehicles} from "../models/vehicle.model";
 import {Heartbeats} from "../models/heartbeat.model";
-import {StatusLogs} from "../models/statusLog.model";
-import {Connectors, ConnectorStatus} from "../models/connector.model";
-import {AppDataSource as dataSource} from "../database/datasource";
+import {ConnectorStatus} from "../models/connector.model";
 import {addMeterValue} from "./meterValue.controller";
 import {addSession} from "./session.controller";
+import {addStatusLog} from "./statusLog.controller";
+import {updateChargerStatus} from "./charger.controller";
 
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
@@ -80,54 +80,12 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
 
 const handleStatusNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received StatusNotification from ${client.identity}: ${JSON.stringify(params)}`);
-    // TODO handle status notification
-    let {connectorId, errorCode, status, info, vendorId, vendorErrorCode} = params;
     let chargerId = client.identity!;
     try {
-        status = _getConnectorStatus(status);
-        const statusNotification = new StatusLogs();
-        statusNotification.status = status;
-        statusNotification.chargerId = chargerId;
-        statusNotification.connectorId = connectorId;
-        statusNotification.errorCode = errorCode;
-        statusNotification.info = info;
-        statusNotification.vendorId = vendorId;
-        statusNotification.vendorErrorCode = vendorErrorCode;
-        await statusNotification.save();
-        if (status === ConnectorStatus.AVAILABLE) {
-            const connector = await dataSource
-                .getRepository(Connectors)
-                .createQueryBuilder("connector")
-                .where("connector.chargerId = :chargerId", {chargerId})
-                .andWhere("connector.chargerConnectorId = :connectorId", {connectorId})
-                .getOne();
-            if (connector) {
-                connector.status = ConnectorStatus.AVAILABLE;
-            }
-        } else {
-            const chargingSession = await dataSource
-                .getRepository(Sessions)
-                .createQueryBuilder("session")
-                .leftJoinAndSelect("session.connector", "connector")
-                .leftJoinAndSelect("session.charger", "charger")
-                .where("connector.chargerConnectorId = :connectorId", {connectorId})
-                .andWhere("charger.id = :chargerId", {chargerId})
-                .andWhere("session.status NOT IN (:...statuses)", {
-                    statuses: [SessionStatus.FAULTED, SessionStatus.FINISHED],
-                })
-                .getOne();
-
-            if (chargingSession) {
-                if (status === ConnectorStatus.PREPARING || status === ConnectorStatus.CHARGING || status === ConnectorStatus.FAULTED || status === ConnectorStatus.FINISHING) {
-                    chargingSession.status = status;
-                } else if (status === ConnectorStatus.SUSPENDED_EV || status === ConnectorStatus.SUSPENDED_EVSE || status === ConnectorStatus.UNAVAILABLE) {
-                    chargingSession.status = SessionStatus.FAULTED;
-                }
-                await chargingSession.save();
-            }
-        }
+        const statusLog = await addStatusLog(chargerId, params);
+        await updateChargerStatus(chargerId, statusLog);
     } catch (err) {
-        logger.error(`Failed to update charger status:`, err);
+        logger.error(`Failed to update charger status: ${err}`);
         throw createRPCError("InternalError", "Database update failed.");
     }
     return {
@@ -160,8 +118,13 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
     let {idTag, meterStop, timestamp, transactionId, reason} = params;
     let chargingSession: Sessions | null = null;
     try {
-        chargingSession = await Sessions.findOneBy({id: transactionId});
+        chargingSession = await Sessions.findOne({
+            where: {id: transactionId},
+            relations: ["connector"]
+        });
         if (chargingSession) {
+            chargingSession.connector.currentSession = null;
+            await chargingSession.connector.save();
             chargingSession.meterStop = meterStop;
             chargingSession.endTime = timestamp;
             chargingSession.reason = reason;

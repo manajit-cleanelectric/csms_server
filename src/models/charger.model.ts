@@ -22,11 +22,9 @@ export enum ChargerTypes {
 }
 
 export enum ChargerStatus {
-    AVAILABLE = 'available',
-    IN_USE = 'in_use',
-    POWER_DOWN = 'power_down',
-    DOWN_FOR_MAINTENANCE = 'down_for_maintenance',
-    UNKNOWN = 'unknown',
+    AVAILABLE = 'Available',
+    FAULTED = 'Faulted',
+    UNAVAILABLE = 'Unavailable',
 }
 
 
@@ -103,7 +101,7 @@ export class Chargers extends BaseEntity {
     @Column({
         type: 'enum',
         enum: ChargerStatus,
-        default: ChargerStatus.UNKNOWN,
+        default: ChargerStatus.UNAVAILABLE,
     })
     status: ChargerStatus;
 

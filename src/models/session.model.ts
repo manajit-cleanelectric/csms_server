@@ -13,10 +13,13 @@ import {Connectors} from "./connector.model";
 import {Users} from "./user.model";
 
 enum SessionStatus {
+    IDLE = 'Idle',
     PREPARING = 'Preparing',
     CHARGING = 'Charging',
+    SUSPENDED = 'Suspended',
     FINISHING = 'Finishing',
     FINISHED = 'Finished',
+    UNAVAILABLE = 'Unavailable',
     FAULTED = 'Faulted',
 }
 

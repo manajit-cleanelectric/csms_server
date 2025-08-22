@@ -5,7 +5,7 @@ import {
     Entity,
     JoinColumn,
     ManyToOne,
-    OneToMany,
+    OneToMany, OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
@@ -50,6 +50,10 @@ class Connectors extends BaseEntity {
 
     @OneToMany(() => Sessions, (session) => session.connector)
     sessions!: Sessions[];
+
+    @OneToOne(() => Sessions, {cascade: true})
+    @JoinColumn({name: "currentSessionId"})
+    currentSession!: Sessions | null;
 
     @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;

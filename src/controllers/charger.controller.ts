@@ -10,6 +10,80 @@ import {
 import {validate as uuidValidate} from "uuid";
 import {Tariffs} from "../models/tariff.model";
 import {Addresses} from "../models/address.model";
+import {StatusLogs} from "../models/statusLog.model";
+import {SessionStatus} from "../models/session.model";
+
+const validConnectorTransitions: Record<ConnectorStatus, ConnectorStatus[]> = {
+    [ConnectorStatus.AVAILABLE]: [
+        ConnectorStatus.PREPARING, ConnectorStatus.CHARGING, ConnectorStatus.SUSPENDED_EV,
+        ConnectorStatus.SUSPENDED_EVSE, ConnectorStatus.FINISHING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.PREPARING]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.CHARGING, ConnectorStatus.SUSPENDED_EV,
+        ConnectorStatus.SUSPENDED_EVSE, ConnectorStatus.FINISHING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.CHARGING]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.PREPARING, ConnectorStatus.SUSPENDED_EV,
+        ConnectorStatus.SUSPENDED_EVSE, ConnectorStatus.FINISHING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.SUSPENDED_EV]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.CHARGING, ConnectorStatus.SUSPENDED_EVSE,
+        ConnectorStatus.FINISHING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.SUSPENDED_EVSE]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.CHARGING, ConnectorStatus.SUSPENDED_EV,
+        ConnectorStatus.FINISHING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.FINISHING]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.PREPARING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.UNAVAILABLE]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.PREPARING, ConnectorStatus.CHARGING,
+        ConnectorStatus.SUSPENDED_EV, ConnectorStatus.SUSPENDED_EVSE, ConnectorStatus.FINISHING, ConnectorStatus.FAULTED,
+    ],
+    [ConnectorStatus.FAULTED]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.PREPARING, ConnectorStatus.CHARGING,
+        ConnectorStatus.SUSPENDED_EV, ConnectorStatus.SUSPENDED_EVSE, ConnectorStatus.FINISHING, ConnectorStatus.UNAVAILABLE,
+    ],
+    [ConnectorStatus.RESERVED]: [
+        ConnectorStatus.AVAILABLE, ConnectorStatus.PREPARING, ConnectorStatus.UNAVAILABLE, ConnectorStatus.FAULTED,
+    ],
+};
+
+function mapConnectorToSessionStatus(connectorStatus: ConnectorStatus): SessionStatus {
+    switch (connectorStatus) {
+        case ConnectorStatus.AVAILABLE:
+            return SessionStatus.IDLE;
+        case ConnectorStatus.PREPARING:
+            return SessionStatus.PREPARING;
+        case ConnectorStatus.CHARGING:
+            return SessionStatus.CHARGING;
+        case ConnectorStatus.SUSPENDED_EV:
+        case ConnectorStatus.SUSPENDED_EVSE:
+            return SessionStatus.SUSPENDED;
+        case ConnectorStatus.RESERVED:
+            return SessionStatus.FAULTED;
+        case ConnectorStatus.FINISHING:
+            return SessionStatus.FINISHING;
+        case ConnectorStatus.UNAVAILABLE:
+            return SessionStatus.UNAVAILABLE;
+        case ConnectorStatus.FAULTED:
+            return SessionStatus.FAULTED;
+        default:
+            throw new Error("Unknown connector status");
+    }
+}
+
+function isConnectorTransitionValid(
+    fromStatus: ConnectorStatus,
+    toStatus: ConnectorStatus
+): boolean {
+    return validConnectorTransitions[fromStatus]?.includes(toStatus) ?? false;
+}
+
+function getSessionStatusFromConnectorStatus( status: ConnectorStatus ) {
+    return mapConnectorToSessionStatus(status);
+}
 
 async function addCharger(data: any) {
     const requiredFields = [
@@ -188,6 +262,39 @@ async function updateChargerData(chargerId: string, data: any) {
     return await charger.save();
 }
 
+async function updateChargerStatus(chargerId: string, statusLog: StatusLogs) {
+    const charger = await Chargers.findOne({
+        where: {id: chargerId},
+        relations: ["connectors", "connectors.currentSession"]
+    });
+    if (!charger) {
+        throw new Error(`Charger with ID ${chargerId} not found`);
+    }
+    if (statusLog.connectorId == 0) {
+        if (!Object.values(ChargerStatus).includes(statusLog.status as unknown as ChargerStatus)) {
+            throw new Error(`Charger status is invalid`);
+        }
+        charger.status = statusLog.status as unknown as ChargerStatus;
+    } else {
+        const connector = charger.connectors.find(c => c.chargerConnectorId === statusLog.connectorId);
+        if (!connector) {
+            throw new Error(`Connector with ID ${statusLog.connectorId} not found for charger ${chargerId}`);
+        }
+        if (!Object.values(ConnectorStatus).includes(statusLog.status)) {
+            throw new Error(`Connector status is invalid`);
+        }
+        // TODO: Uncomment this when the transition validation is implemented
+        // if (!isConnectorTransitionValid(connector.status, statusLog.status as ConnectorStatus)) {
+        //     throw new Error(`Invalid status transition from ${connector.status} to ${statusLog.status}`);
+        // }
+        connector.status = statusLog.status;
+        if (connector.currentSession){
+            connector.currentSession.status = getSessionStatusFromConnectorStatus(statusLog.status);
+        }
+    }
+    await charger.save();
+}
+
 async function listAllCharger() {
     return await Chargers.find();
 }
@@ -274,6 +381,7 @@ export {
     updateChargerTariff,
     updateChargerAddress,
     updateChargerData,
+    updateChargerStatus,
     listAllCharger,
     getCharger,
     updateCharger,
