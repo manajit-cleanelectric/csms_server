@@ -157,6 +157,7 @@ import {router as userRoutes} from "./routes/userRoutes";
 import {router as chargerRoutes} from "./routes/chargerRoutes";
 import {router as sessionRoutes} from "./routes/sessionRoutes";
 import {router as vehicleRoutes} from "./routes/vehicleRoutes";
+import {router as walletRoutes} from "./routes/walletRoutes";
 
 // Middlewares
 app.use(express.json());
@@ -167,6 +168,7 @@ app.use(userRoutes);
 app.use(chargerRoutes);
 app.use(sessionRoutes);
 app.use(vehicleRoutes);
+app.use(walletRoutes);
 app.use(express.static(path.join(__dirname, '../', STATIC_FOLDER)));
 const STATIC_FOLDER_PATH = path.join(__dirname, '../', STATIC_FOLDER);
 logger.info(path.join(__dirname, '../', STATIC_FOLDER));
