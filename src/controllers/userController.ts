@@ -253,7 +253,11 @@ async function changeUserRole(userId: string, role: UserRoles) {
 }
 
 async function addMoney(userId: string, amount: string, transactionId: string, upiId: string) {
-    const user = await Users.findOneBy({id: userId});
+    const user = await Users.findOne({
+        where: {id: userId},
+        relations: ["wallet"]
+
+    });
     if (!user) {
         throw new ResourceNotFoundError(`User not found with id ${userId}`);
     }
@@ -267,9 +271,9 @@ async function addMoney(userId: string, amount: string, transactionId: string, u
         wallet.currency = 'INR';
         await wallet.save()
     }
-    let metchantWallet = await Wallet.findOneByOrFail({code : `SYSTEM:RAZORPAY_SETTLEMENT`});
-    LedgerService.postBalancedTransaction({externalRef: transactionId,category: TxnCategory.ADDMONEY, description: "Money is added offline", legs: [
-        { wallet: metchantWallet, type: EntryType.DEBIT, amount: amount, memo: 'Razorpay outflow' },
+    let merchantWallet = await Wallet.findOneByOrFail({code : `SYSTEM:RAZORPAY_SETTLEMENT`});
+    await LedgerService.postBalancedTransaction({externalRef: transactionId,category: TxnCategory.ADDMONEY, description: "Money is added offline", legs: [
+        { wallet: merchantWallet, type: EntryType.DEBIT, amount: amount, memo: 'Razorpay outflow' },
         { wallet: wallet, type: EntryType.CREDIT, amount: amount, memo: 'User wallet top-up' }
     ]});
 }
