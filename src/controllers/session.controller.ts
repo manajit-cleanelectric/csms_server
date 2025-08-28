@@ -8,7 +8,7 @@ import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoun
 import {logger} from "../app";
 import {In} from "typeorm";
 
-async function addSession(chargerId: string, connectorId: number, vin: string, meterStart: number, timestamp: any) {
+async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
     // Create a new session
     const session = new Sessions();
     const charger = await Chargers.findOne({
@@ -30,12 +30,12 @@ async function addSession(chargerId: string, connectorId: number, vin: string, m
     }
     session.connector = connector;
     const vehicle = await Vehicles.findOne({
-        where: { vin: vin },
+        where: { bin: bin },
         relations: ["user"]
     });
     if (!vehicle) {
-        logger.error(`Vehicle with ID ${vin} not found`);
-        throw new ResourceNotFoundError(`Vehicle with ID ${vin} not found`);
+        logger.error(`Vehicle with battery ID ${bin} not found`);
+        throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
     }
     session.vehicleNo = vehicle.vehicleNo;
     session.vehicleVendor = vehicle.vendor;

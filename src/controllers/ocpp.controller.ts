@@ -42,7 +42,7 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
     try {
         // TODO: Confirm 'vehicle' field is correct for VIN
         const vehicle = await Vehicles.findOne({
-            where: {vin: params.idTag},
+            where: {bin: params.idTag},
             relations: ["user"]
         })
         user = vehicle?.user;
