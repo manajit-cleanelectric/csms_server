@@ -3,11 +3,15 @@ import {AppDataSource} from './database/datasource';
 import {rpcServer} from "./ocpp/ocppServer";
 import {Worker} from "worker_threads";
 import path from "path";
+import {ensureSystemWallets} from "./services/BootstrapService";
 
 let server: ReturnType<typeof app.listen>;
 
 AppDataSource.initialize()
     .then(() => {
+        ensureSystemWallets().then(r => {
+            console.log("Wallet initialised")
+        });
         server = app.listen(SERVER_PORT, () => {
             logger.info(`Server started on port ${SERVER_PORT}`);
         });
@@ -45,7 +49,7 @@ const onCloseSignal = () => {
         logger.info('Server closed');
         try {
             // Send a shutdown message to a worker and wait for it to exit
-            worker.postMessage({ action: 'shutdown' });
+            worker.postMessage({action: 'shutdown'});
 
             // Wait for the worker to exit before proceeding
             await new Promise<void>((resolve, reject) => {

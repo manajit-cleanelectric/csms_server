@@ -7,14 +7,15 @@ import {
     removeVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
-import {authenticate} from "../middleware/auth.middleware";
+import {authenticate, authorize} from "../middleware/auth.middleware";
 import {uploadRcImage} from "../middleware/image.middleware";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
+import {UserRoles} from "../models/user.model";
 
 const router: Router = Router();
 
-router.get('/api/users/:userId/vehicles', authenticate, async (req: Request, res: Response) => {
+router.get('/api/users/:userId/vehicles', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
     try {
         const userId = req.params.userId;
         const vehicles = await getVehiclesByUserId(userId);
@@ -25,7 +26,7 @@ router.get('/api/users/:userId/vehicles', authenticate, async (req: Request, res
     }
 });
 
-router.post('/api/users/:userId/vehicles', authenticate, uploadRcImage, async (req: Request, res: Response) => {
+router.post('/api/users/:userId/vehicles', authenticate, authorize(UserRoles.CUSTOMER), uploadRcImage, async (req: Request, res: Response) => {
     try {
         const userId = req.params.userId;
         const data = req.body;
@@ -38,7 +39,7 @@ router.post('/api/users/:userId/vehicles', authenticate, uploadRcImage, async (r
     }
 });
 
-router.get('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: Response) => {
+router.get('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
     try {
         const vehicleId = req.params.vehicleId;
         const vehicle = await getVehicleById(vehicleId);
@@ -49,7 +50,7 @@ router.get('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: R
     }
 })
 
-router.put('/api/vehicles/:vehicleId', authenticate, uploadRcImage, async (req: Request, res: Response) => {
+router.put('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), uploadRcImage, async (req: Request, res: Response) => {
     try{
         const user = req.user;
         const vehicleId = req.params.vehicleId;
@@ -64,7 +65,7 @@ router.put('/api/vehicles/:vehicleId', authenticate, uploadRcImage, async (req: 
     }
 });
 
-router.patch('/api/vehicles/:vehicleId', authenticate, async (req: Request, res: Response) => {
+router.patch('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
     try {
         const vehicleId = req.params.vehicleId;
         const data = req.body;

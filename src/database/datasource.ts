@@ -12,6 +12,9 @@ import {Connectors} from "../models/connector.model";
 import {Addresses} from "../models/address.model";
 import {AuthTokens} from "../models/authToken.model";
 import {Tariffs} from "../models/tariff.model";
+import {LedgerEntry} from "../models/LedgerEntry";
+import {Wallet} from "../models/wallets";
+import {Transaction} from "../models/Transaction";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -33,6 +36,10 @@ const AppDataSource = new DataSource({
         Heartbeats,
         StatusLogs,
         Tariffs,
+        StatusLogs,
+        LedgerEntry,
+        Transaction,
+        Wallet
     ],
     synchronize: true,
     logging: false,

@@ -9,6 +9,9 @@ import {
     ResourceAlreadyExistsError,
     ResourceNotFoundError
 } from "../errors/customErrors";
+import {Wallet} from "../models/wallets";
+import {EntryType, TxnCategory, WalletType} from "../models/enums";
+import {LedgerService} from "../services/LedgerService";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
@@ -240,6 +243,42 @@ async function listCustomers() {
     }
 }
 
+async function changeUserRole(userId: string, role: UserRoles) {
+    let user = await Users.findOneBy({id: userId});
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    user.role = role;
+    await user.save();
+}
+
+async function addMoney(userId: string, amount: string, transactionId: string, upiId: string) {
+    const user = await Users.findOne({
+        where: {id: userId},
+        relations: ["wallet"]
+
+    });
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    let wallet  = user.wallet;
+    if (!wallet) {
+        wallet = new Wallet();
+        wallet.user = user;
+        wallet.balance = `0.0000`;
+        wallet.code = `USER:${ user.id }`;
+        wallet.type = WalletType.USER;
+        wallet.currency = 'INR';
+        await wallet.save()
+    }
+    let merchantWallet = await Wallet.findOneByOrFail({code : `SYSTEM:RAZORPAY_SETTLEMENT`});
+    await LedgerService.postBalancedTransaction({externalRef: transactionId,category: TxnCategory.ADDMONEY, description: "Money is added offline", legs: [
+        { wallet: merchantWallet, type: EntryType.DEBIT, amount: amount, memo: 'Razorpay outflow' },
+        { wallet: wallet, type: EntryType.CREDIT, amount: amount, memo: 'User wallet top-up' }
+    ]});
+}
+
+
 export {
     addUserInfo,
     updateUser,
@@ -254,4 +293,6 @@ export {
     isPhoneNoAvailable,
     updateUserPhoneNo,
     listCustomers,
+    changeUserRole,
+    addMoney
 }
