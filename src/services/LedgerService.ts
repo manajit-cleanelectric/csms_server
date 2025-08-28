@@ -1,8 +1,8 @@
 import { AppDataSource } from '../database/datasource';
 import { EntryType, TxnCategory } from '../models/enums';
-import { LedgerEntry } from '../models/LedgerEntry';
-import { Transaction } from '../models/Transaction';
-import { Wallet } from '../models/wallets';
+import { LedgerEntry } from '../models/LedgerEntry.model';
+import { Transaction } from '../models/transaction.model';
+import { Wallet } from '../models/wallet.model';
 import { toAmountString } from '../utils/money';
 
 type Leg = { wallet: Wallet; type: EntryType; amount: string; memo?: string | null };

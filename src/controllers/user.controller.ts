@@ -9,7 +9,7 @@ import {
     ResourceAlreadyExistsError,
     ResourceNotFoundError
 } from "../errors/customErrors";
-import {Wallet} from "../models/wallets";
+import {Wallet} from "../models/wallet.model";
 import {EntryType, TxnCategory, WalletType} from "../models/enums";
 import {LedgerService} from "../services/LedgerService";
 

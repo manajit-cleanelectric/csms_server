@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
 import { EntryType } from './enums';
-import { Wallet } from './wallets';
-import { Transaction } from './Transaction';
+import { Wallet } from './wallet.model';
+import { Transaction } from './transaction.model';
 
 @Entity('ledger_entries')
 export class LedgerEntry {

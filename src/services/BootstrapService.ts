@@ -1,5 +1,5 @@
 import { AppDataSource } from '../database/datasource';
-import { Wallet } from '../models/wallets';
+import { Wallet } from '../models/wallet.model';
 import { WalletType } from '../models/enums';
 
 export async function ensureSystemWallets() {

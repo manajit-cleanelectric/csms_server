@@ -1,9 +1,9 @@
 import {authenticate, authorize, UserPayload} from "../middleware/auth.middleware";
-import {UserRoles} from "../models/users";
+import {UserRoles} from "../models/user.model";
 import {Request, Response} from "express";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
-import {router} from "./userRoutes";
+import {router} from "./user.routes";
 import {getUserWallet} from "../controllers/walletController";
 
 router.get('/api/wallet/balance', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {

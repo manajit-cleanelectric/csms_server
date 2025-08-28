@@ -10,7 +10,7 @@ import {
 import {Vehicles} from "./vehicle.model";
 import {AuthTokens} from "./authToken.model";
 import {Sessions} from "./session.model";
-import {Wallet} from "./wallets";
+import {Wallet} from "./wallet.model";
 import {toTitleCase} from "../services/titleCase.services";
 
 enum UserRoles {

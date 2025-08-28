@@ -1,5 +1,5 @@
 import {MissingParameterError} from "../errors/customErrors";
-import {Wallet} from "../models/wallets";
+import {Wallet} from "../models/wallet.model";
 
 async function getUserWallet(userId: string) {
     if (!userId) {

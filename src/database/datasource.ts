@@ -12,9 +12,9 @@ import {Connectors} from "../models/connector.model";
 import {Addresses} from "../models/address.model";
 import {AuthTokens} from "../models/authToken.model";
 import {Tariffs} from "../models/tariff.model";
-import {LedgerEntry} from "../models/LedgerEntry";
-import {Wallet} from "../models/wallets";
-import {Transaction} from "../models/Transaction";
+import {LedgerEntry} from "../models/LedgerEntry.model";
+import {Wallet} from "../models/wallet.model";
+import {Transaction} from "../models/transaction.model";
 
 const AppDataSource = new DataSource({
     type: "postgres",

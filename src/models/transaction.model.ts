@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Index } from 'typeorm';
-import { LedgerEntry } from './LedgerEntry';
+import { LedgerEntry } from './LedgerEntry.model';
 import { TxnCategory } from './enums';
 
 @Entity('transactions')
