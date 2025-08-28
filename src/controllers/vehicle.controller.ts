@@ -172,6 +172,15 @@ async function removeVehicle(vehicleId: string) {
     return true;
 }
 
+async function updateBinOfVehicle(vin: string, bin: string) {
+    const vehicle = await Vehicles.findOneBy({vin: vin});
+    if (!vehicle) {
+        throw new ResourceNotFoundError(`Vehicle with vin: ${vin} not found for update`);
+    }
+    vehicle.bin = bin;
+    await vehicle.save();
+}
+
 export {
     deleteImageFromDisk,
     addVehicle,
@@ -181,4 +190,5 @@ export {
     approveVehicle,
     listUnapprovedVehicles,
     removeVehicle,
+    updateBinOfVehicle,
 }

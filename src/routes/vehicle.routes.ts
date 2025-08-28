@@ -4,7 +4,7 @@ import {
     deleteImageFromDisk,
     getVehicleById,
     getVehiclesByUserId,
-    removeVehicle,
+    removeVehicle, updateBinOfVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
 import {authenticate, authorize} from "../middleware/auth.middleware";
@@ -51,7 +51,7 @@ router.get('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOME
 })
 
 router.put('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), uploadRcImage, async (req: Request, res: Response) => {
-    try{
+    try {
         const user = req.user;
         const vehicleId = req.params.vehicleId;
         const data = req.body;
@@ -76,6 +76,16 @@ router.patch('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTO
         handleError(error, res, logger);
     }
 });
+
+router.put('/api/vehicles/update-bin-number', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
+    try {
+        const {vin, bin} = req.body;
+        await updateBinOfVehicle(vin, bin);
+        res.status(200).send({status: true, message: "Vehicle updated successfully", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
 
 
 export {
