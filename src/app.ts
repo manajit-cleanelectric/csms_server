@@ -33,6 +33,7 @@ const DATABASE_NAME = process.env.DATABASE_NAME!;
 const DATABASE_USERNAME = process.env.DATABASE_USERNAME!;
 const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD!;
 const SERVER_PORT = parseInt(process.env.SERVER_PORT!, 10);
+const SERVER_HOST = process.env.SERVER_HOST!;
 const REDIS_HOST = process.env.REDIS_HOST!;
 const REDIS_PORT = parseInt(process.env.REDIS_PORT!, 10);
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD!;
@@ -68,6 +69,9 @@ if (!DATABASE_PASSWORD) {
 }
 if (!SERVER_PORT) {
     throw new Error('SERVER_PORT is not defined in environment variables.');
+}
+if (!SERVER_HOST) {
+    throw new Error('SERVER_HOST is not defined in environment variables.');
 }
 if (!REDIS_HOST) {
     throw new Error('REDIS_HOST is not defined in environment variables.');
@@ -184,6 +188,7 @@ export {
     DATABASE_USERNAME,
     DATABASE_PASSWORD,
     SERVER_PORT,
+    SERVER_HOST,
     apiLimiter,
     redisClient,
     OTP_LENGTH,
