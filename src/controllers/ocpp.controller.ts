@@ -9,6 +9,9 @@ import {addMeterValue} from "./meterValue.controller";
 import {addSession} from "./session.controller";
 import {addStatusLog} from "./statusLog.controller";
 import {updateChargerStatus} from "./charger.controller";
+import {LedgerService} from "../services/LedgerService";
+import {EntryType, TxnCategory} from "../utils/enums";
+import {Wallet} from "../models/wallet.model";
 
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
@@ -23,7 +26,10 @@ const handleBootNotification = async ({client, params}: { client: any; params: a
 const handleHeartbeat = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Heartbeat from ${client.identity}`);
     try {
-        await Chargers.update({id: client.identity!}, {status: ChargerStatus.AVAILABLE, lastHeartBeat: new Date().toISOString()});
+        await Chargers.update({id: client.identity!}, {
+            status: ChargerStatus.AVAILABLE,
+            lastHeartBeat: new Date().toISOString()
+        });
         const heartBeat = new Heartbeats();
         heartBeat.chargerId = client.identity!;
         await heartBeat.save();
@@ -73,7 +79,7 @@ const handleMeterValues = async ({client, params}: { client: any; params: any })
         await addMeterValue(chargerId, params);
         return {};
     } catch (err) {
-        logger.error(`Failed to add meterValues: ${err}` );
+        logger.error(`Failed to add meterValues: ${err}`);
         throw createRPCError("InternalError", "Database update failed.");
     }
 };
@@ -120,7 +126,7 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
     try {
         chargingSession = await Sessions.findOne({
             where: {id: transactionId},
-            relations: ["connector"]
+            relations: ['user', 'connector'],
         });
         if (chargingSession) {
             chargingSession.connector.currentSession = null;
@@ -129,7 +135,21 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
             chargingSession.endTime = timestamp;
             chargingSession.reason = reason;
             chargingSession.status = SessionStatus.FINISHED;
+            chargingSession.energyUsed = chargingSession.meterStop - chargingSession.meterStart;
             await chargingSession.save();
+            let systemWallet = await Wallet.findOneByOrFail({code: `SYSTEM:CPO_REVENUE`});
+            const userWallet = await Wallet.findOneByOrFail({code: `USER:${chargingSession.user?.id}`});
+            // TODO 15 is tariff, replace it with actual revenue
+            let amount = (chargingSession.energyUsed * 15.00).toString();
+            await LedgerService.postBalancedTransaction({
+                externalRef: `ChargingSession:${transactionId}`,
+                category: TxnCategory.CHARGE,
+                description: `Money is being deducted for Charging Session: ${chargingSession.id}`,
+                legs: [
+                    {wallet: systemWallet, type: EntryType.CREDIT, amount: amount, memo: 'CPO Revenue'},
+                    {wallet: userWallet, type: EntryType.DEBIT, amount: amount, memo: 'User Vehicle Charge'}
+                ]
+            })
         } else {
             throw new Error("No such session was found.");
         }

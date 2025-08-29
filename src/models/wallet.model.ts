@@ -26,8 +26,8 @@ export class Wallet extends BaseEntity {
     @Column({default: 'INR'})
     currency!: string;
 
-    @Index({unique: true})
-    @Column({unique: true})
+    @Column()
+    @Index('IDX_wallet_code', ['code'], { unique: true })
     code!: string; // e.g. USER:<userId> or SYSTEM:RAZORPAY_SETTLEMENT
 
     @Column({type: 'numeric', precision: 20, scale: 4, default: 0})

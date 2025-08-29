@@ -2,7 +2,7 @@ import {
     BaseEntity, BeforeInsert, BeforeRemove, BeforeUpdate,
     Column,
     CreateDateColumn,
-    Entity,
+    Entity, Index,
     JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
@@ -64,10 +64,10 @@ class Vehicles extends BaseEntity {
 
     @Column({
         type: "varchar",
-        unique: true,
         nullable: true,
         length: 64
     })
+    @Index('Vehicle RC Number', ['rcNumber'], {unique: true})
     rcNumber!: string;
 
     @Column({type: "boolean", default: false})
