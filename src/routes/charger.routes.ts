@@ -5,7 +5,7 @@ import {
     getChargerByCity,
     getCities,
     listAllCharger,
-    updateCharger, updateChargerAddress, updateChargerData, updateChargerTariff
+    updateCharger, updateChargerAddress, updateChargerData, updateChargerTariff, updateConnectorType
 } from '../controllers/charger.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {UserRoles} from "../models/user.model";
@@ -78,7 +78,17 @@ router.patch('/api/chargers/:chargerId/data', authenticate, authorize(UserRoles.
     }
 });
 
-
+router.patch('/api/chargers/:chargerId/connector', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        const {chargerId} = req.params;
+        const {connectorId, connectorType} = req.body;
+        const updatedCharger = await updateConnectorType(chargerId, connectorId, connectorType);
+        res.status(200).send({success: true, message: "Charger Connector Type Updated", data: updatedCharger});
+        logger.info(`Charger with ID ${chargerId} connector type updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
 
 router.get('/api/chargers/:chargerId', authenticate, async (req: Request, res: Response) => {
     try {

@@ -87,7 +87,6 @@ function getSessionStatusFromConnectorStatus( status: ConnectorStatus ) {
 
 async function addCharger(data: any) {
     const requiredFields = [
-        "type",
         "model",
         "address_line1",
         "address_line2",
@@ -97,6 +96,7 @@ async function addCharger(data: any) {
         "address_zipCode",
         "address_country",
         "noOfConnector",
+        "connectorTypes",
         "vendor",
         "serialNumber",
         "longitude",
@@ -142,13 +142,13 @@ async function addCharger(data: any) {
     for (let i = 0; i < data.noOfConnector; i++) {
         const connector = new Connectors();
         connector.chargerConnectorId = i + 1; // Assuming connector IDs start from 1
+        connector.type = data.connectorTypes[i]; // Default to Type1 if not enough types provided
         connector.status = ConnectorStatus.UNAVAILABLE;
         connectors.push(connector);
     }
 
     // Create charger object
     const charger = new Chargers();
-    charger.type = data.type;
     charger.model = data.model;
     charger.address = address;
     charger.city = data.address_city;
@@ -257,9 +257,34 @@ async function updateChargerData(chargerId: string, data: any) {
         throw new ResourceNotFoundError(`Charger with ID ${chargerId} not found`);
     }
     charger.vendor = data.vendor ?? charger.vendor;
-    charger.type = data.type ?? charger.type;
     charger.model = data.model ?? charger.model;
     return await charger.save();
+}
+
+async function updateConnectorType(chargerId: string, connectorId: number, type: string) {
+    if (!chargerId) {
+        throw new MissingParameterError(`Charger ID is required to update connector type`);
+    }
+    if (!uuidValidate(chargerId)) {
+        throw new InvalidUUIDError(`Charger ID is invalid`);
+    }
+    const charger = await Chargers.findOne({
+        where: {id: chargerId},
+        relations: ["connectors"],
+    });
+    if (!charger) {
+        throw new ResourceNotFoundError(`Charger with ID ${chargerId} not found`);
+    }
+    const connector = charger.connectors.find(c => c.chargerConnectorId === connectorId);
+    if (!connector) {
+        throw new ResourceNotFoundError(`Connector with ID ${connectorId} not found for charger ${chargerId}`);
+    }
+    if (!Object.values(ConnectorStatus).includes(type as ConnectorStatus)) {
+        throw new TypeError(`Connector type ${type} is not valid`);
+    }
+    connector.type = type;
+    await charger.save();
+    return charger;
 }
 
 async function updateChargerStatus(chargerId: string, statusLog: StatusLogs) {
@@ -324,9 +349,7 @@ async function updateCharger(chargerId: string, data: any) {
     if (!charger) {
         throw new ResourceNotFoundError(`Charger with ID ${chargerId} not found`);
     }
-    charger.type = data.type ?? charger.type;
     charger.model = data.model ?? charger.model;
-    charger.address = data.address ?? charger.address;
     charger.city = data.city ?? charger.city;
     charger.noOfConnector = data.noOfConnector ?? charger.noOfConnector;
     charger.vendor = data.vendor ?? charger.vendor;
@@ -352,13 +375,13 @@ async function getChargerByCity(city: string) {
         vendor: charger.vendor,
         city: charger.city,
         address: charger.address,
-        type: charger.type,
         noOfConnector: charger.noOfConnector,
         status: charger.status,
         longitude: charger.longitude,
         latitude: charger.latitude,
         connectors: charger.connectors.map(connector => ({
             id: connector.id,
+            connectorType: connector.type,
             connectorId: connector.chargerConnectorId,
             status: connector.status,
         }))
@@ -381,6 +404,7 @@ export {
     updateChargerTariff,
     updateChargerAddress,
     updateChargerData,
+    updateConnectorType,
     updateChargerStatus,
     listAllCharger,
     getCharger,

@@ -11,7 +11,6 @@ import {
 } from "typeorm";
 import {Chargers} from "./charger.model";
 import {Sessions} from "./session.model";
-import {toTitleCase} from "../services/titleCase.services";
 
 enum ConnectorStatus {
     AVAILABLE = 'Available',
@@ -23,6 +22,30 @@ enum ConnectorStatus {
     RESERVED = 'Reserved',
     UNAVAILABLE = 'Unavailable',
     FAULTED = 'Faulted',
+}
+
+enum ConnectorType {
+    // Passenger cars
+    TYPE_2_AC = 'TYPE_2_AC',
+    CCS2_DC = 'CCS2_DC',
+    CHADEMO_DC = 'CHADEMO_DC',
+    TYPE_1_AC = 'TYPE_1_AC',
+
+    // Light EVs (2W/3W)
+    TYPE_6_DC = 'TYPE_6_DC',
+    TYPE_7_ACDC = 'TYPE_7_ACDC',
+
+    // Bharat (legacy/transition)
+    BHARAT_AC001 = 'BHARAT_AC001',
+    BHARAT_DC001 = 'BHARAT_DC001',
+
+    // Bus/heavy-vehicle depot and public DC
+    GBT_AC = 'GBT_AC',
+    GBT_DC = 'GBT_DC',
+
+    // Automated high-power interfaces (buses)
+    PANTOGRAPH_DOWN = 'PANTOGRAPH_DOWN',
+    PANTOGRAPH_UP = 'PANTOGRAPH_UP'
 }
 
 @Entity("connectors")
@@ -40,6 +63,13 @@ class Connectors extends BaseEntity {
         unique: false,
     })
     chargerConnectorId!: number;
+
+    @Column({
+        type: 'enum',
+        enum: ConnectorType,
+        default: ConnectorType.TYPE_6_DC,
+    })
+    type: string;
 
     @Column({
         type: "enum",
@@ -71,5 +101,6 @@ class Connectors extends BaseEntity {
 
 export {
     Connectors,
+    ConnectorType,
     ConnectorStatus
 }

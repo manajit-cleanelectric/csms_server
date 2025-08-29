@@ -16,11 +16,6 @@ import {Addresses} from "./address.model";
 import {toTitleCase} from "../services/titleCase.services";
 import {Tariffs} from "./tariff.model";
 
-export enum ChargerTypes {
-    TYPE_6 = 'type_6',
-    CCS_2 = 'ccs_2'
-}
-
 export enum ChargerStatus {
     AVAILABLE = 'Available',
     FAULTED = 'Faulted',
@@ -67,13 +62,6 @@ export class Chargers extends BaseEntity {
     @OneToOne(() => Addresses, (address) => address.charger, {cascade: true})
     @JoinColumn({name: "addressId"})
     address: Addresses;
-
-    @Column({
-        type: 'enum',
-        enum: ChargerTypes,
-        default: ChargerTypes.TYPE_6,
-    })
-    type: string;
 
     @Column({
         type: "int",
@@ -135,6 +123,11 @@ export class Chargers extends BaseEntity {
         this.vendor = toTitleCase(this.vendor);
         this.serialNumber = this.serialNumber.toUpperCase();
         this.city = toTitleCase(this.city);
+    }
+
+    public get connectorTypes(): string[] {
+        if (!this.connectors) return [];
+        return this.connectors.map(connector => connector.type);
     }
 
 }
