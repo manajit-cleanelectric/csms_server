@@ -59,6 +59,13 @@ async function login(phoneNumber: string, otp: string) {
         user = new Users();
         user.phoneNumber = phoneNumber;
         await user.save();
+        const wallet = new Wallet();
+        wallet.type = WalletType.USER;
+        wallet.currency = "INR";
+        wallet.user = user;
+        wallet.code = `USER:${user.id}`;
+        wallet.balance = `0.0000`
+        await wallet.save();
     } else {
         // TODO to allow concurrent login change the login here
         await AuthTokens.update({user: user}, {isRevoked: true});
@@ -261,21 +268,23 @@ async function addMoney(userId: string, amount: string, transactionId: string, u
     if (!user) {
         throw new ResourceNotFoundError(`User not found with id ${userId}`);
     }
-    let wallet  = user.wallet;
+    let wallet = user.wallet;
     if (!wallet) {
         wallet = new Wallet();
         wallet.user = user;
         wallet.balance = `0.0000`;
-        wallet.code = `USER:${ user.id }`;
+        wallet.code = `USER:${user.id}`;
         wallet.type = WalletType.USER;
         wallet.currency = 'INR';
         await wallet.save()
     }
-    let merchantWallet = await Wallet.findOneByOrFail({code : `SYSTEM:RAZORPAY_SETTLEMENT`});
-    await LedgerService.postBalancedTransaction({externalRef: transactionId,category: TxnCategory.ADDMONEY, description: "Money is added offline", legs: [
-        { wallet: merchantWallet, type: EntryType.DEBIT, amount: amount, memo: 'Razorpay outflow' },
-        { wallet: wallet, type: EntryType.CREDIT, amount: amount, memo: 'User wallet top-up' }
-    ]});
+    let merchantWallet = await Wallet.findOneByOrFail({code: `SYSTEM:RAZORPAY_SETTLEMENT`});
+    await LedgerService.postBalancedTransaction({
+        externalRef: transactionId, category: TxnCategory.ADDMONEY, description: "Money is added offline", legs: [
+            {wallet: merchantWallet, type: EntryType.DEBIT, amount: amount, memo: 'Razorpay outflow'},
+            {wallet: wallet, type: EntryType.CREDIT, amount: amount, memo: 'User wallet top-up'}
+        ]
+    });
 }
 
 
