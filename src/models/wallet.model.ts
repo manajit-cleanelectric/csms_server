@@ -8,7 +8,7 @@ import {
     UpdateDateColumn, OneToOne, JoinColumn, BaseEntity
 } from 'typeorm';
 import {Users} from './user.model';
-import {WalletType} from './enums';
+import {WalletType} from '../utils/enums';
 import {LedgerEntry} from './LedgerEntry.model';
 
 @Entity('wallets')

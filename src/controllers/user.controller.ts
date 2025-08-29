@@ -10,7 +10,7 @@ import {
     ResourceNotFoundError
 } from "../errors/customErrors";
 import {Wallet} from "../models/wallet.model";
-import {EntryType, TxnCategory, WalletType} from "../models/enums";
+import {EntryType, TxnCategory, WalletType} from "../utils/enums";
 import {LedgerService} from "../services/LedgerService";
 
 async function addUserInfo(userId: string, data: any) {

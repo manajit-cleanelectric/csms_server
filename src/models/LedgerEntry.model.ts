@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
-import { EntryType } from './enums';
+import { EntryType } from '../utils/enums';
 import { Wallet } from './wallet.model';
 import { Transaction } from './transaction.model';
 

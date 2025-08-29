@@ -4,7 +4,7 @@ import {Request, Response} from "express";
 import {logger} from "../app";
 import {handleError} from "../errors/customErrors";
 import {router} from "./user.routes";
-import {getUserWallet} from "../controllers/walletController";
+import {getUserWallet} from "../controllers/wallet.controller";
 
 router.get('/api/wallet/balance', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
     try {

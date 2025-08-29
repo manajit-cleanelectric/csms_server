@@ -1,5 +1,5 @@
 import { AppDataSource } from '../database/datasource';
-import { EntryType, TxnCategory } from '../models/enums';
+import { EntryType, TxnCategory } from '../utils/enums';
 import { LedgerEntry } from '../models/LedgerEntry.model';
 import { Transaction } from '../models/transaction.model';
 import { Wallet } from '../models/wallet.model';

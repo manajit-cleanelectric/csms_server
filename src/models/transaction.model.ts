@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Index } from 'typeorm';
 import { LedgerEntry } from './LedgerEntry.model';
-import { TxnCategory } from './enums';
+import { TxnCategory } from '../utils/enums';
 
 @Entity('transactions')
 export class Transaction {

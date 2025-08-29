@@ -1,6 +1,6 @@
 import { AppDataSource } from '../database/datasource';
 import { Wallet } from '../models/wallet.model';
-import { WalletType } from '../models/enums';
+import { WalletType } from '../utils/enums';
 
 export async function ensureSystemWallets() {
     const repo = AppDataSource.getRepository(Wallet);

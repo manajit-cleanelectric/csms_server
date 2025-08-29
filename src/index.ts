@@ -9,8 +9,8 @@ let server: ReturnType<typeof app.listen>;
 
 AppDataSource.initialize()
     .then(() => {
-        ensureSystemWallets().then(r => {
-            console.log("Wallet initialised")
+        ensureSystemWallets().then(() => {
+            logger.info("Wallet initialised")
         });
         server = app.listen(SERVER_PORT, () => {
             logger.info(`Server started on port ${SERVER_PORT}`);
