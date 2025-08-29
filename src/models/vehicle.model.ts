@@ -9,7 +9,7 @@ import {
     UpdateDateColumn
 } from "typeorm";
 import {Users} from "./user.model";
-import {toTitleCase} from "../services/titleCase.services";
+import {toTitleCase} from "../utils/titleCase";
 
 
 @Entity("vehicles")

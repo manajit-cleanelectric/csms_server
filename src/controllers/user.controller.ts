@@ -1,7 +1,7 @@
 import {UserRoles, Users} from "../models/user.model";
 import jwt from 'jsonwebtoken';
 import {JWT_SECRET_KEY, logger, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
-import {sendOtp} from "../services/sms.services"
+import {sendOtp} from "../services/sms.service"
 import {AuthTokens} from "../models/authToken.model";
 import {
     InvalidAuthError,
@@ -11,7 +11,7 @@ import {
 } from "../errors/customErrors";
 import {Wallet} from "../models/wallet.model";
 import {EntryType, TxnCategory, WalletType} from "../utils/enums";
-import {LedgerService} from "../services/LedgerService";
+import {LedgerService} from "../services/ledger.service";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data

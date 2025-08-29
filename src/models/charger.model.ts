@@ -13,7 +13,7 @@ import {
 import {Sessions} from "./session.model";
 import {Connectors} from "./connector.model";
 import {Addresses} from "./address.model";
-import {toTitleCase} from "../services/titleCase.services";
+import {toTitleCase} from "../utils/titleCase";
 import {Tariffs} from "./tariff.model";
 
 export enum ChargerStatus {

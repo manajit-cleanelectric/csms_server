@@ -9,7 +9,7 @@ import {addMeterValue} from "./meterValue.controller";
 import {addSession} from "./session.controller";
 import {addStatusLog} from "./statusLog.controller";
 import {updateChargerStatus} from "./charger.controller";
-import {LedgerService} from "../services/LedgerService";
+import {LedgerService} from "../services/ledger.service";
 import {EntryType, TxnCategory} from "../utils/enums";
 import {Wallet} from "../models/wallet.model";
 

@@ -3,7 +3,7 @@ import { AppDataSource } from "./database/datasource";
 import { rpcServer } from "./ocpp/ocppServer";
 import { Worker } from "worker_threads";
 import path from "path";
-import { ensureSystemWallets } from "./services/BootstrapService";
+import { ensureSystemWallets } from "./services/bootstrap.service";
 import { bootstrapKafka } from "./services/kafka/BootStrapKafka";
 
 let server: ReturnType<typeof app.listen>;

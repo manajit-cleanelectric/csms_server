@@ -11,7 +11,7 @@ import {Vehicles} from "./vehicle.model";
 import {AuthTokens} from "./authToken.model";
 import {Sessions} from "./session.model";
 import {Wallet} from "./wallet.model";
-import {toTitleCase} from "../services/titleCase.services";
+import {toTitleCase} from "../utils/titleCase";
 
 enum UserRoles {
     ADMINISTRATOR = 'administrator',

@@ -10,7 +10,7 @@ import {
     BeforeUpdate
 } from "typeorm"
 import {Chargers} from "./charger.model";
-import {toTitleCase} from "../services/titleCase.services";
+import {toTitleCase} from "../utils/titleCase";
 
 @Entity("addresses")
 class Addresses extends BaseEntity {

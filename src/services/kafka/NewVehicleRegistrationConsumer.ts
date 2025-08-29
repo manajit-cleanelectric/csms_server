@@ -1,5 +1,5 @@
 import {kafkaClients} from './kafkaClients';
-import {sendMail} from "../mail.services";
+import {sendMail} from "../mail.service";
 import {logger} from "../../app";
 
 const notificationServiceConsumer = kafkaClients.consumer({groupId: 'notification-service-group'});
