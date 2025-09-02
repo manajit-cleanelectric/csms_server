@@ -1,5 +1,5 @@
 import {MissingParameterError} from "../errors/customErrors";
-import {PaymentRequest, PaymentRequestStatus} from "../models/paymentGatewayOrders";
+import {PaymentRequest, PaymentRequestStatus} from "../models/paymentOrders.model";
 import PaymentGatewayService from "../services/razorpay.services";
 import {Users} from "../models/user.model";
 
