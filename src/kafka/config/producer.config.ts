@@ -13,17 +13,18 @@ const DefaultProducerConfig: ProducerConfig = {
     },
 }
 
+// TODO: Check for idempotent
 // Config specifically for VehicleProducer
 const VehicleProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
-    idempotent: true,
+    // idempotent: true,
     // transactionalId: 'charge-clean-producer',
     maxInFlightRequests: 1,
     // retry setting not needed for producer as idempotent is true
-    // retry: {
-    //     initialRetryTime: 300,
-    //     retries: 10,
-    // },
+    retry: {
+        initialRetryTime: 300,
+        retries: 10
+    },
 }
 
 
