@@ -15,6 +15,7 @@ import {AuthTokens} from "../models/authTokens";
 import {LedgerEntry} from "../models/LedgerEntry";
 import {Wallet} from "../models/wallets";
 import {Transaction} from "../models/Transaction";
+import {PaymentRequest} from "../models/paymentGatewayOrders";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -37,7 +38,8 @@ const AppDataSource = new DataSource({
         StatusLogs,
         LedgerEntry,
         Transaction,
-        Wallet
+        Wallet,
+        PaymentRequest
     ],
     synchronize: true,
     logging: false,

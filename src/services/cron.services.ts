@@ -2,7 +2,7 @@ import {AppDataSource} from "../database/datasource";
 import {Chargers, ChargerStatus} from "../models/charger";
 import {logger} from "../app";
 import cron from "node-cron";
-import {SessionStatus} from "../models/sessions";
+import {Sessions, SessionStatus} from "../models/sessions";
 import {parentPort} from "worker_threads";
 import {LessThan} from "typeorm";
 
@@ -11,10 +11,10 @@ const scheduleHeartbeatJob = () => {
     AppDataSource.initialize().then(() => {
         logger.info("Database Connection initialized in worker thread");
     })
-    .catch((err) => {
-        logger.error(`Database Connection initialization failed in worker thread: ${err}`);
-        process.exit(1);
-    });
+        .catch((err) => {
+            logger.error(`Database Connection initialization failed in worker thread: ${err}`);
+            process.exit(1);
+        });
     cron.schedule('* * * * *', async () => {
         logger.info(`Starting cleanup job`);
         const minutes = 5;
@@ -27,6 +27,15 @@ const scheduleHeartbeatJob = () => {
             }
         })
 
+        const cutOffTime = new Date(Date.now() - 5 * 60 * 1000);
+
+        const expiredSessions = await Sessions.find({
+            select: ['id'],
+            where: {
+                updatedAt: LessThan(cutOffTime)
+            }
+        });
+
         if (unavailableChargers?.length !== 0) {
             logger.info(`Found ${unavailableChargers.length} unavailable charger(s)`);
 
@@ -34,23 +43,26 @@ const scheduleHeartbeatJob = () => {
                 .getRepository(Chargers)
                 .createQueryBuilder()
                 .update(Chargers)
-                .set({ status: ChargerStatus.UNKNOWN })
-                .where(`id IN (:...ids)`, { ids: unavailableChargers.map(c => c.id) })
+                .set({status: ChargerStatus.UNKNOWN})
+                .where(`id IN (:...ids)`, {ids: unavailableChargers.map(c => c.id)})
                 .execute();
 
+
+        }
+        if (expiredSessions?.length !== 0) {
             await AppDataSource
                 .getRepository('sessions')
                 .createQueryBuilder()
                 .update()
-                .set({ status: SessionStatus.FAULTED })
+                .set({status: SessionStatus.FAULTED})
                 .where(
-                    `chargerId IN (:...ids)`, { ids: unavailableChargers.map(c => c.id) }
+                    `id IN (:...ids)`, {ids: expiredSessions.map(c => c.id)}
                 )
                 .andWhere(
                     "status IN (:...status)",
-                    { status: [SessionStatus.FINISHING, SessionStatus.CHARGING, SessionStatus.PREPARING] }
+                    {status: [SessionStatus.FINISHING, SessionStatus.CHARGING, SessionStatus.PREPARING]}
                 )
-                .setParameters({ currentTime })
+                .setParameters({currentTime})
                 .execute();
         }
         parentPort?.postMessage('Cleanup job completed');
