@@ -4,7 +4,7 @@ import { rpcServer } from "./ocpp/ocppServer";
 import { Worker } from "worker_threads";
 import path from "path";
 import { ensureSystemWallets } from "./services/bootstrap.service";
-import { bootstrapKafka } from "./services/kafka/BootStrapKafka";
+import {bootstrapKafka, bootstrapProducers, disconnectProducers} from "./kafka/bootstrap";
 
 let server: ReturnType<typeof app.listen>;
 
@@ -13,9 +13,6 @@ AppDataSource.initialize()
         try {
             await ensureSystemWallets();
             logger.info("System wallets initialized");
-
-            await bootstrapKafka();
-            logger.info("Kafka bootstrap completed");
 
             server = app.listen(SERVER_PORT, SERVER_HOST, () => {
                 logger.info(`Server started on port ${SERVER_PORT}`);
@@ -30,6 +27,17 @@ AppDataSource.initialize()
     })
     .catch((err) => {
         logger.error(`Database initialization failed: ${err}`);
+        process.exit(1);
+    });
+
+// Start Kafka and other services
+bootstrapKafka()
+    .then(async () => {
+        await bootstrapProducers();
+        logger.info("Kafka bootstrap completed");
+    })
+    .catch((err) => {
+        logger.error(`Kafka initialization failed: ${err}`);
         process.exit(1);
     });
 
@@ -75,6 +83,9 @@ const onCloseSignal = () => {
           }
         });
       });
+
+      await disconnectProducers();
+      logger.info("Kafka producers disconnected");
 
       await AppDataSource.destroy();
       logger.info("Database connection closed");

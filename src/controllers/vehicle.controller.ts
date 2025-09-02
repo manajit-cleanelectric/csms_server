@@ -12,6 +12,7 @@ import * as fs from "node:fs";
 import path from "path";
 import {logger, STATIC_FOLDER_PATH} from "../app";
 import {AppDataSource} from "../database/datasource";
+import {VehicleProducer} from "../kafka/producers/vehicle.producer";
 
 function deleteImageFromDisk(imagePath: string): void {
     if (!imagePath) return;
@@ -63,6 +64,22 @@ async function addVehicle(userId: string, data: any) {
     await user.save();
     vehicle.user = user;
     await vehicle.save();
+
+    const vehicleProducer = VehicleProducer.getInstance();
+    try {
+        await vehicleProducer.sendVehicleRegistrationMessage(
+            user.fullName,
+            user.phoneNumber,
+            undefined,
+            `${vehicle.vendor} ${vehicle.model}`,
+            vehicle.rcNumber,
+            new Date().toISOString()
+        );
+        logger.info(`Vehicle registration message sent to Kafka for vehicle ID ${vehicle.id}`);
+    } catch (error) {
+        logger.error(`Failed to send vehicle registration message to Kafka: ${error}`);
+    }
+
     return vehicle;
 }
 
