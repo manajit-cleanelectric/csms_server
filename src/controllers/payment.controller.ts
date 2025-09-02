@@ -1,7 +1,7 @@
 import {MissingParameterError} from "../errors/customErrors";
 import {PaymentRequest, PaymentRequestStatus} from "../models/paymentGatewayOrders";
 import PaymentGatewayService from "../services/razorpay.services";
-import {Users} from "../models/users";
+import {Users} from "../models/user.model";
 
 async function createOrder(userId: string, amount: number) {
     if (!userId) {

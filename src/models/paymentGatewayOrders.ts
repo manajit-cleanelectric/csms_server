@@ -6,7 +6,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from "typeorm"
-import {Users} from "./users";
+import {Users} from "./user.model";
 
 enum PaymentRequestStatus {
     INITIALISED = 'initialised',

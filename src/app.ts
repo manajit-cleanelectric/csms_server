@@ -173,7 +173,7 @@ import {router as chargerRoutes} from "./routes/charger.routes";
 import {router as sessionRoutes} from "./routes/session.routes";
 import {router as vehicleRoutes} from "./routes/vehicle.routes";
 import {router as walletRoutes} from "./routes/wallet.routes";
-import {router as paymentRoutes} from "./routes/paymentRoutes";
+import {router as paymentRoutes} from "./routes/payment.routes";
 
 // Middlewares
 app.use(express.json());
