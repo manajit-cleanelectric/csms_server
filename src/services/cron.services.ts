@@ -1,50 +1,65 @@
 import {AppDataSource} from "../database/datasource";
 import {Chargers, ChargerStatus} from "../models/charger.model";
 import cron from "node-cron";
-import {SessionStatus} from "../models/session.model";
+import {Sessions, SessionStatus} from "../models/session.model";
 import {parentPort} from "worker_threads";
 import {LessThan} from "typeorm";
-import {ConnectorStatus} from "../models/connector.model";
 
 const scheduleHeartbeatJob = () => {
     AppDataSource.initialize().then(() => {
         parentPort?.postMessage("Database Connection initialized in worker thread");
     })
-    .catch((err) => {
-        parentPort?.postMessage(`Database Connection initialization failed in worker thread: ${err}`);
-        process.exit(1);
-    });
+        .catch((err) => {
+            parentPort?.postMessage(`Database Connection initialization failed in worker thread: ${err}`);
+            process.exit(1);
+        });
     cron.schedule('* * * * *', async () => {
         parentPort?.postMessage(`Starting cleanup job`);
         const minutes = 5;
         const currentTime = new Date(new Date().getTime() - minutes * 60 * 1000);
 
         const unavailableChargers = await Chargers.find({
-            where: { lastHeartBeat: LessThan(currentTime) },
-            relations: ["connectors", "connectors.currentSession"],
+            select: ['id'],
+            where: {
+                lastHeartBeat: LessThan(currentTime),
+            }
         })
+
+        const cutOffTime = new Date(Date.now() - 5 * 60 * 1000);
+
+        const expiredSessions = await Sessions.find({
+            select: ['id'],
+            where: {
+                updatedAt: LessThan(cutOffTime)
+            }
+        });
 
         if (unavailableChargers?.length !== 0) {
             parentPort?.postMessage(`Found ${unavailableChargers.length} unavailable charger(s)`);
-            for (const charger of unavailableChargers) {
-                parentPort?.postMessage(`Unavailable charger: ${charger.id}`);
-                try {
-                    charger.status = ChargerStatus.UNAVAILABLE;
-                    for (const connector of charger.connectors) {
-                        if (connector.currentSession) {
-                            connector.currentSession.status = SessionStatus.FAULTED;
-                            await connector.currentSession.save();
-                            parentPort?.postMessage(`Updated session ${connector.currentSession.id} status to UNAVAILABLE`);
-                            connector.currentSession = null;
-                        }
-                        connector.status = ConnectorStatus.UNAVAILABLE;
-                    }
-                    await charger.save();
-                    parentPort?.postMessage(`Updated charger ${charger.id} status to UNAVAILABLE`);
-                } catch (err) {
-                    parentPort?.postMessage(`Error updating charger ${charger.id} status: ${err}`);
-                }
-            }
+
+            await AppDataSource
+                .getRepository(Chargers)
+                .createQueryBuilder()
+                .update(Chargers)
+                .set({status: ChargerStatus.UNAVAILABLE})
+                .where(`id IN (:...ids)`, {ids: unavailableChargers.map(c => c.id)})
+                .execute();
+        }
+        if (expiredSessions?.length !== 0) {
+            await AppDataSource
+                .getRepository('sessions')
+                .createQueryBuilder()
+                .update()
+                .set({status: SessionStatus.FAULTED})
+                .where(
+                    `id IN (:...ids)`, {ids: expiredSessions.map(c => c.id)}
+                )
+                .andWhere(
+                    "status IN (:...status)",
+                    {status: [SessionStatus.FINISHING, SessionStatus.CHARGING, SessionStatus.PREPARING]}
+                )
+                .setParameters({currentTime})
+                .execute();
         }
         parentPort?.postMessage('Cleanup job completed');
     });

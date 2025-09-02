@@ -43,8 +43,11 @@ const OTP_LENGTH = parseInt(process.env.OTP_LENGTH!, 10);
 const STATIC_FOLDER = process.env.STATIC_FOLDER!;
 const MEDIA_FOLDER = process.env.MEDIA_FOLDER!;
 const RC_IMAGE_FOLDER = process.env.RC_IMAGE_FOLDER!;
-const SMS_SERVICE_PROVIDER_URL = process.env.SMS_SERVICE_PROVIDER_URL;
-const SMS_SERVICE_PROVIDER_API_KEY = process.env.SMS_SERVICE_PROVIDER_API_KEY;
+const SMS_SERVICE_PROVIDER_URL = process.env.SMS_SERVICE_PROVIDER_URL!;
+const SMS_SERVICE_PROVIDER_API_KEY = process.env.SMS_SERVICE_PROVIDER_API_KEY!;
+const RAZORPAY_API_KEY_ID = process.env.RAZORPAY_API_KEY_ID!;
+const RAZORPAY_API_KEY_SECRET = process.env.RAZORPAY_API_KEY_SECRET!;
+const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -115,7 +118,15 @@ if (!SMS_SERVICE_PROVIDER_URL) {
 if (!SMS_SERVICE_PROVIDER_API_KEY) {
     throw new Error('SMS_SERVICE_PROVIDER_API_KEY is not defined in environment variables.');
 }
-
+if (!RAZORPAY_API_KEY_ID) {
+    throw new Error('RAZORPAY_API_KEY_ID is not defined in environment variables.');
+}
+if (!RAZORPAY_API_KEY_SECRET) {
+    throw new Error('RAZORPAY_API_KEY_SECRET is not defined in environment variables.');
+}
+if (!RAZORPAY_WEBHOOK_SECRET) {
+    throw new Error('RAZORPAY_WEBHOOK_SECRET is not defined in environment variables.');
+}
 
 function ensureDirExistsSync(dirPath: string): void {
     if (!fs.existsSync(dirPath)) {
@@ -162,6 +173,7 @@ import {router as chargerRoutes} from "./routes/charger.routes";
 import {router as sessionRoutes} from "./routes/session.routes";
 import {router as vehicleRoutes} from "./routes/vehicle.routes";
 import {router as walletRoutes} from "./routes/wallet.routes";
+import {router as paymentRoutes} from "./routes/paymentRoutes";
 
 // Middlewares
 app.use(express.json());
@@ -173,6 +185,7 @@ app.use(chargerRoutes);
 app.use(sessionRoutes);
 app.use(vehicleRoutes);
 app.use(walletRoutes);
+app.use(paymentRoutes);
 app.use(express.static(path.join(__dirname, '../', STATIC_FOLDER)));
 const STATIC_FOLDER_PATH = path.join(__dirname, '../', STATIC_FOLDER);
 logger.info(path.join(__dirname, '../', STATIC_FOLDER));
@@ -198,4 +211,7 @@ export {
     RC_IMAGE_FOLDER,
     SMS_SERVICE_PROVIDER_URL,
     SMS_SERVICE_PROVIDER_API_KEY,
+    RAZORPAY_API_KEY_ID,
+    RAZORPAY_API_KEY_SECRET,
+    RAZORPAY_WEBHOOK_SECRET,
 };
