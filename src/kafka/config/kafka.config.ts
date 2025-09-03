@@ -1,5 +1,4 @@
 import {KafkaConfig, ITopicConfig} from "kafkajs";
-import {logger} from "../../app";
 
 const kafkaConfig: KafkaConfig = {
     clientId: 'charge-clean',
@@ -9,8 +8,7 @@ const kafkaConfig: KafkaConfig = {
     retry: {
         initialRetryTime: 300,
         retries: 10,
-        restartOnFailure: async (error) => {
-            logger.error('Kafka connection error:', error);
+        restartOnFailure: async () => {
             return true;
         },
     }

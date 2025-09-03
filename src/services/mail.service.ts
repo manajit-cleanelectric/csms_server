@@ -1,14 +1,26 @@
 import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
+import {parentPort} from "worker_threads";
 
-// Create a transporter object using SMTP transport
+/**
+ * Mail transporter configuration using Gmail SMTP
+ */
 const transporter: Transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'kumar.ranvijay@cleanelectric.in',           // Replace with your email
-        pass: 'nezhcetiujbfejtb' // Replace with your app password
+        user: process.env.EMAIL_ACCOUNT_ID,
+        pass: process.env.EMAIL_APP_PASSWORD
     }
 });
 
+
+/**
+ * Send an email
+ * @param from - sender email address
+ * @param to - recipient email address
+ * @param subject - email subject
+ * @param message - email body in HTML format
+ * @returns void - sends email and logs result to parent port
+ */
 export function sendMail(from: string, to: string, subject: string, message: string) {
     // Define mail options
     const mailOptions: SendMailOptions = {
@@ -20,9 +32,9 @@ export function sendMail(from: string, to: string, subject: string, message: str
     // Send email
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.error('Error:', error);
+            parentPort?.postMessage(`Error: ${error}`);
         } else {
-            console.log('Email sent:', info.response);
+            parentPort?.postMessage(`Email sent: ${info.response}`);
         }
     });
 }

@@ -1,10 +1,10 @@
 import { app, logger, SERVER_PORT, SERVER_HOST } from "./app";
 import { AppDataSource } from "./database/datasource";
 import { rpcServer } from "./ocpp/ocppServer";
-import { Worker } from "worker_threads";
 import path from "path";
 import { ensureSystemWallets } from "./services/bootstrap.service";
 import {bootstrapKafka, bootstrapProducers, disconnectProducers} from "./kafka/bootstrap";
+import {launchWorker} from "./utils/launchWorker";
 
 let server: ReturnType<typeof app.listen>;
 
@@ -42,64 +42,39 @@ bootstrapKafka()
     });
 
 
-// Start the heartbeat job in a worker thread
-// TODO: Implement centralized logging for worker threads
-const workerPath = path.resolve(__dirname, "services", "cron.services.ts");
-// TODO: Change the workerPath to point to the compiled JavaScript file in production
-const worker = new Worker(workerPath, {
-  execArgv: ["-r", "ts-node/register"],
-});
-worker.on("message", (message) => {
-  logger.info(`Worker message: ${message}`);
-});
-worker.on("error", (error) => {
-  logger.error(`Worker error: ${error}`);
-});
-worker.on("exit", (code) => {
-  if (code !== 0) {
-    logger.error(`Worker stopped with exit code ${code}`);
-  } else {
-    logger.info("Worker exited successfully");
-  }
-});
+// Start worker threads for cron jobs and Kafka consumers
+const cronWorkerPath = path.resolve(__dirname, "services", "cron.services.ts");
+const cronWorker = launchWorker(cronWorkerPath)
+
+const vehicleWorkerPath = path.resolve(__dirname, "kafka", "workers", "vehicle.worker.ts");
+const vehicleWorker = launchWorker(vehicleWorkerPath)
+
 
 const onCloseSignal = () => {
-  logger.info("SIGINT/SIGTERM received, shutting down...");
-  server.close(async () => {
+    logger.info("SIGINT/SIGTERM received, shutting down...");
+    server.close(async () => {
     logger.info("Server closed");
     try {
-      // Send a shutdown message to a worker and wait for it to exit
-      worker.postMessage({ action: "shutdown" });
+        // Send a shutdown message to a worker and wait for it to exit
+        cronWorker.postMessage({ action: "shutdown" });
+        vehicleWorker.postMessage({ action: "shutdown" });
 
-      // Wait for the worker to exit before proceeding
-      await new Promise<void>((resolve, reject) => {
-        worker.once("exit", (code) => {
-          if (code === 0) {
-            logger.info("Worker exited successfully");
-            resolve();
-          } else {
-            logger.error(`Worker stopped with exit code ${code}`);
-            reject(new Error(`Worker stopped with exit code ${code}`));
-          }
-        });
-      });
+        await disconnectProducers();
+        logger.info("Kafka producers disconnected");
 
-      await disconnectProducers();
-      logger.info("Kafka producers disconnected");
+        await AppDataSource.destroy();
+        logger.info("Database connection closed");
 
-      await AppDataSource.destroy();
-      logger.info("Database connection closed");
-
-      process.exit(0);
+        process.exit(0);
     } catch (error) {
-      logger.error(`Error during shutdown: ${error}`);
-      process.exit(1);
+        logger.error(`Error during shutdown: ${error}`);
+        process.exit(1);
     }
-  });
-  setTimeout(() => {
-    logger.error("Forcefully shutting down after timeout");
-    process.exit(1);
-  }, 10000).unref();
+    });
+    setTimeout(() => {
+        logger.error("Forcefully shutting down after timeout");
+        process.exit(1);
+    }, 10000).unref();
 };
 
 process.on("SIGINT", onCloseSignal);
