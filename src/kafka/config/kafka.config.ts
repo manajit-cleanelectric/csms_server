@@ -17,7 +17,7 @@ const kafkaConfig: KafkaConfig = {
 // TODO: Partition and replication factor should be configured based on the deployment environment and topics usage
 const topics: ITopicConfig[] = [
     {
-        topic: 'charge-completions',
+        topic: 'session_completion',
         numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
         replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
     },
@@ -27,7 +27,7 @@ const topics: ITopicConfig[] = [
     //     replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
     // },
     {
-        topic: 'new-vehicle-registration',
+        topic: 'new_vehicle_registration',
         numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
         replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
     },

@@ -31,7 +31,7 @@ class VehicleProducer extends LocalProducer{
             }),
         };
         await this.sendMessage({
-            topic: "new-vehicle-registration",
+            topic: "new_vehicle_registration",
             messages: [message],
         });
     }

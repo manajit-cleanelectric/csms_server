@@ -41,7 +41,7 @@ class VehicleConsumer extends LocalConsumer{
         await this.connect();
         await this.subscribe({
             topics: [
-                'new-vehicle-registration',
+                'new_vehicle_registration',
             ],
             fromBeginning: false,
         });

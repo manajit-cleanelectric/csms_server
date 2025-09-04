@@ -62,7 +62,7 @@ const vehicleMessageProcessor: EachMessageHandler = async (payload: EachMessageP
     const {topic, partition, message, heartbeat, pause} = payload;
     parentPort?.postMessage(`Received message on topic ${topic}, partition ${partition}`);
     switch (topic) {
-        case ('new-vehicle-registration'): {
+        case ('new_vehicle_registration'): {
             const {key, value} = message;
             const vehicleData = JSON.parse(value?.toString()!)
             const {userName, phoneNo, email, vehicleCompanyAndModel, rcNumber, timeStamp} = vehicleData;
