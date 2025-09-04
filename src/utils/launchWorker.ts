@@ -1,5 +1,5 @@
 import {Worker} from "worker_threads";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 
 function launchWorker(workerPath: string) {
     // Start the worker thread

@@ -1,4 +1,5 @@
-import {logger, SMS_SERVICE_PROVIDER_URL, SMS_SERVICE_PROVIDER_API_KEY} from "../app";
+import {SMS_SERVICE_PROVIDER_URL, SMS_SERVICE_PROVIDER_API_KEY} from "../app";
+import {logger} from "./logger.service";
 
 async function sendOtp(phoneNumber: string, otp: string) {
     logger.info(`Sending ${otp} to phone number ${phoneNumber}`);

@@ -9,7 +9,7 @@ import {
 } from "../controllers/vehicle.controller";
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {uploadRcImage} from "../middleware/image.middleware";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
 

@@ -7,7 +7,7 @@ import {
     sendRemoteStopTransaction
 } from '../controllers/session.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {UserRoles} from "../models/user.model";
 import {handleError} from "../errors/customErrors";
 

@@ -1,4 +1,4 @@
-import {KafkaConfig, ITopicConfig} from "kafkajs";
+import {ITopicConfig, KafkaConfig, logLevel} from "kafkajs";
 
 const kafkaConfig: KafkaConfig = {
     clientId: 'charge-clean',
@@ -11,7 +11,8 @@ const kafkaConfig: KafkaConfig = {
         restartOnFailure: async () => {
             return true;
         },
-    }
+    },
+    logLevel: logLevel.WARN
 };
 
 // TODO: Partition and replication factor should be configured based on the deployment environment and topics usage

@@ -15,7 +15,8 @@ import {
     listCustomers
 } from '../controllers/user.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
-import {apiLimiter, logger} from "../app";
+import {apiLimiter} from "../app";
+import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
 

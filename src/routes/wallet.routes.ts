@@ -1,7 +1,7 @@
 import {authenticate, authorize, UserPayload} from "../middleware/auth.middleware";
 import {UserRoles} from "../models/user.model";
 import {Request, Response} from "express";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {router} from "./user.routes";
 import {getUserWallet} from "../controllers/wallet.controller";

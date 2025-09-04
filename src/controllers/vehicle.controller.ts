@@ -10,7 +10,8 @@ import {
 import {validate} from "uuid";
 import * as fs from "node:fs";
 import path from "path";
-import {logger, STATIC_FOLDER_PATH} from "../app";
+import {STATIC_FOLDER_PATH} from "../app";
+import {logger} from "../services/logger.service";
 import {AppDataSource} from "../database/datasource";
 import {VehicleProducer} from "../kafka/producers/vehicle.producer";
 

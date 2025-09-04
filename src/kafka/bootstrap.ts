@@ -1,5 +1,5 @@
 import {kafkaClient} from "./client";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {topics} from "./config/kafka.config";
 import {VehicleProducer} from "./producers/vehicle.producer";
 import {SessionProducer} from "./producers/session.producer";

@@ -9,7 +9,7 @@ import {
     ValueFormat
 } from "../models/sampledValue.model";
 import {Sessions} from "../models/session.model";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 
 function parseSampledValue(sample: any) {
     let parsedSample: any = {};

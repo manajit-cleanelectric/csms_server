@@ -1,4 +1,5 @@
-import { app, logger, SERVER_PORT, SERVER_HOST } from "./app";
+import { app, SERVER_PORT, SERVER_HOST } from "./app";
+import { logger } from "./services/logger.service";
 import { AppDataSource } from "./database/datasource";
 import { rpcServer } from "./ocpp/ocppServer";
 import path from "path";

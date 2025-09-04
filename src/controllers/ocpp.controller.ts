@@ -1,4 +1,4 @@
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {Chargers, ChargerStatus} from "../models/charger.model";
 import {createRPCError} from "ocpp-rpc";
 import {Sessions, SessionStatus} from "../models/session.model";

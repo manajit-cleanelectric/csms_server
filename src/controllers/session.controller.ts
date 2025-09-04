@@ -5,7 +5,7 @@ import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/user.model";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {In} from "typeorm";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {

@@ -1,6 +1,7 @@
 import {UserRoles, Users} from "../models/user.model";
 import jwt from 'jsonwebtoken';
-import {JWT_SECRET_KEY, logger, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
+import {JWT_SECRET_KEY, OTP_LENGTH, redisClient, REFRESH_TOKEN_SECRET_KEY} from "../app";
+import {logger} from "../services/logger.service";
 import {sendOtp} from "../services/sms.service"
 import {AuthTokens} from "../models/authToken.model";
 import {

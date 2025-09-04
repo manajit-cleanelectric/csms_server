@@ -1,6 +1,7 @@
 import {Request, Response, Router} from 'express';
 import {authenticate, authorize} from "../middleware/auth.middleware";
-import {logger, RAZORPAY_WEBHOOK_SECRET} from "../app";
+import {RAZORPAY_WEBHOOK_SECRET} from "../app";
+import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
 import {createOrder} from "../controllers/payment.controller";

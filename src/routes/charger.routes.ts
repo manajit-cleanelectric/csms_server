@@ -9,7 +9,7 @@ import {
 } from '../controllers/charger.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {UserRoles} from "../models/user.model";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 
 const router: Router = Router();

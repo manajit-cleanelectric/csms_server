@@ -1,7 +1,7 @@
 import {config} from "dotenv";
 import cors from "cors";
 import express, {type Express} from "express";
-import {pino} from "pino";
+import {logger} from "./services/logger.service";
 import {rateLimit} from 'express-rate-limit'
 import {RedisStore} from 'rate-limit-redis';
 import Redis from "ioredis";
@@ -12,18 +12,6 @@ config();
 
 
 const app: Express = express();
-
-const logger = pino({
-    name: "server start",
-    transport: {
-        target: "pino-pretty",
-        options: {
-            colorize: true,
-            ignore: 'pid,hostname,name',
-            translateTime: 'SYS:standard',
-        }
-    }
-});
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY!;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY!;
@@ -132,8 +120,6 @@ function ensureDirExistsSync(dirPath: string): void {
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, {recursive: true});
         logger.info(`Directory created: ${dirPath}`);
-    } else {
-        logger.info(`Directory already exists: ${dirPath}`);
     }
 }
 
@@ -192,7 +178,6 @@ logger.info(path.join(__dirname, '../', STATIC_FOLDER));
 
 export {
     app,
-    logger,
     JWT_SECRET_KEY,
     REFRESH_TOKEN_SECRET_KEY,
     DATABASE_HOST,

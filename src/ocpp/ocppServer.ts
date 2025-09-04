@@ -1,5 +1,5 @@
 import {createRPCError, RPCServer} from "ocpp-rpc";
-import {logger} from "../app";
+import {logger} from "../services/logger.service";
 import {
     handleAuthorize,
     handleBootNotification,
