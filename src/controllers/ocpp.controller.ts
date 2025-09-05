@@ -4,14 +4,13 @@ import {createRPCError} from "ocpp-rpc";
 import {Sessions, SessionStatus} from "../models/session.model";
 import {Vehicles} from "../models/vehicle.model";
 import {Heartbeats} from "../models/heartbeat.model";
-import {ConnectorStatus} from "../models/connector.model";
 import {addMeterValue} from "./meterValue.controller";
 import {addSession} from "./session.controller";
 import {addStatusLog} from "./statusLog.controller";
 import {updateChargerStatus} from "./charger.controller";
-import {LedgerService} from "../services/ledger.service";
-import {EntryType, TxnCategory} from "../utils/enums";
-import {Wallet} from "../models/wallet.model";
+// import {LedgerService} from "../services/ledger.service";
+// import {EntryType, TxnCategory} from "../utils/enums";
+// import {Wallet} from "../models/wallet.model";
 
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
@@ -137,24 +136,24 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
             chargingSession.status = SessionStatus.FINISHED;
             chargingSession.energyUsed = chargingSession.meterStop - chargingSession.meterStart;
             await chargingSession.save();
-            let systemWallet = await Wallet.findOneByOrFail({code: `SYSTEM:CPO_REVENUE`});
-            const userWallet = await Wallet.findOneByOrFail({code: `USER:${chargingSession.user?.id}`});
-            // TODO 15 is tariff, replace it with actual revenue
-            let amount = (chargingSession.energyUsed * 15.00).toString();
-            await LedgerService.postBalancedTransaction({
-                externalRef: `ChargingSession:${transactionId}`,
-                category: TxnCategory.CHARGE,
-                description: `Money is being deducted for Charging Session: ${chargingSession.id}`,
-                legs: [
-                    {wallet: systemWallet, type: EntryType.CREDIT, amount: amount, memo: 'CPO Revenue'},
-                    {wallet: userWallet, type: EntryType.DEBIT, amount: amount, memo: 'User Vehicle Charge'}
-                ]
-            })
+            // let systemWallet = await Wallet.findOneByOrFail({code: `SYSTEM:CPO_REVENUE`});
+            // const userWallet = await Wallet.findOneByOrFail({code: `USER:${chargingSession.user?.id}`});
+            // // TODO 15 is tariff, replace it with actual revenue
+            // let amount = (chargingSession.energyUsed * 15.00).toString();
+            // await LedgerService.postBalancedTransaction({
+            //     externalRef: `ChargingSession:${transactionId}`,
+            //     category: TxnCategory.CHARGE,
+            //     description: `Money is being deducted for Charging Session: ${chargingSession.id}`,
+            //     legs: [
+            //         {wallet: systemWallet, type: EntryType.CREDIT, amount: amount, memo: 'CPO Revenue'},
+            //         {wallet: userWallet, type: EntryType.DEBIT, amount: amount, memo: 'User Vehicle Charge'}
+            //     ]
+            // })
         } else {
             throw new Error("No such session was found.");
         }
     } catch (err) {
-        logger.error(`Failed to update charger status:`, err);
+        logger.error(`Failed to stop Transaction: ${err}`);
         throw createRPCError("InternalError", "Database update failed.");
     }
     return {
@@ -163,30 +162,6 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
         }
     };
 };
-
-function _getConnectorStatus(status: string) {
-    switch (status) {
-        case ConnectorStatus.AVAILABLE:
-            return ConnectorStatus.AVAILABLE;
-        case ConnectorStatus.PREPARING:
-            return ConnectorStatus.PREPARING;
-        case ConnectorStatus.CHARGING:
-            return ConnectorStatus.CHARGING;
-        case ConnectorStatus.FAULTED:
-            return ConnectorStatus.FAULTED;
-        case ConnectorStatus.FINISHING:
-            return ConnectorStatus.FINISHING;
-        case ConnectorStatus.SUSPENDED_EV:
-            return ConnectorStatus.SUSPENDED_EV;
-        case ConnectorStatus.UNAVAILABLE:
-            return ConnectorStatus.UNAVAILABLE;
-        case ConnectorStatus.RESERVED:
-            return ConnectorStatus.RESERVED;
-        case ConnectorStatus.SUSPENDED_EVSE:
-            return ConnectorStatus.SUSPENDED_EVSE;
-    }
-    return ConnectorStatus.UNAVAILABLE;
-}
 
 export {
     handleBootNotification,

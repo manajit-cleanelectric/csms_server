@@ -104,19 +104,19 @@ class Sessions extends BaseEntity {
     endTime!: Date;
 
     @Column({
-        type: "float",
+        type: "bigint",
         nullable: true
     })
     meterStart!: number;
 
     @Column({
-        type: "float",
+        type: "bigint",
         nullable: true
     })
     meterStop!: number;
 
     @Column({
-        type: "float",
+        type: "int",
         nullable: true
     })
     energyUsed!: number;
@@ -129,13 +129,15 @@ class Sessions extends BaseEntity {
     location!: string;
 
     @Column({
-        type: "float",
+        type: "int",
+        unsigned: true,
         nullable: true
     })
     socStart!: number;
 
     @Column({
-        type: "float",
+        type: "int",
+        unsigned: true,
         nullable: true
     })
     socLast!: number;

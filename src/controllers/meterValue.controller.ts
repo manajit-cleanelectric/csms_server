@@ -54,18 +54,22 @@ async function addMeterValue(chargerId: any, params: any) {
         });
         meterValueEntity.sampledValues = sampledValue.map((sample: any) => {
             const parsedSample = parseSampledValue(sample);
-            if (parsedSample.measurand == Measurand.ENERGY_ACTIVE_IMPORT_REGISTER) {
+            if (parsedSample.measurand == Measurand.ENERGY_ACTIVE_IMPORT_REGISTER && parsedSample.numericValue) {
                 if (parsedSample.unit == UnitOfMeasure.KILOWATT_HOUR) {
                     session.meterStop = parsedSample.numericValue ? parsedSample.numericValue * 1000 : session.meterStop;
                 } else {
                     session.meterStop = parsedSample.numericValue ?? session.meterStop;
                 }
-            } else if (parsedSample.measurand == Measurand.SoC){
-                if (!session.socStart){
-                    session.socStart = parsedSample.numericValue ?? session.socStart;
+                session.meterStop = Math.round(session.meterStop);
+            } else if (parsedSample.measurand == Measurand.SoC && parsedSample.numericValue){
+                if (parsedSample.numericValue >= 0 || parsedSample.numericValue <= 100){
+                    if (!session.socStart){
+                        session.socStart = parsedSample.numericValue ?? session.socStart;
+                        session.socStart = Math.round(session.socStart);
+                    }
                     session.socLast = parsedSample.numericValue ?? session.socLast;
+                    session.socLast = Math.round(session.socLast);
                 }
-                session.socLast = parsedSample.numericValue ?? session.socLast;
             }
             return SampledValues.create(parsedSample);
         });
