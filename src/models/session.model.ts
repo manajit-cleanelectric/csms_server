@@ -173,7 +173,23 @@ class Sessions extends BaseEntity {
         nullable: true,
         default: null,
     })
-    taxAmount!: string | null; // Tax amount
+    netCGST!: string | null; // Tax amount
+
+    @Column({
+        type: "numeric",
+        precision: 20,
+        scale: 4,
+        nullable: true,
+    })
+    netSGST!: string | null; // Tax amount
+
+    @Column({
+        type: "numeric",
+        precision: 20,
+        scale: 4,
+        nullable: true,
+    })
+    netIGST!: string | null; // Tax amount
 
     @Column({
         type: "numeric",

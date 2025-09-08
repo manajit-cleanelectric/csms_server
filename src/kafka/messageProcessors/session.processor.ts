@@ -41,11 +41,6 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
                 let IGST = baseAmount * (chargingSession.charger?.tariff?.IGST / 100);
                 IGST = Math.round((IGST + Number.EPSILON) * 100) / 100;
 
-                // Convert NaN to 0 if tariff fields are null
-                if (isNaN(CGST)) CGST = 0;
-                if (isNaN(SGST)) SGST = 0;
-                if (isNaN(IGST)) IGST = 0;
-
                 // Total Amount = Base Amount + Taxes
                 let netAmount = baseAmount + CGST + SGST + IGST;
                 netAmount = Math.round((netAmount + Number.EPSILON) * 100) / 100;
@@ -73,7 +68,9 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
 
                 chargingSession.transaction = transaction;
                 chargingSession.baseAmount = toAmountString(baseAmount);
-                chargingSession.taxAmount = toAmountString(netAmount - baseAmount);
+                chargingSession.netCGST = toAmountString(CGST);
+                chargingSession.netSGST = toAmountString(SGST);
+                chargingSession.netIGST = toAmountString(IGST);
                 chargingSession.totalAmount = transaction.amount;
                 await chargingSession.save();
 

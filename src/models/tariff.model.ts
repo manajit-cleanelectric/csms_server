@@ -26,7 +26,7 @@ class Tariffs extends BaseEntity {
         type: "decimal",
         precision: 7,
         scale: 2,
-        nullable: true,
+        default: 0.00,
     })
     CGST!: number;
 
@@ -34,7 +34,7 @@ class Tariffs extends BaseEntity {
         type: "decimal",
         precision: 7,
         scale: 2,
-        nullable: true,
+        default: 0.00,
     })
     SGST!: number;
 
@@ -42,7 +42,7 @@ class Tariffs extends BaseEntity {
         type: "decimal",
         precision: 7,
         scale: 2,
-        nullable: true,
+        default: 0.00,
     })
     IGST!: number;
 
