@@ -1,17 +1,12 @@
 import {logger} from "../services/logger.service";
 import {Chargers, ChargerStatus} from "../models/charger.model";
 import {createRPCError} from "ocpp-rpc";
-import {Sessions, SessionStatus} from "../models/session.model";
 import {Vehicles} from "../models/vehicle.model";
 import {Heartbeats} from "../models/heartbeat.model";
 import {addMeterValue} from "./meterValue.controller";
-import {addSession} from "./session.controller";
+import {addSession, endSession} from "./session.controller";
 import {addStatusLog} from "./statusLog.controller";
 import {updateChargerStatus} from "./charger.controller";
-// import {LedgerService} from "../services/ledger.service";
-// import {EntryType, TxnCategory} from "../utils/enums";
-// import {Wallet} from "../models/wallet.model";
-
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received BootNotification from ${client.identity}`);
@@ -120,38 +115,9 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
 
 const handleStopTransaction = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Stop Transaction from ${client.identity}: ${JSON.stringify(params)}`);
-    let {idTag, meterStop, timestamp, transactionId, reason} = params;
-    let chargingSession: Sessions | null = null;
+    const transactionId = params.transactionId;
     try {
-        chargingSession = await Sessions.findOne({
-            where: {id: transactionId},
-            relations: ['user', 'connector'],
-        });
-        if (chargingSession) {
-            chargingSession.connector.currentSession = null;
-            await chargingSession.connector.save();
-            chargingSession.meterStop = meterStop;
-            chargingSession.endTime = timestamp;
-            chargingSession.reason = reason;
-            chargingSession.status = SessionStatus.FINISHED;
-            chargingSession.energyUsed = chargingSession.meterStop - chargingSession.meterStart;
-            await chargingSession.save();
-            // let systemWallet = await Wallet.findOneByOrFail({code: `SYSTEM:CPO_REVENUE`});
-            // const userWallet = await Wallet.findOneByOrFail({code: `USER:${chargingSession.user?.id}`});
-            // // TODO 15 is tariff, replace it with actual revenue
-            // let amount = (chargingSession.energyUsed * 15.00).toString();
-            // await LedgerService.postBalancedTransaction({
-            //     externalRef: `ChargingSession:${transactionId}`,
-            //     category: TxnCategory.CHARGE,
-            //     description: `Money is being deducted for Charging Session: ${chargingSession.id}`,
-            //     legs: [
-            //         {wallet: systemWallet, type: EntryType.CREDIT, amount: amount, memo: 'CPO Revenue'},
-            //         {wallet: userWallet, type: EntryType.DEBIT, amount: amount, memo: 'User Vehicle Charge'}
-            //     ]
-            // })
-        } else {
-            throw new Error("No such session was found.");
-        }
+        await endSession(transactionId, params);
     } catch (err) {
         logger.error(`Failed to stop Transaction: ${err}`);
         throw createRPCError("InternalError", "Database update failed.");

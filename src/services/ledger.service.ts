@@ -1,9 +1,9 @@
-import { AppDataSource } from '../database/datasource';
-import { EntryType, TxnCategory } from '../utils/enums';
-import { LedgerEntry } from '../models/LedgerEntry.model';
-import { Transaction } from '../models/transaction.model';
-import { Wallet } from '../models/wallet.model';
-import { toAmountString } from '../utils/money';
+import {AppDataSource} from '../database/datasource';
+import {EntryType, TxnCategory} from '../utils/enums';
+import {LedgerEntry} from '../models/LedgerEntry.model';
+import {Transaction} from '../models/transaction.model';
+import {Wallet} from '../models/wallet.model';
+import {toAmountString} from '../utils/money';
 
 type Leg = { wallet: Wallet; type: EntryType; amount: string; memo?: string | null };
 
@@ -14,8 +14,7 @@ export class LedgerService {
         description?: string;
         legs: Leg[]; // must balance
     }) {
-        const ds = AppDataSource;
-        return ds.transaction('READ COMMITTED', async (manager) => {
+        return AppDataSource.transaction('READ COMMITTED', async (manager) => {
             // Enforce idempotency by externalRef
             const existing = await manager.findOne(Transaction, { where: { externalRef: params.externalRef } });
             if (existing) return existing;
@@ -31,6 +30,8 @@ export class LedgerService {
                 throw new Error('Transaction not balanced (debits != credits)');
             }
 
+            const transactionAmount = toAmountString(debit); // or credit, they are equal here
+
             // Pessimistic lock wallets to avoid race conditions on balance updates
             const walletsToLock = [...new Set(params.legs.map(l => l.wallet.id))];
             const lockedWallets = await Promise.all(walletsToLock.map(id =>
@@ -42,6 +43,7 @@ export class LedgerService {
             const txn = manager.create(Transaction, {
                 externalRef: params.externalRef,
                 category: params.category,
+                amount: transactionAmount,
                 description: params.description ?? null
             });
             await manager.save(txn);

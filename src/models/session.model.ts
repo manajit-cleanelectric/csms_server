@@ -4,13 +4,14 @@ import {
     CreateDateColumn,
     Entity,
     JoinColumn,
-    ManyToOne,
+    ManyToOne, OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Chargers} from "./charger.model";
 import {Connectors} from "./connector.model";
 import {Users} from "./user.model";
+import {Transaction} from "./transaction.model";
 
 enum SessionStatus {
     IDLE = 'Idle',
@@ -156,6 +157,37 @@ class Sessions extends BaseEntity {
     })
     status!: SessionStatus;
 
+    @Column({
+        type: "numeric",
+        precision: 20,
+        scale: 4,
+        nullable: true,
+        default: null,
+    })
+    baseAmount!: string | null; // Amount before tax and discounts
+
+    @Column({
+        type: "numeric",
+        precision: 20,
+        scale: 4,
+        nullable: true,
+        default: null,
+    })
+    taxAmount!: string | null; // Tax amount
+
+    @Column({
+        type: "numeric",
+        precision: 20,
+        scale: 4,
+        nullable: true,
+        default: null,
+    })
+    totalAmount!: string | null; // Total amount to be paid by user (same as transaction.amount)
+
+    @OneToOne(() => Transaction, {nullable: true})
+    @JoinColumn({name: "transactionId"})
+    transaction!: Transaction | null;
+
     @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
 
@@ -165,5 +197,6 @@ class Sessions extends BaseEntity {
 
 export {
     Sessions,
-    SessionStatus
+    SessionStatus,
+    Reason,
 };

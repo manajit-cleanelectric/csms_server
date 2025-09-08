@@ -11,6 +11,13 @@ export class Transaction {
     @Column({ unique: true })
     externalRef!: string; // Razorpay payment_id OR session_id
 
+    @Column({
+        type: 'numeric',
+        precision: 20,
+        scale: 4,
+    })
+    amount!: string; //Always positive
+
     @Column({ type: 'enum', enum: TxnCategory })
     category!: TxnCategory;
 

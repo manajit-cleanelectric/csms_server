@@ -1,4 +1,4 @@
-import {Sessions, SessionStatus} from "../models/session.model";
+import {Reason, Sessions, SessionStatus} from "../models/session.model";
 import {Chargers} from "../models/charger.model";
 import {Vehicles} from "../models/vehicle.model";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
@@ -7,6 +7,7 @@ import {Users} from "../models/user.model";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../services/logger.service";
 import {In} from "typeorm";
+import {SessionProducer} from "../kafka/producers/session.producer";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
     // Create a new session
@@ -49,20 +50,28 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
 }
 
 async function endSession(sessionId: number, data: any) {
-    if (!sessionId) {
-        throw new MissingParameterError(`Session ID is required`);
+    const chargingSession = await Sessions.findOne({
+        where: {id: sessionId},
+        relations: ['user', 'connector'],
+    });
+    if (!Object.values(Reason).includes(data.reason)) {
+        data.reason = Reason.OTHER
     }
-    const session = await Sessions.findOneBy({id: sessionId});
-    if (!session) {
+    if (chargingSession) {
+        chargingSession.connector.currentSession = null;
+        await chargingSession.connector.save();
+        chargingSession.meterStop = data.meterStop;
+        chargingSession.endTime = data.timestamp;
+        chargingSession.reason = data.reason;
+        chargingSession.status = SessionStatus.FINISHED;
+        chargingSession.energyUsed = chargingSession.meterStop - chargingSession.meterStart;
+        await chargingSession.save();
+        const sessionProducer: SessionProducer = SessionProducer.getInstance();
+        await sessionProducer.sendSessionCompleteMessage(sessionId);
+    } else {
         logger.error(`Session with ID ${sessionId} not found`);
-        throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
+        throw new Error(`Session with ID ${sessionId} not found`);
     }
-    session.endTime = data.endTime;
-    session.meterStop = data.meterStop;
-    session.energyUsed = data.energyUsed;
-    session.status = SessionStatus.FINISHED;
-    await session.save();
-    return session;
 }
 
 async function getSession(sessionId: number) {

@@ -1,5 +1,6 @@
 import {LocalProducer} from "./producer";
 import {DefaultProducerConfig} from "../config/producer.config";
+import {Message} from "kafkajs";
 
 class SessionProducer extends LocalProducer{
     private static instance: SessionProducer;
@@ -18,16 +19,15 @@ class SessionProducer extends LocalProducer{
         return SessionProducer.instance;
     }
 
-    public async sendSessionCompleteMessage(sessionId: string, userId: string, ): Promise<void> {
-        const message = {
-            key: sessionId,
+    public async sendSessionCompleteMessage(sessionId: number): Promise<void> {
+        const message: Message = {
+            key: sessionId.toString(),
             value: JSON.stringify({
                 sessionId,
-                userId,
             }),
         };
         await this.sendMessage({
-            topic: "charge-completions",
+            topic: "session_completion",
             messages: [message],
         });
     }

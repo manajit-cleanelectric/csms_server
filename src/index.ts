@@ -50,6 +50,9 @@ const cronWorker = launchWorker(cronWorkerPath)
 const vehicleWorkerPath = path.resolve(__dirname, "kafka", "workers", "vehicle.worker.ts");
 const vehicleWorker = launchWorker(vehicleWorkerPath)
 
+const sessionWorkerPath = path.resolve(__dirname, "kafka", "workers", "session.worker.ts");
+const sessionWorker = launchWorker(sessionWorkerPath)
+
 
 const onCloseSignal = () => {
     logger.info("SIGINT/SIGTERM received, shutting down...");
@@ -59,6 +62,7 @@ const onCloseSignal = () => {
         // Send a shutdown message to a worker and wait for it to exit
         cronWorker.postMessage({ action: "shutdown" });
         vehicleWorker.postMessage({ action: "shutdown" });
+        sessionWorker.postMessage({ action: "shutdown" });
 
         await disconnectProducers();
         logger.info("Kafka producers disconnected");
