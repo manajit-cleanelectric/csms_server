@@ -2,7 +2,7 @@ import {
     BaseEntity,
     Column,
     CreateDateColumn,
-    Entity, JoinColumn, OneToOne,
+    Entity, JoinColumn, ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from "typeorm"
@@ -20,7 +20,7 @@ class PaymentRequest extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @OneToOne(() => Users)
+    @ManyToOne(() => Users)
     @JoinColumn({name: "userId"})
     user: Users;
 
