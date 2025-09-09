@@ -3,7 +3,7 @@ import {authenticate, authorize} from "../middleware/auth.middleware";
 import {logger, RAZORPAY_WEBHOOK_SECRET} from "../app";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
-import {createOrder} from "../controllers/payment.controller";
+import {createOrder, processOrder} from "../controllers/payment.controller";
 import {validateWebhookSignature} from "razorpay/dist/utils/razorpay-utils";
 
 
@@ -26,13 +26,19 @@ router.post('/api/payments/create-order', authenticate, authorize(UserRoles.CUST
         handleError(error, res, logger);
     }
 });
-router.post('/api/payments/razorpay/webhook', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
+router.post('/api/payments/razorpay/webhook', async (req: Request, res: Response) => {
     try {
         const webhookBody: any = req.body;
-        const webhookSignature: any = req.headers['X-Razorpay-Signature'];
-        validateWebhookSignature(JSON.stringify(webhookBody), webhookSignature, RAZORPAY_WEBHOOK_SECRET)
-        // TODO check and validate above code
-        // TODO write rest of the logic
+        const webhookSignature: any = req.headers['x-razorpay-signature'];
+        const isValid: boolean = validateWebhookSignature(JSON.stringify(webhookBody), webhookSignature, RAZORPAY_WEBHOOK_SECRET)
+        if(isValid) {
+            const status = await processOrder(webhookBody?.payload?.order?.entity?.id,webhookBody?.payload?.payment?.entity?.status === "captured");
+            if (status) {
+                res.status(200).send({success: true, message: "Payment Received", data: undefined});
+            } else {
+                res.status(200).send({success: false, message: "Payment Failed", data: undefined});
+            }
+        }
         logger.info("Web hook is triggered");
     } catch (error: any) {
         handleError(error, res, logger);
