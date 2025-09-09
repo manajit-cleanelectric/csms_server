@@ -140,7 +140,7 @@ async function generateAccessTokenViaRefreshToken(token: string) {
 async function logout(token: string) {
     const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false});
     if (!authToken) {
-        throw new InvalidAuthError(`Invalid refresh token provided`);
+        return true;
     }
     authToken.isRevoked = true;
     await authToken.save();
