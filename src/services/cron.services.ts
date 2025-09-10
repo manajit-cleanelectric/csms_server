@@ -1,65 +1,73 @@
 import {AppDataSource} from "../database/datasource";
 import {Chargers, ChargerStatus} from "../models/charger.model";
 import cron from "node-cron";
-import {Sessions, SessionStatus} from "../models/session.model";
+import {Reason, Sessions, SessionStatus} from "../models/session.model";
 import {parentPort} from "worker_threads";
-import {LessThan} from "typeorm";
+import {In, LessThan} from "typeorm";
+import {ConnectorStatus} from "../models/connector.model";
+import {SessionProducer} from "../kafka/producers/session.producer";
+
+const sessionProducer = SessionProducer.getInstance();
 
 const scheduleHeartbeatJob = () => {
-    AppDataSource.initialize().then(() => {
-        parentPort?.postMessage("Database Connection initialized in worker thread");
-    })
+    AppDataSource.initialize()
+        .then(() => {
+            parentPort?.postMessage("Database Connection initialized in cronWorker");
+        })
         .catch((err) => {
-            parentPort?.postMessage(`Database Connection initialization failed in worker thread: ${err}`);
+            parentPort?.postMessage(`Database Connection initialization failed in cronWorker: ${err}`);
             process.exit(1);
         });
+
+    sessionProducer.connect()
+        .then(() => {
+            parentPort?.postMessage("Kafka Producer connected in cronWorker");
+        })
+        .catch((err) => {
+            parentPort?.postMessage(`Kafka Producer connection failed in cronWorker: ${err}`);
+            process.exit(1);
+        });
+
     cron.schedule('* * * * *', async () => {
         parentPort?.postMessage(`Starting cleanup job`);
         const minutes = 5;
-        const currentTime = new Date(new Date().getTime() - minutes * 60 * 1000);
+        const cutOffTime = new Date(Date.now() - minutes * 60 * 1000);
 
         const unavailableChargers = await Chargers.find({
             select: ['id'],
             where: {
-                lastHeartBeat: LessThan(currentTime),
-            }
+                lastHeartBeat: LessThan(cutOffTime),
+            },
+            relations: ['connectors'],
         })
 
-        const cutOffTime = new Date(Date.now() - 5 * 60 * 1000);
-
         const expiredSessions = await Sessions.find({
-            select: ['id'],
             where: {
-                updatedAt: LessThan(cutOffTime)
-            }
+                updatedAt: LessThan(cutOffTime),
+                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING]),
+            },
+            relations: ['connector.currentSession',],
         });
 
-        if (unavailableChargers?.length !== 0) {
-            parentPort?.postMessage(`Found ${unavailableChargers.length} unavailable charger(s)`);
-
-            await AppDataSource
-                .getRepository(Chargers)
-                .createQueryBuilder()
-                .update(Chargers)
-                .set({status: ChargerStatus.UNAVAILABLE})
-                .where(`id IN (:...ids)`, {ids: unavailableChargers.map(c => c.id)})
-                .execute();
+        for (const charger of unavailableChargers) {
+            charger.status = ChargerStatus.UNAVAILABLE;
+            if (charger.connectors) {
+                for (const connector of charger.connectors) {
+                    connector.status = ConnectorStatus.UNAVAILABLE;
+                }
+            }
+            await charger.save();
         }
-        if (expiredSessions?.length !== 0) {
-            await AppDataSource
-                .getRepository('sessions')
-                .createQueryBuilder()
-                .update()
-                .set({status: SessionStatus.FAULTED})
-                .where(
-                    `id IN (:...ids)`, {ids: expiredSessions.map(c => c.id)}
-                )
-                .andWhere(
-                    "status IN (:...status)",
-                    {status: [SessionStatus.FINISHING, SessionStatus.CHARGING, SessionStatus.PREPARING]}
-                )
-                .setParameters({currentTime})
-                .execute();
+
+        for (const session of expiredSessions) {
+            session.status = SessionStatus.FAULTED;
+            session.endTime = session.updatedAt;
+            session.reason = Reason.LOCAL;
+            if (session.connector.currentSession?.id === session.id) {
+                session.connector.currentSession = null;
+            }
+            await session.save();
+            await sessionProducer.sendSessionCompleteMessage(session.id);
         }
         parentPort?.postMessage('Cleanup job completed');
     });
@@ -69,6 +77,9 @@ const cleanup = () => {
     try {
         AppDataSource.destroy().then(() => {
             parentPort?.postMessage('Database connection closed successfully in worker thread');
+        });
+        sessionProducer.disconnect().then(() => {
+            parentPort?.postMessage('Kafka Producer disconnected successfully in worker thread');
         });
         process.exit(0);
     } catch (err) {
