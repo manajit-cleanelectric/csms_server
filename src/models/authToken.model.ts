@@ -42,7 +42,7 @@ class AuthTokens extends BaseEntity {
 
     @Column({
         type: "varchar",
-        unique: true,
+        unique: false,
         nullable: true,
         length: 32
     })
