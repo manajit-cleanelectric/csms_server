@@ -38,7 +38,8 @@ router.post('/api/auth/send-otp', async (req: Request, res: Response) => {
 router.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
         const {phoneNumber, otp} = req.body;
-        const {accessToken, refreshToken, user} = await userLogin(phoneNumber, otp);
+        const clientIp = req.ip ?? '0.0.0.0';
+        const {accessToken, refreshToken, user} = await userLogin(phoneNumber, otp, clientIp);
         res.status(200).json({
             success: true,
             message: "OTP verified successfully",

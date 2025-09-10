@@ -49,7 +49,7 @@ async function updateUser(userId: string, data: any) {
     return user;
 }
 
-async function login(phoneNumber: string, otp: string) {
+async function login(phoneNumber: string, otp: string, clientIp: string = '0.0.0.0') {
     const storedOTP = await getOTP(phoneNumber);
     if (!storedOTP || String(storedOTP) !== String(otp)) {
         throw new InvalidAuthError(`Invalid OTP provided`);
@@ -85,6 +85,7 @@ async function login(phoneNumber: string, otp: string) {
     const authToken = new AuthTokens()
     authToken.user = user;
     authToken.token = refreshToken;
+    authToken.ipAddress = clientIp;
     // TODO add other details
     await authToken.save()
     return {accessToken, refreshToken, user};
