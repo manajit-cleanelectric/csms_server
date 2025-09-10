@@ -89,11 +89,11 @@ class Vehicles extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     transformFields() {
-        this.model = toTitleCase(this.model);
-        this.vendor = toTitleCase(this.vendor);
-        this.vin = this.vin.toUpperCase();
-        this.vehicleNo = this.vehicleNo.toUpperCase();
-        this.rcNumber = this.rcNumber.toUpperCase();
+        if (this.model) this.model = toTitleCase(this.model);
+        if (this.vendor) this.vendor = toTitleCase(this.vendor);
+        if (this.vin) this.vin = this.vin.toUpperCase();
+        if (this.vehicleNo) this.vehicleNo = this.vehicleNo.toUpperCase();
+        if (this.rcNumber) this.rcNumber = this.rcNumber.toUpperCase();
     }
 
     @BeforeRemove()

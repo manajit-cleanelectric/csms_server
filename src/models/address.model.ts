@@ -85,12 +85,12 @@ class Addresses extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     transformFields() {
-        this.line1 = toTitleCase(this.line1);
-        this.line2 = toTitleCase(this.line2);
-        this.location = toTitleCase(this.location);
-        this.city = toTitleCase(this.city);
-        this.state = toTitleCase(this.state);
-        this.zipCode = toTitleCase(this.zipCode);
+        if (this.line1) this.line1 = toTitleCase(this.line1);
+        if (this.line2) this.line2 = toTitleCase(this.line2);
+        if (this.location) this.location = toTitleCase(this.location);
+        if (this.city) this.city = toTitleCase(this.city);
+        if (this.state) this.state = toTitleCase(this.state);
+        if (this.zipCode) this.zipCode = toTitleCase(this.zipCode);
     }
 }
 
