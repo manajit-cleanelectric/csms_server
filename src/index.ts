@@ -2,10 +2,11 @@ import { app, SERVER_PORT, SERVER_HOST } from "./app";
 import { logger } from "./services/logger.service";
 import { AppDataSource } from "./database/datasource";
 import { rpcServer } from "./ocpp/ocppServer";
-import path from "path";
 import { ensureSystemWallets } from "./services/bootstrap.service";
 import {bootstrapKafka, bootstrapProducers, disconnectProducers} from "./kafka/bootstrap";
-import {launchWorker} from "./utils/launchWorker";
+
+// Import and start workers
+import { cronWorker, vehicleWorker, sessionWorker } from "./utils/workers";
 
 let server: ReturnType<typeof app.listen>;
 
@@ -42,18 +43,15 @@ bootstrapKafka()
         process.exit(1);
     });
 
-
-// Start worker threads for cron jobs and Kafka consumers
-const cronWorkerPath = path.resolve(__dirname, "services", "cron.services.ts");
-const cronWorker = launchWorker(cronWorkerPath)
-
-const vehicleWorkerPath = path.resolve(__dirname, "kafka", "workers", "vehicle.worker.ts");
-const vehicleWorker = launchWorker(vehicleWorkerPath)
-
-const sessionWorkerPath = path.resolve(__dirname, "kafka", "workers", "session.worker.ts");
-const sessionWorker = launchWorker(sessionWorkerPath)
-
-
+/**
+ * Gracefully shutdown the server
+ * * Close the server to stop accepting new connections
+ * * Wait for existing connections to finish
+ * * Send shutdown message to workers
+ * * Disconnect Kafka producers
+ * * Close database connection
+ * * Exit the process
+ */
 const onCloseSignal = () => {
     logger.info("SIGINT/SIGTERM received, shutting down...");
     server.close(async () => {

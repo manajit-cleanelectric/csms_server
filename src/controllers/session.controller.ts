@@ -8,13 +8,14 @@ import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoun
 import {logger} from "../services/logger.service";
 import {In} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
+import {cronWorker} from "../utils/workers";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
     // Create a new session
     const session = new Sessions();
     const charger = await Chargers.findOne({
         where: { id: chargerId },
-        relations: ["connectors", "address"]
+        relations: ["connectors.currentSession", "address"]
     });
     if (!charger) {
         logger.error(`Charger with ID ${chargerId} not found`);
@@ -26,8 +27,11 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
         logger.error(`Connector with ID ${connectorId} not found in charger ${chargerId}`);
         throw new ResourceNotFoundError(`Connector with ID ${connectorId} not found`);
     } else {
+        if (connector.currentSession) {
+            logger.warn(`Connector with ID ${connectorId} has an ongoing faulty session`);
+            cronWorker.postMessage({ action: "handleExpiredSessionId", sessionId: connector.currentSession.id });
+        }
         connector.currentSession = session;
-        await connector.save();
     }
     session.connector = connector;
     const vehicle = await Vehicles.findOne({

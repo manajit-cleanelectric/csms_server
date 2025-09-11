@@ -313,7 +313,7 @@ async function updateChargerStatus(chargerId: string, statusLog: StatusLogs) {
         //     throw new Error(`Invalid status transition from ${connector.status} to ${statusLog.status}`);
         // }
         connector.status = statusLog.status;
-        if (connector.currentSession){
+        if (connector.currentSession &&  connector.currentSession.status !== SessionStatus.FINISHED){
             connector.currentSession.status = getSessionStatusFromConnectorStatus(statusLog.status);
         }
     }

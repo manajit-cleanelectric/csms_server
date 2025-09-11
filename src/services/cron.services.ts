@@ -9,6 +9,30 @@ import {SessionProducer} from "../kafka/producers/session.producer";
 
 const sessionProducer = SessionProducer.getInstance();
 
+async function handleExpiredSession(session: Sessions) {
+    session.status = SessionStatus.FAULTED;
+    session.endTime = session.updatedAt;
+    session.reason = Reason.LOCAL;
+    if (session.connector.currentSession?.id === session.id) {
+        session.connector.currentSession = null;
+    }
+    await session.save();
+    await sessionProducer.sendSessionCompleteMessage(session.id);
+    parentPort?.postMessage(`Expired session with ID ${session.id} marked as FAULTED and sent to Kafka`);
+}
+
+async function handleExpiredSessionId(sessionId: number) {
+    const session = await Sessions.findOne({
+        where: {id: sessionId},
+        relations: ['connector.currentSession'],
+    });
+    if (session) {
+        await handleExpiredSession(session);
+    } else {
+        parentPort?.postMessage(`Session with ID ${sessionId} not found during cleanup`);
+    }
+}
+
 const scheduleHeartbeatJob = () => {
     AppDataSource.initialize()
         .then(() => {
@@ -34,7 +58,6 @@ const scheduleHeartbeatJob = () => {
         const cutOffTime = new Date(Date.now() - minutes * 60 * 1000);
 
         const unavailableChargers = await Chargers.find({
-            select: ['id'],
             where: {
                 lastHeartBeat: LessThan(cutOffTime),
             },
@@ -60,14 +83,7 @@ const scheduleHeartbeatJob = () => {
         }
 
         for (const session of expiredSessions) {
-            session.status = SessionStatus.FAULTED;
-            session.endTime = session.updatedAt;
-            session.reason = Reason.LOCAL;
-            if (session.connector.currentSession?.id === session.id) {
-                session.connector.currentSession = null;
-            }
-            await session.save();
-            await sessionProducer.sendSessionCompleteMessage(session.id);
+            await handleExpiredSession(session);
         }
         parentPort?.postMessage('Cleanup job completed');
     });
@@ -88,9 +104,13 @@ const cleanup = () => {
     }
 };
 
-parentPort?.on('message', (msg) => {
+parentPort?.on('message', async  (msg) => {
     if (msg?.action === 'shutdown') {
         cleanup();
+    }
+    if (msg?.action === 'handleExpiredSessionId' && msg?.sessionId) {
+        parentPort?.postMessage(`Received request to handle expired session with ID ${msg.sessionId}`);
+        await handleExpiredSessionId(msg.sessionId);
     }
 });
 
