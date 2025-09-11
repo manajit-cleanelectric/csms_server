@@ -28,7 +28,40 @@ router.get('/api/sessions/:sessionId', authenticate, async (req: Request, res: R
 router.get('/api/user/:userId/sessions', authenticate, async (req: Request, res: Response) => {
     try {
         const {userId} = req.params;
-        const sessions = await listAllUserSessions(userId);
+        let {startDate, endDate, page = 1, limit = 10} = req.query;
+
+        // Ensure page and limit are numbers
+        page = Number(page);
+        limit = Number(limit);
+
+        // Cast to string for date processing
+        startDate = startDate as string | undefined;
+        endDate = endDate as string | undefined;
+
+        // Validate page and limit (optional: you can add constraints for minimums or maximums)
+        if (isNaN(page) || page < 1) page = 1;
+        if (isNaN(limit) || limit < 1) limit = 10;
+        let startTime = new Date();
+        let endTime = new Date();
+
+        // Handle the startDate and endDate
+        if (startDate) {
+            startTime = new Date(startDate);
+            // If the startDate is invalid, we reset to epoch
+            if (isNaN(startTime.getTime())) startTime = new Date(0);
+        } else {
+            startTime = new Date(0);  // Default to epoch if not provided
+        }
+
+        if (endDate) {
+            endTime = new Date(endDate);
+            // If the endDate is invalid, set to current date
+            if (isNaN(endTime.getTime())) endTime = new Date();
+        } else {
+            endTime = new Date();  // Default to the current date if not provided
+        }
+
+        const sessions = await listAllUserSessions(userId, page, limit, startTime, endTime);
         res.status(200).send({success: true, message: "User sessions retrieved", data: sessions});
         logger.info(`Sent sessions for user with ID ${userId} successfully`);
     } catch (error: any) {
@@ -37,13 +70,13 @@ router.get('/api/user/:userId/sessions', authenticate, async (req: Request, res:
 });
 
 router.get('/api/chargers/:chargerId/sessions', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
-   try {
-       const {chargerId} = req.params;
-       const sessions = await listAllChargerSessions(chargerId);
-       res.status(200).send({success: true, message: "Charger sessions retrieved", data: sessions});
-   } catch (error: any) {
-       handleError(error, res, logger);
-   }
+    try {
+        const {chargerId} = req.params;
+        const sessions = await listAllChargerSessions(chargerId);
+        res.status(200).send({success: true, message: "Charger sessions retrieved", data: sessions});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
 });
 
 router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, async (req: Request, res: Response) => {
