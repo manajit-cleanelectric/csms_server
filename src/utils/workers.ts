@@ -1,5 +1,6 @@
 import {Worker} from "worker_threads";
 import {logger} from "../services/logger.service";
+import path from "path";
 
 function launchWorker(workerPath: string) {
     // Start the worker thread
@@ -22,6 +23,18 @@ function launchWorker(workerPath: string) {
     return worker;
 }
 
+// Start worker threads for cron jobs and Kafka consumers
+const cronWorkerPath = path.resolve(__dirname, "..", "services", "cron.services.ts");
+const cronWorker = launchWorker(cronWorkerPath)
+
+const vehicleWorkerPath = path.resolve(__dirname, "..", "kafka", "workers", "vehicle.worker.ts");
+const vehicleWorker = launchWorker(vehicleWorkerPath)
+
+const sessionWorkerPath = path.resolve(__dirname, "..", "kafka", "workers", "session.worker.ts");
+const sessionWorker = launchWorker(sessionWorkerPath)
+
 export {
-    launchWorker,
+    cronWorker,
+    vehicleWorker,
+    sessionWorker
 };

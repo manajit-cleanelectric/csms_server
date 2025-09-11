@@ -57,7 +57,8 @@ class Sessions extends BaseEntity {
     @ManyToOne(() => Connectors, (connector) => connector.sessions, {
         onDelete: "SET NULL",
         nullable: true,
-        orphanedRowAction: "nullify"
+        orphanedRowAction: "nullify",
+        cascade: true,
     })
     @JoinColumn({name: "connectorId"})
     connector!: Connectors;

@@ -107,10 +107,10 @@ class Users extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     transformFields() {
-        this.phoneNumber = toTitleCase(this.phoneNumber);
-        this.firstName = toTitleCase(this.firstName);
-        this.city = toTitleCase(this.city);
-        this.state = toTitleCase(this.state);
+        if (this.phoneNumber) this.phoneNumber = toTitleCase(this.phoneNumber);
+        if (this.firstName) this.firstName = toTitleCase(this.firstName);
+        if (this.city) this.city = toTitleCase(this.city);
+        if (this.state) this.state = toTitleCase(this.state);
     }
 }
 

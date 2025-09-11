@@ -119,10 +119,10 @@ export class Chargers extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     transformFields() {
-        this.model = toTitleCase(this.model);
-        this.vendor = toTitleCase(this.vendor);
-        this.serialNumber = this.serialNumber.toUpperCase();
-        this.city = toTitleCase(this.city);
+        if (this.model) this.model = toTitleCase(this.model);
+        if (this.vendor) this.vendor = toTitleCase(this.vendor);
+        if (this.serialNumber) this.serialNumber = this.serialNumber.toUpperCase();
+        if (this.city) this.city = toTitleCase(this.city);
     }
 
     public get connectorTypes(): string[] {
