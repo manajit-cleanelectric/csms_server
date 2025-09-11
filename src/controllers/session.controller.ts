@@ -6,7 +6,7 @@ import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/user.model";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../services/logger.service";
-import {In} from "typeorm";
+import {In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
 
@@ -14,7 +14,7 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
     // Create a new session
     const session = new Sessions();
     const charger = await Chargers.findOne({
-        where: { id: chargerId },
+        where: {id: chargerId},
         relations: ["connectors.currentSession", "address"]
     });
     if (!charger) {
@@ -35,7 +35,7 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
     }
     session.connector = connector;
     const vehicle = await Vehicles.findOne({
-        where: { bin: bin },
+        where: {bin: bin},
         relations: ["user"]
     });
     if (!vehicle) {
@@ -84,7 +84,7 @@ async function getSession(sessionId: number) {
     }
     // TODO: OPTIMIZE: Use query builder to partially fetch session data
     const session = await Sessions.findOne({
-        where: { id: sessionId },
+        where: {id: sessionId},
         relations: ["charger", "connector"]
     });
     if (!session) {
@@ -94,7 +94,7 @@ async function getSession(sessionId: number) {
     return session;
 }
 
-async function listAllUserSessions(userId: string) {
+async function listAllUserSessions(userId: string, page: number, limit: number, startDate: Date, endDate: Date) {
     if (!userId) {
         throw new MissingParameterError(`Charger ID is required`);
     }
@@ -102,19 +102,34 @@ async function listAllUserSessions(userId: string) {
         throw new InvalidUUIDError(`Charger ID ${userId} is not a valid UUID`);
     }
     const user = await Users.findOne({
-        where: { id: userId },
+        where: {id: userId},
     });
     if (!user) {
         logger.error(`User with ID ${userId} not found`);
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
     const sessions = await Sessions.find({
-        where: { user: { id: userId } },
-        relations: ["charger", "connector"]
+        where: [
+            {
+                user: {id: userId},
+                endTime: MoreThanOrEqual(startDate),
+            },
+            {
+                user: {id: userId},
+                endTime: LessThanOrEqual(endDate),
+            }
+        ],
+        relations: ['charger', 'connector'],
+        order: {
+            endTime: 'ASC',
+        },
+        skip: (page - 1) * limit,
+        take: limit,
     });
     if (sessions.length === 0) {
-        logger.error(`No sessions found for user with ID ${userId}`);
-        throw new NoContentError(`No sessions found for user with ID ${userId}`);
+        logger.info(`No sessions found for user with ID ${userId}`);
+        return [];
+        // throw new NoContentError(`No sessions found for user with ID ${userId}`);
     }
     return sessions.map(session => ({
         id: session.id,
@@ -143,7 +158,7 @@ async function listAllUserSessions(userId: string) {
 }
 
 // TODO: OPTIMIZE: Save ongoing session in cache to avoid multiple DB calls
-async function getOngoingSession(userId: string){
+async function getOngoingSession(userId: string) {
     if (!userId) {
         throw new MissingParameterError(`User ID is required`);
     }
@@ -151,13 +166,16 @@ async function getOngoingSession(userId: string){
         throw new InvalidUUIDError(`User ID ${userId} is not a valid UUID`);
     }
     const user = await Users.findOne({
-        where: { id: userId },
+        where: {id: userId},
     });
     if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
     const session = await Sessions.findOne({
-        where: { user: { id: userId }, status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING]) },
+        where: {
+            user: {id: userId},
+            status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
+        },
         relations: ["charger", "connector"]
     });
     if (!session) {
@@ -173,13 +191,13 @@ async function listAllChargerSessions(chargerId: string) {
     if (!uuidValidate(chargerId)) {
         throw new InvalidUUIDError(`Charger ID ${chargerId} is not a valid UUID`);
     }
-    const charger = await Chargers.findOneBy({ id: chargerId });
+    const charger = await Chargers.findOneBy({id: chargerId});
     if (!charger) {
         logger.error(`Charger with ID ${chargerId} not found`);
         throw new ResourceNotFoundError(`Charger with ID ${chargerId} not found`);
     }
     const sessions = await Sessions.find({
-        where: { charger: { id: chargerId } },
+        where: {charger: {id: chargerId}},
         relations: ["vehicle", "user", "connector"]
     });
     if (sessions.length === 0) {
