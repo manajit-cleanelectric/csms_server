@@ -53,6 +53,19 @@ export class Chargers extends BaseEntity {
     serialNumber: string;
 
     @Column({
+        type: "int",
+        default: 0,
+    })
+    maxPower: number; // in kW
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length:64,
+    })
+    alias: string | null;
+
+    @Column({
         type: "varchar",
         unique: false,
         length: 64
