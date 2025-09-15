@@ -58,7 +58,7 @@ function mailBodyInterface(
 </div>`;
 }
 
-const vehicleMessageProcessor: EachMessageHandler = async (payload: EachMessagePayload): Promise<void> => {
+const userMessageProcessor: EachMessageHandler = async (payload: EachMessagePayload): Promise<void> => {
     const {topic, partition, message, heartbeat, pause} = payload;
     parentPort?.postMessage(`Received message on topic ${topic}, partition ${partition}`);
     switch (topic) {
@@ -77,5 +77,5 @@ const vehicleMessageProcessor: EachMessageHandler = async (payload: EachMessageP
 }
 
 export {
-    vehicleMessageProcessor,
+    userMessageProcessor,
 }

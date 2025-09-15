@@ -19,7 +19,7 @@ const SessionConsumerConfig: ConsumerConfig = {
 }
 
 const VehicleConsumerConfig: ConsumerConfig = {
-    groupId: "vehicle-consumer-group",
+    groupId: "user-consumer-group",
     allowAutoTopicCreation: false,
     maxWaitTimeInMs: 1000,
     sessionTimeout: 30000,

@@ -1,7 +1,7 @@
 import {kafkaClient} from "./client";
 import {logger} from "../services/logger.service";
 import {topics} from "./config/kafka.config";
-import {VehicleProducer} from "./producers/vehicle.producer";
+import {UserProducer} from "./producers/user.producer";
 import {SessionProducer} from "./producers/session.producer";
 
 async function bootstrapKafka() {
@@ -30,8 +30,8 @@ async function bootstrapKafka() {
 async function bootstrapProducers(){
     try {
         // Setup Vehicle Producer instance
-        const vehicleProducer = VehicleProducer.getInstance();
-        await vehicleProducer.connect();
+        const userProducer = UserProducer.getInstance();
+        await userProducer.connect();
         logger.info('Vehicle Producer connected successfully.');
 
         const sessionProducer = SessionProducer.getInstance();
@@ -48,8 +48,8 @@ async function bootstrapProducers(){
 
 async function disconnectProducers(){
     try {
-        const vehicleProducer = VehicleProducer.getInstance();
-        await vehicleProducer.disconnect();
+        const userProducer = UserProducer.getInstance();
+        await userProducer.disconnect();
         logger.info('Vehicle Producer disconnected successfully.');
 
         const sessionProducer = SessionProducer.getInstance();

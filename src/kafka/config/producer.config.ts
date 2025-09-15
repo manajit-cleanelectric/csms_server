@@ -1,6 +1,4 @@
 import {ProducerConfig} from "kafkajs";
-import {VehicleProducer} from "../producers/vehicle.producer";
-import {zipMap} from "ioredis/built/utils";
 
 const DefaultProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
@@ -15,7 +13,7 @@ const DefaultProducerConfig: ProducerConfig = {
 
 // TODO: Check for idempotent
 // Config specifically for VehicleProducer
-const VehicleProducerConfig: ProducerConfig = {
+const UserProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
     // idempotent: true,
     // transactionalId: 'charge-clean-producer',
@@ -31,5 +29,5 @@ const VehicleProducerConfig: ProducerConfig = {
 
 export {
     DefaultProducerConfig,
-    VehicleProducerConfig,
+    UserProducerConfig,
 }

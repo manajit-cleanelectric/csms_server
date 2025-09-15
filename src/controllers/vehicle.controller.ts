@@ -13,7 +13,7 @@ import path from "path";
 import {STATIC_FOLDER_PATH} from "../app";
 import {logger} from "../services/logger.service";
 import {AppDataSource} from "../database/datasource";
-import {VehicleProducer} from "../kafka/producers/vehicle.producer";
+import {UserProducer} from "../kafka/producers/user.producer";
 
 function deleteImageFromDisk(imagePath: string): void {
     if (!imagePath) return;
@@ -66,9 +66,9 @@ async function addVehicle(userId: string, data: any) {
     vehicle.user = user;
     await vehicle.save();
 
-    const vehicleProducer = VehicleProducer.getInstance();
+    const userProducer = UserProducer.getInstance();
     try {
-        await vehicleProducer.sendVehicleRegistrationMessage(
+        await userProducer.sendVehicleRegistrationMessage(
             user.fullName,
             user.phoneNumber,
             undefined,
