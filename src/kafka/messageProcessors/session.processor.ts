@@ -57,12 +57,7 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
                     description: `Money is being deducted for Charging Session: ${chargingSession.id}`,
                     legs: [
                         {wallet: systemWallet, type: EntryType.CREDIT, amount: netAmountString, memo: 'CPO Revenue'},
-                        {
-                            wallet: userWallet,
-                            type: EntryType.DEBIT,
-                            amount: netAmountString,
-                            memo: 'User Vehicle Charge'
-                        }
+                        {wallet: userWallet, type: EntryType.DEBIT, amount: netAmountString, memo: 'User Vehicle Charge'},
                     ]
                 });
 

@@ -1,5 +1,14 @@
 import {parentPort} from "worker_threads";
 import {UserConsumer} from "../consumers/user.consumer";
+import {AppDataSource} from "../../database/datasource";
+
+AppDataSource.initialize()
+    .then(() => {
+        parentPort?.postMessage("Data Source has been initialized in User worker!");
+    })
+    .catch((err) => {
+        parentPort?.postMessage(`Error during Data Source initialization in User worker: ${err}`);
+    });
 
 const initializeWorker = () => {
     // Add any initialization logic here

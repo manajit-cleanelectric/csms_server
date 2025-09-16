@@ -72,6 +72,16 @@ class Users extends BaseEntity {
     })
     state!: string;
 
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 254,
+    })
+    email!: string;
+
+    @Column({type: "boolean", default: false})
+    isEmailVerified!: boolean;
+
     @Column({type: "boolean", default: false})
     isAccountApproved: boolean;
 
@@ -111,6 +121,7 @@ class Users extends BaseEntity {
         if (this.firstName) this.firstName = toTitleCase(this.firstName);
         if (this.city) this.city = toTitleCase(this.city);
         if (this.state) this.state = toTitleCase(this.state);
+        if (this.email) this.email = this.email.toLowerCase();
     }
 }
 

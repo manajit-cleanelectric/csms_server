@@ -42,6 +42,7 @@ class UserConsumer extends LocalConsumer{
         await this.subscribe({
             topics: [
                 'new_vehicle_registration',
+                'email_verification',
             ],
             fromBeginning: false,
         });

@@ -36,10 +36,10 @@ async function handleExpiredSessionId(sessionId: number) {
 const scheduleHeartbeatJob = () => {
     AppDataSource.initialize()
         .then(() => {
-            parentPort?.postMessage("Database Connection initialized in cronWorker");
+            parentPort?.postMessage("Data Source has been initialized in Cron worker!");
         })
         .catch((err) => {
-            parentPort?.postMessage(`Database Connection initialization failed in cronWorker: ${err}`);
+            parentPort?.postMessage( `Error during Data Source initialization in Cron worker: ${err}`);
             process.exit(1);
         });
 

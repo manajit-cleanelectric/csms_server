@@ -22,11 +22,11 @@ const topics: ITopicConfig[] = [
         numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
         replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
     },
-    // {
-    //     topic: 'session-updates',
-    //     numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
-    //     replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
-    // },
+    {
+        topic: 'email_verification',
+        numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
+        replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
+    },
     {
         topic: 'new_vehicle_registration',
         numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
