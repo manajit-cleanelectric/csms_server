@@ -1,5 +1,5 @@
 import {LocalConsumer} from "./consumer";
-import {VehicleConsumerConfig} from "../config/consumer.config";
+import {UserConsumerConfig} from "../config/consumer.config";
 import {userMessageProcessor} from "../messageProcessors/user.processor";
 
 class UserConsumer extends LocalConsumer{
@@ -10,7 +10,7 @@ class UserConsumer extends LocalConsumer{
      * Initializes the UserConsumer with the specified configuration.
      */
     private constructor() {
-        super(VehicleConsumerConfig);
+        super(UserConsumerConfig);
     }
 
     /**

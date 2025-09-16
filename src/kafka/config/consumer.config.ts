@@ -18,7 +18,7 @@ const SessionConsumerConfig: ConsumerConfig = {
     // autoCommitThreshold: 100,
 }
 
-const VehicleConsumerConfig: ConsumerConfig = {
+const UserConsumerConfig: ConsumerConfig = {
     groupId: "user-consumer-group",
     allowAutoTopicCreation: false,
     maxWaitTimeInMs: 1000,
@@ -31,6 +31,6 @@ const VehicleConsumerConfig: ConsumerConfig = {
 
 export {
     DefaultConsumerConfig,
-    VehicleConsumerConfig,
+    UserConsumerConfig,
     SessionConsumerConfig,
 }
