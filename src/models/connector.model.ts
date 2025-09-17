@@ -6,11 +6,12 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany, OneToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Chargers} from "./charger.model";
 import {Sessions} from "./session.model";
+import {v7} from "uuid";
 
 enum ConnectorStatus {
     AVAILABLE = 'Available',
@@ -50,7 +51,7 @@ enum ConnectorType {
 
 @Entity("connectors")
 class Connectors extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @ManyToOne(() => Chargers, (charger) => charger.connectors)
@@ -90,6 +91,11 @@ class Connectors extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 
     @BeforeInsert()
     @BeforeUpdate()

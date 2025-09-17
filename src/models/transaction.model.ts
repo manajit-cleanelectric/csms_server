@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Index } from 'typeorm';
+import {Entity, PrimaryColumn, Column, CreateDateColumn, OneToMany, Index, BeforeInsert} from 'typeorm';
 import { LedgerEntry } from './LedgerEntry.model';
 import { TxnCategory } from '../utils/enums';
+import {v7} from "uuid";
 
 @Entity('transactions')
 export class Transaction {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn('uuid')
     id!: string;
 
     @Index({ unique: true })
@@ -29,4 +30,9 @@ export class Transaction {
 
     @OneToMany(() => LedgerEntry, le => le.transaction)
     entries!: LedgerEntry[];
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }

@@ -1,9 +1,19 @@
-import {BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {
+    BaseEntity,
+    BeforeInsert,
+    Column,
+    CreateDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryColumn,
+    UpdateDateColumn
+} from "typeorm";
 import {SampledValues} from "./sampledValue.model";
+import {v7} from "uuid";
 
 @Entity("meterValues")
 class MeterValues extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @Column({
@@ -41,6 +51,11 @@ class MeterValues extends BaseEntity {
 
     @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {

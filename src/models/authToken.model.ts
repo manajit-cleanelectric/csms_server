@@ -1,19 +1,20 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert,
     Column,
     CreateDateColumn,
     Entity,
     JoinColumn,
     ManyToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Users} from "./user.model";
+import {v7} from "uuid";
 
 @Entity("authTokens")
 class AuthTokens extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id!: number;
+    @PrimaryColumn("uuid")
+    id!: string;
 
     @ManyToOne(() => Users, (user) => user.authTokens)
     @JoinColumn({name: "userId"})
@@ -56,6 +57,11 @@ class AuthTokens extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {

@@ -1,9 +1,10 @@
-import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {BaseEntity, BeforeInsert, Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn} from "typeorm";
+import {v7} from "uuid";
 
 @Entity("heartbeats")
 class Heartbeats extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id!: number;
+    @PrimaryColumn("uuid")
+    id!: string;
 
     @Column({
         type: "uuid",
@@ -23,6 +24,11 @@ class Heartbeats extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {
