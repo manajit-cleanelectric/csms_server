@@ -10,7 +10,7 @@ class LocalConsumer {
 
     /**
      * Initializes a new instance of the LocalConsumer class with the specified configuration.
-     * @param consumerConfig - Configuration object for the Kafka consumer.
+     * @param {ConsumerConfig} consumerConfig - Configuration object for the Kafka consumer.
      */
     public constructor(consumerConfig: ConsumerConfig) {
         this.consumer = kafkaClient.consumer(consumerConfig);
@@ -26,8 +26,8 @@ class LocalConsumer {
 
     /**
      * Subscribes the consumer to the specified topics.
-     * @param subscription - Object defining the topics to subscribe to and options.
-     * @returns Promise that resolves when the subscription is successful.
+     * @param {ConsumerSubscribeTopics} subscription - Object defining the topics to subscribe to and options.
+     * @returns {Promise<void>} Promise that resolves when the subscription is successful.
      */
     public async subscribe(subscription: ConsumerSubscribeTopics): Promise<void> {
         await this.consumer.subscribe(subscription)
@@ -35,8 +35,8 @@ class LocalConsumer {
 
     /**
      * Starts the Kafka consumer with the specified run configuration.
-     * @param runConfig - Configuration object for running the consumer, including message handlers and options.
-     * @returns Promise that resolves when the consumer is running.
+     * @param {ConsumerRunConfig} runConfig - Configuration object for running the consumer, including message handlers and options.
+     * @returns {Promise<void>} Promise that resolves when the consumer is running.
      */
     public async run(runConfig: ConsumerRunConfig): Promise<void> {
         await this.consumer.run(runConfig);
@@ -44,7 +44,7 @@ class LocalConsumer {
 
     /**
      * Gracefully disconnects the consumer from the Kafka broker.
-     * @return @returns Promise that resolves when the consumer is running.
+     * @return {Promise<void>} Promise that resolves when the consumer is disconnected.
      */
     public async shutdown(): Promise<void> {
         await this.consumer.disconnect();

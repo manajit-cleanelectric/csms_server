@@ -56,6 +56,10 @@ class UserConsumer extends LocalConsumer{
         });
     }
 
+    /**
+     * Stops the consumer by shutting it down.
+     * @returns Promise that resolves when the consumer is stopped.
+     */
     public async stopConsumer(): Promise<void> {
         await this.shutdown();
     }

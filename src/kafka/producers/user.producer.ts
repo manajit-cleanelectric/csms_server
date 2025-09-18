@@ -24,6 +24,15 @@ class UserProducer extends LocalProducer{
         return UserProducer.instance;
     }
 
+    /**
+     * Send a vehicle registration message to the Kafka topic.
+     * @param userName
+     * @param phoneNo
+     * @param email
+     * @param vehicleCompanyAndModel
+     * @param rcNumber
+     * @param timeStamp
+     */
     public async sendVehicleRegistrationMessage(userName: string, phoneNo: string, email: string | undefined, vehicleCompanyAndModel: string, rcNumber: string, timeStamp: string): Promise<void> {
         const message: Message = {
             key: phoneNo,
@@ -41,6 +50,11 @@ class UserProducer extends LocalProducer{
         });
     }
 
+    /**
+     * Send an email verification message to the Kafka topic.
+     * @param phoneNo
+     * @param email
+     */
     public async sendEmailVerificationMessage(phoneNo: string, email: string): Promise<void> {
         const message: Message = {
             key: phoneNo,
@@ -54,6 +68,13 @@ class UserProducer extends LocalProducer{
         });
     }
 
+    /**
+     * Send a top-up mail message to the Kafka topic.
+     * @param phoneNo
+     * @param amount
+     * @param orderId
+     * @param timeStamp
+     */
     public async sendTopUpMailMessage(phoneNo: string, amount: string, orderId: string, timeStamp: string): Promise<void> {
         const message: Message = {
             key: phoneNo,

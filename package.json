@@ -5,7 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "nodemon",
-    "test": "jest"
+    "test": "jest",
+    "docs": "typedoc",
+    "docs:serve": "typedoc && npx http-server docs -p 8080 -o"
   },
   "author": "Achyut Salunkhe",
   "dependencies": {
@@ -44,6 +46,8 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.13",
+    "typedoc-plugin-markdown": "^4.8.1",
     "typescript": "^5.8.3"
   },
   "engines": {

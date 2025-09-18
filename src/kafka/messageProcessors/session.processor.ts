@@ -12,8 +12,8 @@ import {makeSessionIdRandomized} from "../../services/idCodec.service";
 
 /**
  * Processor for handling session-related Kafka messages.
- * @param payload - The message payload containing topic, partition, message, heartbeat, and pause function.
- * @returns A promise that resolves when message processing is complete.
+ * @param {EachMessagePayload} payload - The message payload containing topic, partition, message, heartbeat, and pause function.
+ * @returns {Promise<void>} A promise that resolves when message processing is complete.
  */
 const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessagePayload): Promise<void> => {
     const {topic, partition, message, heartbeat, pause} = payload;

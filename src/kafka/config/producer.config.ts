@@ -1,5 +1,9 @@
 import {ProducerConfig} from "kafkajs";
 
+/**
+ * Default Producer Config
+ * @readonly {ProducerConfig} DefaultProducerConfig - Default configuration for Kafka producer
+ */
 const DefaultProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
     // idempotent: true,
@@ -13,6 +17,10 @@ const DefaultProducerConfig: ProducerConfig = {
 
 // TODO: Check for idempotent
 // Config specifically for VehicleProducer
+/**
+ * User Producer Config
+ * @readonly {ProducerConfig} UserProducerConfig - Configuration for Kafka producer handling user-related topics
+ */
 const UserProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
     // idempotent: true,

@@ -9,6 +9,11 @@ import {
 import {Users} from "../../models/user.model";
 import jwt from "jsonwebtoken";
 
+/**
+ * Processes user-related Kafka messages and triggers appropriate email notifications.
+ * @param {EachMessagePayload} payload - The message payload from Kafka.
+ * @returns {Promise<void>} A promise that resolves when the message has been processed.
+ */
 const userMessageProcessor: EachMessageHandler = async (payload: EachMessagePayload): Promise<void> => {
     const {topic, partition, message, heartbeat, pause} = payload;
     parentPort?.postMessage(`Received message on topic ${topic}, partition ${partition}`);
