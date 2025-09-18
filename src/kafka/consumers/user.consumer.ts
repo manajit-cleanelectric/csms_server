@@ -43,6 +43,7 @@ class UserConsumer extends LocalConsumer{
             topics: [
                 'new_vehicle_registration',
                 'email_verification',
+                'top_up_mail',
             ],
             fromBeginning: false,
         });

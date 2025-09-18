@@ -53,6 +53,21 @@ class UserProducer extends LocalProducer{
             messages: [message],
         });
     }
+
+    public async sendTopUpMailMessage(phoneNo: string, amount: string, orderId: string, timeStamp: string): Promise<void> {
+        const message: Message = {
+            key: phoneNo,
+            value: JSON.stringify({
+                amount,
+                orderId,
+                timeStamp,
+            }),
+        }
+        await this.sendMessage({
+            topic: "top_up_mail",
+            messages: [message],
+        });
+    }
 }
 
 export {

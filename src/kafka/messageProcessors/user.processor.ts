@@ -1,7 +1,11 @@
 import {EachMessageHandler, EachMessagePayload} from "kafkajs";
 import {sendMail} from "../../services/mail.service";
 import {parentPort} from "worker_threads";
-import {emailVerificationMailBodyInterface, vehicleRegistrationMailBodyInterface} from "../../utils/mailBodyInterface";
+import {
+    emailVerificationMailBodyInterface,
+    topUpSuccessfulMailBodyInterface,
+    vehicleRegistrationMailBodyInterface
+} from "../../utils/mailBodyInterface";
 import {Users} from "../../models/user.model";
 import jwt from "jsonwebtoken";
 
@@ -30,6 +34,20 @@ const userMessageProcessor: EachMessageHandler = async (payload: EachMessagePayl
             const verificationLink = `http://${process.env.SERVER_URL}/users/verify-email?token=${token}`;
             const body = emailVerificationMailBodyInterface(user.firstName, verificationLink);
             sendMail('clean@gmail.com', email, '📧 Verify Your Email Address', body);
+            break;
+        }
+        case ('top_up_mail'): {
+            const {key, value} = message;
+            const phoneNo = key?.toString()!;
+            const topUpData = JSON.parse(value?.toString()!)
+            const {amount, orderId, timeStamp} = topUpData;
+            const user = await Users.findOneOrFail({
+                where: {phoneNumber: phoneNo}
+            });
+            if (user.isEmailVerified) {
+                const body = topUpSuccessfulMailBodyInterface(user.firstName, amount, orderId, timeStamp);
+                sendMail('clean@gmail.com', user.email, '💰 Wallet Top-Up Successful', body);
+            }
             break;
         }
         default: {

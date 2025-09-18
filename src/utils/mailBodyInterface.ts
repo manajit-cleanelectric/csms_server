@@ -172,8 +172,51 @@ function chargeCompletionMailBodyInterface(
 </div>`;
 }
 
+function topUpSuccessfulMailBodyInterface(
+    userName: string,
+    amount: string,
+    orderId: string,
+    timeStamp: string
+): string {
+    return `
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; color: #333; line-height: 1.5; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 6px;">
+    <p style="margin-bottom: 20px;">Dear <strong>${userName}</strong>,</p>
+    <p style="margin-bottom: 24px;">
+        Your <strong style="color: #28A745;">wallet top-up</strong> on <strong>Charge Clean</strong> was <span style="color: #28A745; font-weight: bold;">successful</span>!
+    </p>
+    <h3 style="color: #444; margin-bottom: 15px;">💳 Top-Up Details</h3>
+    <table style="border-collapse: collapse; width: 100%; font-size: 15px; border-color: #ddd;">
+        <tr style="background-color: #f9f9f9;">
+            <th style="padding: 12px; text-align: left;">Field</th>
+            <th style="padding: 12px; text-align: left;">Value</th>
+        </tr>
+        <tr>
+            <td style="padding: 12px; border-top: 1px solid #ddd;"><strong>Amount</strong></td>
+            <td style="padding: 12px; border-top: 1px solid #ddd;">₹${amount}</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; border-top: 1px solid #ddd;"><strong>Razorpay Order Id</strong></td>
+            <td style="padding: 12px; border-top: 1px solid #ddd;">${orderId}</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; border-top: 1px solid #ddd;"><strong>Date & Time</strong></td>
+            <td style="padding: 12px; border-top: 1px solid #ddd;">${timeStamp}</td>
+        </tr>
+    </table>
+    <p style="margin-top: 30px;">
+        The amount has been credited to your Charge Clean wallet and is now available for future charging sessions.
+    </p>
+    <p style="margin-top: 40px; font-size: 16px;">
+        Thank you,<br />
+        <em>Charge Clean Team</em>
+    </p>
+</div>`;
+}
+
+
 export {
     vehicleRegistrationMailBodyInterface,
     emailVerificationMailBodyInterface,
     chargeCompletionMailBodyInterface,
+    topUpSuccessfulMailBodyInterface,
 }
