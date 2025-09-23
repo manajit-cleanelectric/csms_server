@@ -189,8 +189,8 @@ async function getOngoingSession(userId: string) {
         throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
     }
     const { pricePerKWh = 0, CGST = 0, SGST = 0, IGST = 0 } = session.charger.tariff || {};
-    const taxPercent = IGST > 0 ? IGST : (CGST + SGST);
-    const totalCostSoFar = (((session.energyUsed / 1000) * pricePerKWh) * (1 + taxPercent / 100)).toFixed(2);
+    const taxFraction = (CGST / 100) + (SGST / 100) + (IGST / 100);
+    const totalCostSoFar = (((session.energyUsed / 1000) * pricePerKWh) * (1 + taxFraction)).toFixed(2);
     return {
         id: session.id,
         startTime: session.startTime,
