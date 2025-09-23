@@ -41,7 +41,7 @@ enum Reason {
 @Entity("sessions")
 class Sessions extends BaseEntity {
     @PrimaryGeneratedColumn({
-        type: "int",
+        type: "bigint",
         unsigned: true
     })
     id!: number;

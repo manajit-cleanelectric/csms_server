@@ -7,7 +7,7 @@ import {
     JoinColumn, ManyToOne,
     OneToMany,
     OneToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn
 } from "typeorm"
 import {Sessions} from "./session.model";
@@ -15,6 +15,7 @@ import {Connectors} from "./connector.model";
 import {Addresses} from "./address.model";
 import {toTitleCase} from "../utils/titleCase";
 import {Tariffs} from "./tariff.model";
+import {v7} from "uuid";
 
 export enum ChargerStatus {
     AVAILABLE = 'Available',
@@ -25,7 +26,7 @@ export enum ChargerStatus {
 
 @Entity("chargers")
 export class Chargers extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id: string;
 
     @Column({
@@ -51,6 +52,19 @@ export class Chargers extends BaseEntity {
         length: 128
     })
     serialNumber: string;
+
+    @Column({
+        type: "int",
+        default: 0,
+    })
+    maxPower: number; // in kW
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length:64,
+    })
+    alias: string | null;
 
     @Column({
         type: "varchar",
@@ -115,6 +129,11 @@ export class Chargers extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 
     @BeforeInsert()
     @BeforeUpdate()

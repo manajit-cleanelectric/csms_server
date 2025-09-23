@@ -1,7 +1,9 @@
 import {ProducerConfig} from "kafkajs";
-import {VehicleProducer} from "../producers/vehicle.producer";
-import {zipMap} from "ioredis/built/utils";
 
+/**
+ * Default Producer Config
+ * @readonly {ProducerConfig} DefaultProducerConfig - Default configuration for Kafka producer
+ */
 const DefaultProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
     // idempotent: true,
@@ -15,7 +17,11 @@ const DefaultProducerConfig: ProducerConfig = {
 
 // TODO: Check for idempotent
 // Config specifically for VehicleProducer
-const VehicleProducerConfig: ProducerConfig = {
+/**
+ * User Producer Config
+ * @readonly {ProducerConfig} UserProducerConfig - Configuration for Kafka producer handling user-related topics
+ */
+const UserProducerConfig: ProducerConfig = {
     allowAutoTopicCreation: false,
     // idempotent: true,
     // transactionalId: 'charge-clean-producer',
@@ -31,5 +37,5 @@ const VehicleProducerConfig: ProducerConfig = {
 
 export {
     DefaultProducerConfig,
-    VehicleProducerConfig,
+    UserProducerConfig,
 }

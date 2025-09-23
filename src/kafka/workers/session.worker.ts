@@ -1,15 +1,14 @@
 import {AppDataSource} from "../../database/datasource";
-import {logger} from "../../services/logger.service";
 import {parentPort} from "worker_threads";
 import {SessionConsumer} from "../consumers/session.consumer";
 
 AppDataSource.initialize()
-.then(() => {
-    logger.info("Data Source has been initialized in session worker!");
-    })
-.catch((err) => {
-    logger.error("Error during Data Source initialization in session worker:", err);
-    });
+    .then(() => {
+        parentPort?.postMessage("Data Source has been initialized in session worker!");
+        })
+    .catch((err) => {
+        parentPort?.postMessage(`Error during Data Source initialization in session worker: ${err}`);
+        });
 
 const initializeWorker = () => {
     // Add any initialization logic here

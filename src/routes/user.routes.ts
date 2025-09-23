@@ -13,7 +13,8 @@ import {
     updateUser,
     updateUserPhoneNo,
     listCustomers,
-    addFcmToken
+    addFcmToken,
+    updateUserEmail, verifyUserEmail
 } from '../controllers/user.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter} from "../app";
@@ -147,6 +148,31 @@ router.put('/api/users/me/update-phone', authenticate, async (req: Request, res:
         handleError(error, res, logger);
     }
 });
+
+router.put('/api/users/me/update-email', authenticate, async (req: Request, res: Response) => {
+    const user = req.user;
+    try {
+        const {email} = req.body;
+        const userWithUpdatedEmail = await updateUserEmail(user!.id, email);
+        res.status(200).send({success: true, message: "Email updated successfully", data: userWithUpdatedEmail});
+        logger.info(`Email for user with ID ${user?.id} updated successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
+router.get('/users/verify-email', async (req: Request, res: Response) => {
+    try {
+        const {token} = req.query;
+        await verifyUserEmail(token)
+        res.status(200).send(`<html lang="en"><body><h1>Email Verified Successfully</h1><p>Your email has been verified successfully. You can now close this window.</p></body></html>`);
+        logger.info(`Email verified successfully using token`);
+    } catch (error: any) {
+        res.status(400).send(`<html lang="en"><body><h1>Email Verification Failed</h1><p>${error.message}</p></body></html>`);
+        logger.error(`Email verification failed: ${error.message}`);
+    }
+})
+
 
 router.get('/api/users/:userId/approve', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {

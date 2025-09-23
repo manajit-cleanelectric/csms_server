@@ -14,6 +14,7 @@ import {Wallet} from "../models/wallet.model";
 import {EntryType, TxnCategory, WalletType} from "../utils/enums";
 import {LedgerService} from "../services/ledger.service";
 import {FcmTokens} from "../models/fcmToken.model";
+import {UserProducer} from "../kafka/producers/user.producer";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
@@ -229,6 +230,47 @@ async function updateUserPhoneNo(userId: string, newPhoneNumber: string, otp: st
     return user;
 }
 
+async function updateUserEmail(userId: string, newEmail: string) {
+    if (!userId || !newEmail) {
+        throw new MissingParameterError("User ID is required");
+    }
+    const user = await Users.findOneBy({id: userId});
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    user.email = newEmail;
+    user.isEmailVerified = false;
+
+    await user.save();
+
+    // send email verification
+    const userProducer = UserProducer.getInstance();
+    await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email);
+    return user;
+}
+
+async function verifyUserEmail(token: any) {
+    if (typeof token !== "string") {
+        throw new Error("Token Missing");
+    }
+    let {phoneNo, email} = jwt.verify(token, JWT_SECRET_KEY) as any;
+    if (!phoneNo || !email) {
+        throw new Error(`Invalid token provided`);
+    }
+    const user = await Users.findOneOrFail({
+        where: {phoneNumber: phoneNo}
+    });
+    if (!user) {
+        throw new Error(`User not found with phone number ${phoneNo}`);
+    }
+    if (user.email !== email) {
+        throw new Error(`Email does not match for the provided phone number`);
+    }
+    user.isEmailVerified = true;
+    await user.save();
+    return user;
+}
+
 async function listUnApprovedUsers() {
     const users = await Users.find({
         select: ["id", "firstName", "lastName", "phoneNumber"],
@@ -323,6 +365,8 @@ export {
     logout,
     isPhoneNoAvailable,
     updateUserPhoneNo,
+    updateUserEmail,
+    verifyUserEmail,
     listCustomers,
     changeUserRole,
     addMoney,

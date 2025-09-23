@@ -5,16 +5,17 @@ import {
     Entity, Index,
     JoinColumn,
     ManyToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Users} from "./user.model";
 import {toTitleCase} from "../utils/titleCase";
+import {v7} from "uuid";
 
 
 @Entity("vehicles")
 class Vehicles extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @ManyToOne(() => Users, (user) => user.vehicles, {
@@ -85,6 +86,11 @@ class Vehicles extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 
     @BeforeInsert()
     @BeforeUpdate()

@@ -4,7 +4,7 @@ import {
     CreateDateColumn,
     Entity,
     OneToMany, OneToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Vehicles} from "./vehicle.model";
@@ -12,6 +12,7 @@ import {AuthTokens} from "./authToken.model";
 import {Sessions} from "./session.model";
 import {Wallet} from "./wallet.model";
 import {toTitleCase} from "../utils/titleCase";
+import {v7} from "uuid";
 
 enum UserRoles {
     ADMINISTRATOR = 'administrator',
@@ -21,7 +22,7 @@ enum UserRoles {
 
 @Entity("users")
 class Users extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @Column({
@@ -72,6 +73,16 @@ class Users extends BaseEntity {
     })
     state!: string;
 
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 254,
+    })
+    email!: string;
+
+    @Column({type: "boolean", default: false})
+    isEmailVerified!: boolean;
+
     @Column({type: "boolean", default: false})
     isAccountApproved: boolean;
 
@@ -105,12 +116,18 @@ class Users extends BaseEntity {
     }
 
     @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
+
+    @BeforeInsert()
     @BeforeUpdate()
     transformFields() {
         if (this.phoneNumber) this.phoneNumber = toTitleCase(this.phoneNumber);
         if (this.firstName) this.firstName = toTitleCase(this.firstName);
         if (this.city) this.city = toTitleCase(this.city);
         if (this.state) this.state = toTitleCase(this.state);
+        if (this.email) this.email = this.email.toLowerCase();
     }
 }
 

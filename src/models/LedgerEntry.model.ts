@@ -1,11 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
+import {Entity, PrimaryColumn, Column, ManyToOne, CreateDateColumn, Index, BeforeInsert} from 'typeorm';
 import { EntryType } from '../utils/enums';
 import { Wallet } from './wallet.model';
 import { Transaction } from './transaction.model';
+import {v7} from "uuid";
 
 @Entity('ledger_entries')
 export class LedgerEntry {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn('uuid')
     id!: string;
 
     @ManyToOne(() => Transaction, t => t.entries, { nullable: false })
@@ -26,4 +27,9 @@ export class LedgerEntry {
 
     @CreateDateColumn()
     createdAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }

@@ -1,5 +1,6 @@
-import {BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {BaseEntity, BeforeInsert, Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn} from "typeorm";
 import {ConnectorStatus} from "./connector.model";
+import {v7} from "uuid";
 
 enum ErrorCode {
     CONNECTOR_LOCK_FAILURE = "ConnectorLockFailure",
@@ -22,7 +23,7 @@ enum ErrorCode {
 
 @Entity("statusLogs")
 class StatusLogs extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @Column({
@@ -77,6 +78,11 @@ class StatusLogs extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {

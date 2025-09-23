@@ -1,27 +1,27 @@
 import {LocalConsumer} from "./consumer";
-import {VehicleConsumerConfig} from "../config/consumer.config";
-import {vehicleMessageProcessor} from "../messageProcessors/vehicle.processor";
+import {UserConsumerConfig} from "../config/consumer.config";
+import {userMessageProcessor} from "../messageProcessors/user.processor";
 
-class VehicleConsumer extends LocalConsumer{
-    private static instance: VehicleConsumer;
+class UserConsumer extends LocalConsumer{
+    private static instance: UserConsumer;
 
     /**
      * Private constructor to prevent direct instantiation.
-     * Initializes the VehicleConsumer with the specified configuration.
+     * Initializes the UserConsumer with the specified configuration.
      */
     private constructor() {
-        super(VehicleConsumerConfig);
+        super(UserConsumerConfig);
     }
 
     /**
-     * Gets the singleton instance of the VehicleConsumer.
-     * @returns The singleton instance of VehicleConsumer.
+     * Gets the singleton instance of the UserConsumer.
+     * @returns The singleton instance of UserConsumer.
      */
-    public static getInstance(): VehicleConsumer {
-        if (!VehicleConsumer.instance) {
-            VehicleConsumer.instance = new VehicleConsumer();
+    public static getInstance(): UserConsumer {
+        if (!UserConsumer.instance) {
+            UserConsumer.instance = new UserConsumer();
         }
-        return VehicleConsumer.instance;
+        return UserConsumer.instance;
     }
 
     /**
@@ -42,11 +42,13 @@ class VehicleConsumer extends LocalConsumer{
         await this.subscribe({
             topics: [
                 'new_vehicle_registration',
+                'email_verification',
+                'top_up_mail',
             ],
             fromBeginning: false,
         });
         await this.run({
-            eachMessage: vehicleMessageProcessor,
+            eachMessage: userMessageProcessor,
             autoCommit,
             autoCommitInterval,
             autoCommitThreshold,
@@ -54,6 +56,10 @@ class VehicleConsumer extends LocalConsumer{
         });
     }
 
+    /**
+     * Stops the consumer by shutting it down.
+     * @returns Promise that resolves when the consumer is stopped.
+     */
     public async stopConsumer(): Promise<void> {
         await this.shutdown();
     }
@@ -61,5 +67,5 @@ class VehicleConsumer extends LocalConsumer{
 }
 
 export {
-    VehicleConsumer,
+    UserConsumer,
 }

@@ -1,19 +1,20 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     Column,
     CreateDateColumn,
     OneToMany,
     Index,
-    UpdateDateColumn, OneToOne, JoinColumn, BaseEntity
+    UpdateDateColumn, OneToOne, JoinColumn, BaseEntity, BeforeInsert
 } from 'typeorm';
 import {Users} from './user.model';
 import {WalletType} from '../utils/enums';
 import {LedgerEntry} from './LedgerEntry.model';
+import {v7} from "uuid";
 
 @Entity('wallets')
 export class Wallet extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn('uuid')
     id!: string;
 
     @OneToOne(() => Users, (u) => u.wallet, {nullable: true})
@@ -41,4 +42,9 @@ export class Wallet extends BaseEntity {
 
     @OneToMany(() => LedgerEntry, le => le.wallet)
     entries!: LedgerEntry[];
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }

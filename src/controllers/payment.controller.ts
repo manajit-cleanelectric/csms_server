@@ -5,6 +5,7 @@ import {Users} from "../models/user.model";
 import {LedgerService} from "../services/ledger.service";
 import {Wallet} from "../models/wallet.model";
 import {EntryType, TxnCategory} from "../utils/enums";
+import {UserProducer} from "../kafka/producers/user.producer";
 
 async function createOrder(userId: string, amount: number) {
     if (!userId) {
@@ -56,6 +57,8 @@ async function processOrder(orderId: string, status: boolean) {
             })
             order.status = PaymentRequestStatus.COMPLETED;
             await order.save();
+            const userProducer = UserProducer.getInstance();
+            await userProducer.sendTopUpMailMessage(order.user.phoneNumber, order.amount, order.orderId, order.updatedAt.toLocaleString());
             return true;
         }
         return false;

@@ -27,7 +27,7 @@ function launchWorker(workerPath: string) {
 const cronWorkerPath = path.resolve(__dirname, "..", "services", "cron.services.ts");
 const cronWorker = launchWorker(cronWorkerPath)
 
-const vehicleWorkerPath = path.resolve(__dirname, "..", "kafka", "workers", "vehicle.worker.ts");
+const vehicleWorkerPath = path.resolve(__dirname, "..", "kafka", "workers", "user.worker.ts");
 const vehicleWorker = launchWorker(vehicleWorkerPath)
 
 const sessionWorkerPath = path.resolve(__dirname, "..", "kafka", "workers", "session.worker.ts");

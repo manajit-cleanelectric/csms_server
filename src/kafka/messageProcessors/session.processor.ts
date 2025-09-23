@@ -6,11 +6,14 @@ import {Wallet} from "../../models/wallet.model";
 import {LedgerService} from "../../services/ledger.service";
 import {EntryType, TxnCategory} from "../../utils/enums";
 import {toAmountString} from "../../utils/money";
+import {sendMail} from "../../services/mail.service";
+import {chargeCompletionMailBodyInterface} from "../../utils/mailBodyInterface";
+import {makeSessionIdRandomized} from "../../services/idCodec.service";
 
 /**
  * Processor for handling session-related Kafka messages.
- * @param payload - The message payload containing topic, partition, message, heartbeat, and pause function.
- * @returns A promise that resolves when message processing is complete.
+ * @param {EachMessagePayload} payload - The message payload containing topic, partition, message, heartbeat, and pause function.
+ * @returns {Promise<void>} A promise that resolves when message processing is complete.
  */
 const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessagePayload): Promise<void> => {
     const {topic, partition, message, heartbeat, pause} = payload;
@@ -57,12 +60,7 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
                     description: `Money is being deducted for Charging Session: ${chargingSession.id}`,
                     legs: [
                         {wallet: systemWallet, type: EntryType.CREDIT, amount: netAmountString, memo: 'CPO Revenue'},
-                        {
-                            wallet: userWallet,
-                            type: EntryType.DEBIT,
-                            amount: netAmountString,
-                            memo: 'User Vehicle Charge'
-                        }
+                        {wallet: userWallet, type: EntryType.DEBIT, amount: netAmountString, memo: 'User Vehicle Charge'},
                     ]
                 });
 
@@ -75,6 +73,28 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
                 await chargingSession.save();
 
                 parentPort?.postMessage(`Processed session_completion for session ID ${sessionId}`);
+
+                if (chargingSession.user?.isEmailVerified){
+                    const energyUsed = (chargingSession.energyUsed / 1000).toFixed(2); // Convert Wh to kWh
+                    const mailBody = chargeCompletionMailBodyInterface(
+                        chargingSession.user.firstName ?? 'User',
+                        chargingSession.location,
+                        makeSessionIdRandomized(sessionId, process.env.ID_CODEC_KEY!),
+                        chargingSession.startTime.toLocaleString(),
+                        chargingSession.endTime.toLocaleString(),
+                        energyUsed,
+                        chargingSession.baseAmount!,
+                        chargingSession.netCGST!,
+                        chargingSession.netSGST!,
+                        chargingSession.netIGST!,
+                        chargingSession.totalAmount!,
+                    );
+                    sendMail(
+                        'clean@gmail.com',
+                        chargingSession.user.email,
+                        `🔋 ${energyUsed} kWh — Charge Clean: Receipt Ready`,
+                        mailBody);
+                }
             } catch (error) {
                 parentPort?.postMessage(`Error processing session_completion for ${message.key} message: ${error}`);
                 // TODO: Implement retry logic or move message to a dead-letter queue

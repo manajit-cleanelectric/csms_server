@@ -1,12 +1,13 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert,
     Column,
     CreateDateColumn,
     Entity, JoinColumn, ManyToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn,
 } from "typeorm"
 import {Users} from "./user.model";
+import {v7} from "uuid";
 
 enum PaymentRequestStatus {
     INITIALISED = 'initialised',
@@ -17,7 +18,7 @@ enum PaymentRequestStatus {
 
 @Entity("payment_gateway_orders")
 class PaymentRequest extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id: string;
 
     @ManyToOne(() => Users)
@@ -62,6 +63,11 @@ class PaymentRequest extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {

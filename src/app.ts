@@ -36,6 +36,11 @@ const SMS_SERVICE_PROVIDER_API_KEY = process.env.SMS_SERVICE_PROVIDER_API_KEY!;
 const RAZORPAY_API_KEY_ID = process.env.RAZORPAY_API_KEY_ID!;
 const RAZORPAY_API_KEY_SECRET = process.env.RAZORPAY_API_KEY_SECRET!;
 const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
+const EMAIL_ACCOUNT_ID = process.env.EMAIL_ACCOUNT_ID!;
+const EMAIL_APP_PASSWORD = process.env.EMAIL_APP_PASSWORD!;
+const SERVER_URL = process.env.SERVER_URL!;
+const ID_CODEC_KEY = process.env.ID_CODEC_KEY!;
+const WALLET_MIN_BALANCE = parseInt(process.env.WALLET_MIN_BALANCE!, 10);
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -114,6 +119,21 @@ if (!RAZORPAY_API_KEY_SECRET) {
 }
 if (!RAZORPAY_WEBHOOK_SECRET) {
     throw new Error('RAZORPAY_WEBHOOK_SECRET is not defined in environment variables.');
+}
+if (!EMAIL_ACCOUNT_ID) {
+    throw new Error('EMAIL_ACCOUNT_ID is not defined in environment variables.');
+}
+if (!EMAIL_APP_PASSWORD) {
+    throw new Error('EMAIL_APP_PASSWORD is not defined in environment variables.');
+}
+if (!SERVER_URL) {
+    throw new Error('SERVER_URL is not defined in environment variables.');
+}
+if (!ID_CODEC_KEY) {
+    throw new Error('ID_CODEC_KEY is not defined in environment variables.');
+}
+if (!WALLET_MIN_BALANCE) {
+    throw new Error('WALLET_MIN_BALANCE is not defined in environment variables.');
 }
 
 function ensureDirExistsSync(dirPath: string): void {

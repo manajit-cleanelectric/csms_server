@@ -11,6 +11,21 @@ import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
+    // Check for wallet Min Balance
+    const vehicle = await Vehicles.findOne({
+        where: {bin: bin},
+        relations: ['user.wallet']
+    });
+    if (!vehicle) {
+        logger.error(`Vehicle with battery ID ${bin} not found`);
+        throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
+    }
+    // TODO: IMPLEMENT: Send push notification to user to recharge wallet if balance is low
+    if (parseFloat(vehicle.user?.wallet?.balance!) <= parseInt(process.env.WALLET_MIN_BALANCE!, 10) ) {
+        logger.error(`Insufficient wallet balance for user ${vehicle.user?.id}`);
+        throw new Error(`Insufficient wallet balance. Please recharge your wallet to start a new session.`);
+    }
+
     // Create a new session
     const session = new Sessions();
     const charger = await Chargers.findOne({
@@ -34,14 +49,6 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
         connector.currentSession = session;
     }
     session.connector = connector;
-    const vehicle = await Vehicles.findOne({
-        where: {bin: bin},
-        relations: ["user"]
-    });
-    if (!vehicle) {
-        logger.error(`Vehicle with battery ID ${bin} not found`);
-        throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
-    }
     session.vehicleNo = vehicle.vehicleNo;
     session.vehicleVendor = vehicle.vendor;
     session.vehicleModel = vehicle.model;
@@ -176,12 +183,24 @@ async function getOngoingSession(userId: string) {
             user: {id: userId},
             status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
         },
-        relations: ["charger", "connector"]
+        relations: ['charger.tariff', 'charger.address', 'connector']
     });
     if (!session) {
         throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
     }
-    return session;
+    const { pricePerKWh = 0, CGST = 0, SGST = 0, IGST = 0 } = session.charger.tariff || {};
+    const taxPercent = IGST > 0 ? IGST : (CGST + SGST);
+    const totalCostSoFar = (((session.energyUsed / 1000) * pricePerKWh) * (1 + taxPercent / 100)).toFixed(2);
+    return {
+        id: session.id,
+        startTime: session.startTime,
+        energyUsed: session.energyUsed,
+        totalCostSoFar: totalCostSoFar,
+        address: session.charger.address,
+        socLast: session.socLast,
+        status: session.status,
+        location: session.location
+    };
 }
 
 async function listAllChargerSessions(chargerId: string) {

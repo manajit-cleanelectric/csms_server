@@ -4,17 +4,18 @@ import {
     CreateDateColumn,
     Entity,
     OneToOne,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn,
     BeforeInsert,
     BeforeUpdate
 } from "typeorm"
 import {Chargers} from "./charger.model";
 import {toTitleCase} from "../utils/titleCase";
+import {v7} from "uuid";
 
 @Entity("addresses")
 class Addresses extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id: string;
 
     @OneToOne(() => Chargers, (charger) => charger.address)
@@ -81,6 +82,11 @@ class Addresses extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 
     @BeforeInsert()
     @BeforeUpdate()

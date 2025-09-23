@@ -1,17 +1,18 @@
 import {
-    BaseEntity,
+    BaseEntity, BeforeInsert,
     Column,
     CreateDateColumn,
     Entity,
     OneToMany,
-    PrimaryGeneratedColumn,
+    PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Chargers} from "./charger.model";
+import {v7} from "uuid";
 
 @Entity("tariffs")
 class Tariffs extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @Column({
@@ -54,6 +55,11 @@ class Tariffs extends BaseEntity {
 
     @UpdateDateColumn({type: 'timestamptz'})
     updatedAt!: Date;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {

@@ -155,6 +155,8 @@ async function addCharger(data: any) {
     charger.noOfConnector = data.noOfConnector;
     charger.vendor = data.vendor;
     charger.serialNumber = data.serialNumber;
+    charger.maxPower = data.maxPower;
+    charger.alias = data.alias;
     charger.longitude = data.longitude;
     charger.latitude = data.latitude;
     charger.tariff = tariff;
@@ -258,6 +260,8 @@ async function updateChargerData(chargerId: string, data: any) {
     }
     charger.vendor = data.vendor ?? charger.vendor;
     charger.model = data.model ?? charger.model;
+    charger.maxPower = data.maxPower ?? charger.maxPower;
+    charger.alias = data.alias ?? charger.alias;
     return await charger.save();
 }
 
@@ -364,7 +368,7 @@ async function getChargerByCity(city: string) {
     }
     const chargers = await Chargers.find({
         where: {city: city},
-        relations: ["connectors", "address"]
+        relations: ["connectors", "address", "tariff"]
     });
     if (chargers.length === 0) {
         throw new NoContentError(`No chargers found in city ${city}`);
@@ -374,6 +378,9 @@ async function getChargerByCity(city: string) {
         model: charger.model,
         vendor: charger.vendor,
         city: charger.city,
+        maxPower: charger.maxPower,
+        alias: charger.alias,
+        tariff: charger.tariff,
         address: charger.address,
         noOfConnector: charger.noOfConnector,
         status: charger.status,

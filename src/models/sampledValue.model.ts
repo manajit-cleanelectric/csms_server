@@ -1,5 +1,6 @@
-import {BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {BaseEntity, BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn} from "typeorm";
 import {MeterValues} from "./meterValue.model";
+import {v7} from "uuid";
 
 enum ReadingContext {
     INTERRUPTION_BEGIN = "Interruption.Begin",
@@ -85,7 +86,7 @@ enum UnitOfMeasure {
 
 @Entity("sampledValues")
 class SampledValues extends BaseEntity{
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @ManyToOne(() => MeterValues, (meterValue) => meterValue.sampledValues)
@@ -148,6 +149,11 @@ class SampledValues extends BaseEntity{
         default: UnitOfMeasure.WATT_HOUR,
     })
     unit?: UnitOfMeasure;
+
+    @BeforeInsert()
+    generateId() {
+        this.id = v7();
+    }
 }
 
 export {
