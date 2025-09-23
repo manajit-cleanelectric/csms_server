@@ -12,7 +12,8 @@ import {
     sendOtpToPhoneNumber,
     updateUser,
     updateUserPhoneNo,
-    listCustomers
+    listCustomers,
+    addFcmToken
 } from '../controllers/user.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter} from "../app";
@@ -187,6 +188,16 @@ router.post('/api/add-money', authenticate, authorize(UserRoles.SUPERVISOR), asy
     }
 })
 
+router.post('/api/save-fcm-token', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        const {fcmToken} = req.body;
+        await addFcmToken(user!.id, fcmToken);
+        res.status(200).send({success: true, message: "Added fcm token Successfully", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
 
 export {
     router,

@@ -13,6 +13,7 @@ import {
 import {Wallet} from "../models/wallet.model";
 import {EntryType, TxnCategory, WalletType} from "../utils/enums";
 import {LedgerService} from "../services/ledger.service";
+import {FcmTokens} from "../models/fcmToken.model";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
@@ -135,7 +136,15 @@ async function generateAccessTokenViaRefreshToken(token: string) {
     if (!user) {
         throw new ResourceNotFoundError(`User not found for the provided token`);
     }
-    return jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '3h'});
+    // Trim a user object to remove sensitive information
+    const trimmedUser = {
+        id: user.id,
+        phoneNumber: user.phoneNumber,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+    };
+    return jwt.sign({trimmedUser}, JWT_SECRET_KEY, {expiresIn: '3h'});
 }
 
 async function logout(token: string) {
@@ -289,6 +298,17 @@ async function addMoney(userId: string, amount: string, transactionId: string, u
     });
 }
 
+async function addFcmToken(userId: string, token: string) {
+    let user = await Users.findOneBy({id: userId});
+    if (!user) {
+        throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    let fcmToken = new FcmTokens()
+    fcmToken.token = token;
+    fcmToken.user = user;
+    await fcmToken.save();
+}
+
 
 export {
     addUserInfo,
@@ -305,5 +325,6 @@ export {
     updateUserPhoneNo,
     listCustomers,
     changeUserRole,
-    addMoney
+    addMoney,
+    addFcmToken,
 }

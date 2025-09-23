@@ -16,6 +16,7 @@ import {LedgerEntry} from "../models/LedgerEntry.model";
 import {Wallet} from "../models/wallet.model";
 import {Transaction} from "../models/transaction.model";
 import {PaymentRequest} from "../models/paymentOrders.model";
+import {FcmTokens} from "../models/fcmToken.model";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -41,7 +42,8 @@ const AppDataSource = new DataSource({
         LedgerEntry,
         Transaction,
         Wallet,
-        PaymentRequest
+        PaymentRequest,
+        FcmTokens
     ],
     synchronize: true,
     logging: false,
