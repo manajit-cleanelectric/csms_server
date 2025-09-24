@@ -39,19 +39,23 @@ const handleHeartbeat = async ({client, params}: { client: any; params: any }) =
 const handleAuthorize = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received Authorize from ${client.identity}: ${JSON.stringify(params)}`);
     let user = null;
+    let minBalanceCheck = true
     try {
-        // TODO: Confirm 'vehicle' field is correct for VIN
         const vehicle = await Vehicles.findOne({
             where: {bin: params.idTag},
-            relations: ["user"]
+            relations: ['user.wallet']
         })
         user = vehicle?.user;
+
+        // TODO: IMPLEMENT: Send push notification to user to recharge wallet if balance is low
+        if (parseFloat(user?.wallet?.balance!) <= parseInt(process.env.WALLET_MIN_BALANCE!, 10) ) {
+            minBalanceCheck = false
+        }
     } catch (err) {
         logger.error(`Failed to read vehicle VIN from DB:`, err);
         throw createRPCError("InternalError", "Database read failed.");
     }
-    //TODO add wallet validation
-    if (user) {
+    if (user && minBalanceCheck) {
         return {
             "idTagInfo": {
                 "status": "Accepted"
