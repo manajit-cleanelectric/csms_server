@@ -49,19 +49,19 @@ class InvalidAuthError extends Error {
 function handleError(error: any, res: any, logger: any) {
     switch (error.name) {
         case 'ResourceNotFoundError':
-            res.status(404).send({success: false, error: error.message, data: null});
+            res.status(404).send({success: false, message: error.message, data: null});
             logger.error(`Resource not found: ${error.message}`);
             break;
         case 'ResourceAlreadyExistsError':
-            res.status(409).send({success: false, error: error.message, data: null});
+            res.status(409).send({success: false, message: error.message, data: null});
             logger.error(`Resource already exists: ${error.message}`);
             break;
         case 'MissingParameterError':
-            res.status(400).send({success: false, error: error.message, data: null});
+            res.status(400).send({success: false, message: error.message, data: null});
             logger.error(`Missing parameter: ${error.message}`);
             break;
         case 'InvalidUUIDError':
-            res.status(400).send({success: false, error: error.message, data: null});
+            res.status(400).send({success: false, message: error.message, data: null});
             logger.error(`Invalid UUID: ${error.message}`);
             break;
         case 'NoContentError':
@@ -69,15 +69,15 @@ function handleError(error: any, res: any, logger: any) {
             logger.info(`No content available: ${error.message}`);
             break;
         case 'InvalidAuthError':
-            res.status(401).send({success: false, error: error.message, data: null});
+            res.status(401).send({success: false, message: error.message, data: null});
             logger.error(`Invalid Auth Credentials: ${error.message}`);
             break;
         case 'TypeError':
-            res.status(400).send({success: false, error: error.message, data: null});
+            res.status(400).send({success: false, message: error.message, data: null});
             logger.error(`Malformed request body: ${error.message}`);
             break;
         default:
-            res.status(500).send({success: false, error: "An unexpected error occurred", data: null});
+            res.status(500).send({success: false, message: "An unexpected error occurred", data: null});
             logger.error(`Unexpected error: ${error.message}`);
             break;
     }
