@@ -6,7 +6,7 @@ import {ITopicConfig, KafkaConfig, logLevel} from "kafkajs";
  */
 const kafkaConfig: KafkaConfig = {
     clientId: 'charge-clean',
-    brokers: ['localhost:29092'], // update as needed
+    brokers: ['localhost:9092'], // update as needed
     ssl: false,
     sasl: undefined,
     retry: {
