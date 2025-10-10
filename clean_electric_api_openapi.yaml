@@ -2,7 +2,8 @@ openapi: 3.0.4
 info:
   title: Charging Infrastructure API
   description: |-
-    This API enables management of users, chargers, vehicles, sessions, payments, and other core operations for EV infrastructure.
+    This API enables management of users, chargers, vehicles, sessions, payments, and other core operations for 
+    EV infrastructure.
     Field types and enumerations are standardized to match the database schema.
     All decimal, numeric, and bigint fields are represented as `string` in the API.
     For details, refer to the attached API and data type docs.
@@ -25,31 +26,32 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    ApiResponse:
+    Address:
       type: object
       properties:
-        success:
-          type: boolean
-        message:
+        id:
           type: string
-        data:
-          oneOf:
-            - type: object
-            - type: array
-              items: {}
-      required:
-        - success
-    ErrorResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
-        message:
+          format: uuid
+        line1:
           type: string
-      required:
-        - success
-        - error
+        line2:
+          type: string
+        location:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        country:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     User:
       type: object
       properties:
@@ -106,6 +108,22 @@ components:
           type: string
           format: date-time
           description: Update timestamp
+    UserCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        role:
+          type: string
     Vehicle:
       type: object
       properties:
@@ -183,9 +201,7 @@ components:
           type: string
           description: City location
         address:
-          type: string
-          format: uuid
-          description: Address ID
+          $ref: '#/components/schemas/Address'
         noOfConnector:
           type: number
           description: Number of connectors
@@ -204,9 +220,7 @@ components:
             - Unavailable
           description: Charger status
         tariff:
-          type: string
-          format: uuid
-          description: Tariff ID
+          $ref: '#/components/schemas/Tariff'
         lastHeartBeat:
           type: string
           format: date-time
@@ -220,20 +234,104 @@ components:
           type: string
           format: date-time
           description: Update timestamp
-    Session:
+    ChargerCompact:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+        model:
+          type: string
+        vendor:
+          type: string
+        serialNumber:
+          type: string
+        city:
+          type: string
+        alias:
+          type: string
+        maxPower:
+          type: number
+          format: integer
+        noOfConnector:
+          type: number
+        tariff:
+          $ref: '#/components/schemas/Tariff'
+    Connector:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chargerConnectorId:
+          type: number
+          format: integer
+        type:
+          type: string
+          enum:
+            - TYPE_2_AC
+            - CCS2_DC
+            - CHADEMO_DC
+            - TYPE_1_AC
+            - TYPE_6_DC
+            - TYPE_7_ACDC
+            - BHARAT_AC001
+            - BHARAT_DC001
+            - GBT_AC
+            - GBT_DC
+            - PANTOGRAPH_DOWN
+            - PANTOGRAPH_UP
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PaymentOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Order ID
+        user:
+          $ref: '#/components/schemas/UserCompact'
+        orderId:
+          type: string
+        amount:
+          type: string
+          description: Payment amount
+        currency:
+          type: string
+          description: Currency code
+        status:
+          type: string
+          enum:
+            - initialised
+            - pending
+            - complete
+            - failed
+          description: Payment status
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
           description: Session ID
         charger:
-          type: string
-          format: uuid
-          description: Charger ID
+          $ref: '#/components/schemas/ChargerCompact'
         connector:
-          type: string
-          format: uuid
-          description: Connector ID
+          $ref: '#/components/schemas/Connector'
         vehicleNo:
           type: string
           nullable: true
@@ -247,10 +345,7 @@ components:
           nullable: true
           description: Vehicle model
         user:
-          type: string
-          format: uuid
-          nullable: true
-          description: User ID
+          $ref: '#/components/schemas/UserCompact'
         startTime:
           type: string
           format: date-time
@@ -330,6 +425,34 @@ components:
           type: string
           format: date-time
           description: Update timestamp
+    SessionCompact:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 'Session ID'
+        charger:
+          $ref: '#/components/schemas/ChargerCompact'
+        location:
+          type: string
+          nullable: true
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+        energyUsed:
+          type: number
+          format: integer
+          nullable: true
+        status:
+          type: string
+        totalAmount:
+          type: string
+          description: numeric as string
+          nullable: true
     Wallet:
       type: object
       properties:
@@ -338,10 +461,7 @@ components:
           format: uuid
           description: Wallet ID
         user:
-          type: string
-          format: uuid
-          nullable: true
-          description: User ID
+          $ref: '#/components/schemas/UserCompact'
         type:
           type: string
           enum:
@@ -365,44 +485,144 @@ components:
           type: string
           format: date-time
           description: Update timestamp
-    LoginRequest:
+    WalletCompact:
       type: object
       properties:
-        phoneNumber:
+        id:
           type: string
-          description: Phone number
-        otp:
+          format: uuid
+          description: 'Wallet ID'
+        balance:
           type: string
-          description: OTP code
-      required:
-        - phoneNumber
-        - otp
-    OTPRequest:
+          description: numeric as string
+    Tariff:
       type: object
       properties:
-        phoneNumber:
+        id:
           type: string
-          description: Phone number
-      required:
-        - phoneNumber
-    LoginResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
+          format: uuid
+        pricePerKWh:
           type: string
-          example: Logged user successfully
-        accessToken:
+          description: numeric as string
+        CGST:
           type: string
-          description: JWT access token
-        refreshToken:
+          description: numeric as string
+        SGST:
           type: string
-          description: JWT refresh token
-        data:
-          $ref: '#/components/schemas/User'
+          description: numeric as string
+        IGST:
+          type: string
+          description: numeric as string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the user
+    vehicleId:
+      name: vehicleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the vehicle
+    chargerId:
+      name: chargerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the charger
+    sessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: ID of the session
+  requestBodies:
+    OTPRequestBody:
+      description: Request body for sending OTP
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: Phone number
+            required:
+              - phoneNumber
+    LoginRequestBody:
+      description: Request body for user login
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: Phone number
+              otp:
+                type: string
+                description: OTP code
+            required:
+              - phoneNumber
+              - otp
   responses:
+    GeneralSuccess:
+      description: General success response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: Operation completed successfully
+              data:
+                type: object
+                example: null
+            required:
+              - success
+              - message
+    LoginSuccess:
+      description: Successful login response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: Logged user successfully
+              accessToken:
+                type: string
+                description: JWT access token
+              refreshToken:
+                type: string
+                description: JWT refresh token
+              data:
+                $ref: '#/components/schemas/User'
     UnauthorizedError:
       description: Authentication is required and has failed or has not yet been provided
       content:
@@ -507,24 +727,12 @@ paths:
       summary: Send OTP to phone number
       description: Sends an OTP code to the provided phone number for authentication
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OTPRequest'
+        $ref: '#/components/requestBodies/OTPRequestBody'
       responses:
         '200':
-          description: OTP sent successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+          $ref: '#/components/responses/GeneralSuccess'
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/BadRequestError'
   /api/auth/login:
     post:
       tags:
@@ -532,24 +740,12 @@ paths:
       summary: Login with phone number and OTP
       description: Authenticates user with phone number and OTP, returns JWT tokens
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
+        $ref: '#/components/requestBodies/LoginRequestBody'
       responses:
         '200':
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
+          $ref: '#/components/responses/LoginSuccess'
         '401':
-          description: Invalid OTP
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/UnauthorizedError'
   /api/auth/logout:
     post:
       tags:
@@ -560,11 +756,7 @@ paths:
         - BearerAuth: []
       responses:
         '200':
-          description: Logout successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+          $ref: '#/components/responses/GeneralSuccess'
   /api/auth/refresh:
     post:
       tags:
@@ -579,7 +771,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Token refreshed successfully'
+                  accessToken:
+                    type: string
+                    description: New JWT access token
+                  data:
+                    type: object
+                    example: null
+                required:
+                  - success
+                  - message
+                  - accessToken
   /api/users:
     get:
       tags:
@@ -606,11 +815,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/User'
         '403':
-          description: Forbidden - insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/ForbiddenError'
   /api/users/{userId}/approve:
     get:
       tags:
@@ -620,20 +825,10 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: User ID to approve
+        - $ref: '#/components/parameters/userId'
       responses:
         '200':
-          description: User approved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+          $ref: '#/components/responses/GeneralSuccess'
   /api/users/me:
     get:
       tags:
@@ -653,6 +848,9 @@ paths:
                   success:
                     type: boolean
                     example: true
+                  message:
+                    type: string
+                    example: 'User details fetched'
                   data:
                     $ref: '#/components/schemas/User'
     put:
@@ -677,15 +875,22 @@ paths:
                   type: string
                 state:
                   type: string
-                email:
-                  type: string
       responses:
         '200':
           description: Profile updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Profile updated successfully'
+                  data:
+                    $ref: '#/components/schemas/User'
     post:
       tags:
         - User Profile
@@ -708,13 +913,25 @@ paths:
                   type: string
                 state:
                   type: string
+              required:
+                - firstName
+                - lastName
       responses:
         '200':
           description: Account info updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Account info updated successfully'
+                  data:
+                    $ref: '#/components/schemas/User'
   /api/users/{userId}/vehicles:
     get:
       tags:
@@ -724,13 +941,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: User ID
+        - $ref: '#/components/parameters/userId'
       responses:
         '200':
           description: Vehicles retrieved successfully
@@ -754,13 +965,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: User ID
+        - $ref: '#/components/parameters/userId'
       requestBody:
         required: true
         content:
@@ -786,7 +991,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle added successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
   /api/vehicles/{vehicleId}:
     get:
       tags:
@@ -796,13 +1010,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: vehicleId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Vehicle ID
+        - $ref: '#/components/parameters/vehicleId'
       responses:
         '200':
           description: Vehicle retrieved successfully
@@ -817,11 +1025,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/Vehicle'
         '404':
-          description: Vehicle not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/NotFoundError'
     put:
       tags:
         - Vehicles
@@ -830,13 +1034,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: vehicleId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Vehicle ID
+        - $ref: '#/components/parameters/vehicleId'
       requestBody:
         required: true
         content:
@@ -858,7 +1056,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
     patch:
       tags:
         - Vehicles
@@ -867,13 +1074,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: vehicleId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Vehicle ID
+        - $ref: '#/components/parameters/vehicleId'
       requestBody:
         required: true
         content:
@@ -897,7 +1098,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
   /api/chargers:
     get:
       tags:
@@ -986,7 +1196,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Charger created successfully'
+                  data:
+                    $ref: '#/components/schemas/Charger'
   /api/chargers/{chargerId}:
     get:
       tags:
@@ -996,13 +1215,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: chargerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Charger ID
+        - $ref: '#/components/parameters/chargerId'
       responses:
         '200':
           description: Charger retrieved successfully
@@ -1014,6 +1227,9 @@ paths:
                   success:
                     type: boolean
                     example: true
+                  message:
+                    type: string
+                    example: 'Charger details'
                   data:
                     $ref: '#/components/schemas/Charger'
     put:
@@ -1024,13 +1240,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: chargerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Charger ID
+        - $ref: '#/components/parameters/chargerId'
       requestBody:
         required: true
         content:
@@ -1055,7 +1265,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Charger updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Charger'
   /api/chargers/{chargerId}/sessions:
     get:
       tags:
@@ -1065,13 +1284,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: chargerId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Charger ID
+        - $ref: '#/components/parameters/chargerId'
       responses:
         '200':
           description: Sessions retrieved successfully
@@ -1086,13 +1299,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Session'
+                      $ref: '#/components/schemas/SessionCompact'
         '403':
-          description: Forbidden - not for customers
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/ForbiddenError'
   /api/users/{userId}/sessions:
     get:
       tags:
@@ -1102,13 +1311,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: User ID
+        - $ref: '#/components/parameters/userId'
       responses:
         '200':
           description: Sessions retrieved successfully
@@ -1133,13 +1336,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: User ID
+        - $ref: '#/components/parameters/userId'
       responses:
         '200':
           description: Ongoing session retrieved successfully
@@ -1153,12 +1350,6 @@ paths:
                     example: true
                   data:
                     $ref: '#/components/schemas/Session'
-        '404':
-          description: No ongoing session found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
   /api/sessions/{sessionId}:
     get:
       tags:
@@ -1168,12 +1359,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: sessionId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Session ID
+        - $ref: '#/components/parameters/sessionId'
       responses:
         '200':
           description: Session retrieved successfully
@@ -1196,13 +1382,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: User ID
+        - $ref: '#/components/parameters/userId'
       requestBody:
         required: true
         content:
@@ -1220,11 +1400,7 @@ paths:
                 - transactionId
       responses:
         '200':
-          description: Transaction stopped successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+          $ref: '#/components/responses/GeneralSuccess'
   /api/payments/create-order:
     post:
       tags:
@@ -1258,7 +1434,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Payment order created successfully'
+                  data:
+                    $ref: '#/components/schemas/PaymentOrder'
   /api/wallet/balance:
     get:
       tags:
@@ -1322,11 +1507,7 @@ paths:
               upiId: dcsdvfg
       responses:
         '200':
-          description: Money added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+          $ref: '#/components/responses/GeneralSuccess'
   /api/cities:
     get:
       tags:
@@ -1443,7 +1624,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Phone number updated successfully'
+                  data:
+                    $ref: '#/components/schemas/User'
   /api/upgrade-user-to-supervisor:
     post:
       tags:
@@ -1472,11 +1662,7 @@ paths:
                 - newRole
       responses:
         '200':
-          description: User role updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+          $ref: '#/components/responses/GeneralSuccess'
 tags:
   - name: Authentication
     description: User authentication and authorization
