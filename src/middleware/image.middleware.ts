@@ -3,7 +3,7 @@ import path from 'path';
 import {NextFunction, Request, Response} from 'express';
 import * as fs from "node:fs";
 import sharp from 'sharp';
-import {STATIC_FOLDER, STATIC_FOLDER_PATH, MEDIA_FOLDER, RC_IMAGE_FOLDER} from "../app";
+import {STATIC_FOLDER_PATH, MEDIA_FOLDER, RC_IMAGE_FOLDER} from "../app";
 
 // Set up a storage engine
 const upload = multer({storage: multer.memoryStorage()});

@@ -4,7 +4,13 @@ import {Vehicles} from "../models/vehicle.model";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/user.model";
-import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
+import {
+    InvalidUUIDError,
+    MissingParameterError,
+    NoContentError,
+    ResourceAlreadyExistsError,
+    ResourceNotFoundError
+} from "../errors/customErrors";
 import {logger} from "../services/logger.service";
 import {In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
@@ -41,6 +47,15 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
     if (!vehicle) {
         logger.error(`Vehicle with battery ID ${bin} not found`);
         throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
+    }
+    const runningSession = await Sessions.findOne({
+        where: {
+            vehicleNo: vehicle.vehicleNo,
+            status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
+        }
+    })
+    if (runningSession) {
+        throw new ResourceAlreadyExistsError("An active session already exists for this vehicle");
     }
     session.vehicleNo = vehicle.vehicleNo;
     session.vehicleVendor = vehicle.vendor;
