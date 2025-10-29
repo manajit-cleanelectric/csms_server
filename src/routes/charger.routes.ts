@@ -2,7 +2,7 @@ import {Request, Response, Router} from 'express';
 import {
     addCharger,
     getCharger,
-    getChargerByCity,
+    getChargerByCity, getChargersNearLocation,
     getCities,
     listAllCharger,
     updateCharger, updateChargerAddress, updateChargerData, updateChargerTariff, updateConnectorType
@@ -120,6 +120,21 @@ router.get('/api/cities', authenticate, async (req: Request, res: Response) => {
    } catch (error: any) {
          handleError(error, res, logger);
    }
+});
+
+router.get('/api/chargers/nearby/me', authenticate, async (req: Request, res: Response) => {
+    try {
+        const {longitude, latitude, radius=40} = req.query;
+        const chargers = await getChargersNearLocation(
+            parseFloat(longitude as string),
+            parseFloat(latitude as string),
+            parseInt(radius as string)
+        );
+        res.status(200).send({success: true, message: "Nearby Chargers", data: chargers});
+        logger.info(`Nearby chargers retrieved successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
 });
 
 export {

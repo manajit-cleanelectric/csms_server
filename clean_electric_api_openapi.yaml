@@ -257,6 +257,10 @@ components:
           type: number
         tariff:
           $ref: '#/components/schemas/Tariff'
+        connectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connector'
     Connector:
       type: object
       properties:
