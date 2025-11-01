@@ -48,15 +48,15 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
         logger.error(`Vehicle with battery ID ${bin} not found`);
         throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
     }
-    const runningSession = await Sessions.findOne({
-        where: {
-            vehicleNo: vehicle.vehicleNo,
-            status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
-        }
-    })
-    if (runningSession) {
-        throw new ResourceAlreadyExistsError("An active session already exists for this vehicle");
-    }
+    // const runningSession = await Sessions.findOne({
+    //     where: {
+    //         vehicleNo: vehicle.vehicleNo,
+    //         status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
+    //     }
+    // })
+    // if (runningSession) {
+    //     throw new ResourceAlreadyExistsError("An active session already exists for this vehicle");
+    // }
     session.vehicleNo = vehicle.vehicleNo;
     session.vehicleVendor = vehicle.vendor;
     session.vehicleModel = vehicle.model;
