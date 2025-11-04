@@ -8,7 +8,6 @@ import {
     InvalidUUIDError,
     MissingParameterError,
     NoContentError,
-    ResourceAlreadyExistsError,
     ResourceNotFoundError
 } from "../errors/customErrors";
 import {logger} from "../services/logger.service";
@@ -172,7 +171,6 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
     }));
 }
 
-// TODO: OPTIMIZE: Save ongoing session in cache to avoid multiple DB calls
 async function getOngoingSession(userId: string) {
     if (!userId) {
         throw new MissingParameterError(`User ID is required`);
@@ -209,6 +207,46 @@ async function getOngoingSession(userId: string) {
         status: session.status,
         location: session.location
     };
+}
+
+async function getOngoingSessionV2(userId: string) {
+    if (!userId) {
+        throw new MissingParameterError(`User ID is required`);
+    }
+    if (!uuidValidate(userId)) {
+        throw new InvalidUUIDError(`User ID ${userId} is not a valid UUID`);
+    }
+    const user = await Users.findOne({
+        where: {id: userId},
+    });
+    if (!user) {
+        throw new ResourceNotFoundError(`User with ID ${userId} not found`);
+    }
+    const sessions = await Sessions.find({
+        where: {
+            user: {id: userId},
+            status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
+        },
+        relations: ['charger.tariff', 'charger.address', 'connector']
+    });
+    if (sessions.length == 0) {
+        throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
+    }
+    return sessions.map(session => {
+        const { pricePerKWh = 0, CGST = 0, SGST = 0, IGST = 0 } = session.charger?.tariff || {};
+        const taxFraction = (CGST / 100) + (SGST / 100) + (IGST / 100);
+        const totalCostSoFar = (((session.energyUsed ?? 0) / 1000) * pricePerKWh * (1 + taxFraction)).toFixed(2);
+        return {
+            id: session.id,
+            startTime: session.startTime,
+            energyUsed: session.energyUsed,
+            totalCostSoFar: totalCostSoFar,
+            charger: session.charger,
+            socLast: session.socLast,
+            status: session.status,
+            location: session.location
+        };
+    });
 }
 
 async function listAllChargerSessions(chargerId: string) {
@@ -278,6 +316,7 @@ export {
     getSession,
     listAllUserSessions,
     getOngoingSession,
+    getOngoingSessionV2,
     sendRemoteStopTransaction,
     listAllChargerSessions,
 }
