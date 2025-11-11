@@ -7,6 +7,8 @@ import {RedisStore} from 'rate-limit-redis';
 import Redis from "ioredis";
 import * as fs from 'fs';
 import * as path from 'path';
+import client, { Counter, Registry } from 'prom-client';
+import {NextFunction, Request, Response} from 'express';
 
 config();
 
@@ -195,6 +197,42 @@ app.use(paymentRoutes);
 app.use(express.static(path.join(__dirname, '../', STATIC_FOLDER)));
 const STATIC_FOLDER_PATH = path.join(__dirname, '../', STATIC_FOLDER);
 logger.info(path.join(__dirname, '../', STATIC_FOLDER));
+// Create a Registry to register all metrics
+const register: Registry = new client.Registry();
+
+// Collect default system metrics (CPU, memory, etc.)
+client.collectDefaultMetrics({ register });
+
+// Define a custom counter metric for HTTP requests
+const httpRequestCounter = new Counter({
+    name: 'http_requests_total',
+    help: 'Total number of HTTP requests received',
+    labelNames: ['method', 'route', 'status_code'] as const,
+});
+
+// Register the custom metric
+register.registerMetric(httpRequestCounter);
+
+// Middleware to count requests
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.on('finish', () => {
+        const route = req.route ? req.route.path : req.path;
+        httpRequestCounter.labels(req.method, route, res.statusCode.toString()).inc();
+    });
+    next();
+});
+
+
+// Metrics endpoint
+app.get('/metrics', async (req: Request, res: Response) => {
+    try {
+        res.setHeader('Content-Type', register.contentType);
+        const metrics = await register.metrics();
+        res.send(metrics);
+    } catch (err) {
+        res.status(500).send((err as Error).message);
+    }
+});
 
 export {
     app,
