@@ -27,7 +27,7 @@ export interface IChargerCompact {
     vendor: string;
     serialNumber: string;
     city: string;
-    alias: string;
+    alias?: string;
     maxPower: number;
     noOfConnector: number;
     tariff: ITariff;
