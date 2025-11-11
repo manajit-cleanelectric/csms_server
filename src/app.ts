@@ -234,6 +234,14 @@ app.get('/metrics', async (req: Request, res: Response) => {
     }
 });
 
+// Swagger Documentation
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+const swaggerDocument = YAML.load(path.join(__dirname,'..', 'openapi.yaml'));
+
+// Serve Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 export {
     app,
     JWT_SECRET_KEY,

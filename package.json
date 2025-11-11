@@ -32,7 +32,9 @@
     "sharp": "^0.34.3",
     "typeorm": "^0.3.25",
     "uuid": "^11.1.0",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -51,7 +53,9 @@
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.13",
     "typedoc-plugin-markdown": "^4.8.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/yamljs": "^0.2.34"
   },
   "engines": {
     "node": "^v22.19.0"
