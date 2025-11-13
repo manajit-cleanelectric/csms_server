@@ -190,6 +190,7 @@ async function getOngoingSession(userId: string) {
         startTime: session.startTime,
         energyUsed: session.energyUsed,
         totalCostSoFar: totalCostSoFar,
+        charger: session.charger,
         address: session.charger.address,
         socLast: session.socLast,
         status: session.status,
