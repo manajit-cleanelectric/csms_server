@@ -23,7 +23,7 @@ AppDataSource.initialize()
             server.on("upgrade", rpcServer.handleUpgrade);
 
         } catch (err) {
-            logger.error("Initialization error:", err);
+            logger.error(`Error during database setup: ${err}`);
             process.exit(1);
         }
     })

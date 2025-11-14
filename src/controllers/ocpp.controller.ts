@@ -72,7 +72,7 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
             }
         }
     } catch (err) {
-        logger.error(`Failed to read vehicle VIN from DB:`, err);
+        logger.error(`Failed to read vehicle VIN from DB: ${err}`);
         throw createRPCError("InternalError", "Database read failed.");
     }
 };
@@ -125,7 +125,7 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
                 }
             }
         } else {
-            logger.error(`Failed to update charger status:`, err);
+            logger.error(`Failed to update charger status: ${err}`);
             throw createRPCError("InternalError", "Database update failed.");
         }
     }
