@@ -167,7 +167,8 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
             id: session.charger?.id,
             model: session.charger?.model
         },
-        connectorId: session.connector?.chargerConnectorId
+        connectorId: session.connector?.chargerConnectorId,
+        totalAmount: session.totalAmount,
     }));
 }
 
@@ -202,6 +203,7 @@ async function getOngoingSession(userId: string) {
         startTime: session.startTime,
         energyUsed: session.energyUsed,
         totalCostSoFar: totalCostSoFar,
+        charger: session.charger,
         address: session.charger.address,
         socLast: session.socLast,
         status: session.status,

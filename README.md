@@ -53,7 +53,7 @@ npm install
 Copy the environment template and configure your settings:
 
 ```bash
-cp .env.example .env
+cp ..env.example ..env
 ```
 
 #### Required Environment Variables
