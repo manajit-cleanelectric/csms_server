@@ -71,6 +71,48 @@ rpcServer.on("client", async (client: RpcServerClient) => {
         logger.warn(`Unhandled RPC method ${method} from ${client.identity}`);
         throw createRPCError("NotImplemented", `Method ${method} not supported.`);
     });
+
+    client.on('message', (event) => {
+        const {message, outbound} = event;
+        const direction = outbound ? 'SENT' : 'RECV';
+        logger.info(`[${direction}] OCPP message for ${String(client.identity).slice(-12)}: ${message}`);
+    })
+
+    client.on('close', (event) => {
+        const {code, reason} = event;
+        logger.info(`[CLOSE] Charger ${String(client.identity).slice(-12)} connection closed. Code: ${code}, Reason: ${reason}`);
+    })
+
+    client.on('error', (err) => {
+        logger.warn(`[ERROR] Error on connection with charger ${String(client.identity).slice(-12)}: ${err}`);
+    })
+
+    client.on('disconnect', (event) => {
+        const {code, reason} = event;
+        logger.info(`[DISCONNECT] Charger ${String(client.identity).slice(-12)} disconnected. Code: ${code}, Reason: ${reason}`);
+    })
+
+    client.on('closing', () => {
+        logger.info(`[CLOSING] Connection closing for charger ${String(client.identity).slice(-12)}`);
+    })
+
+    client.on('connecting', () => {
+        logger.info(`[CONNECTING] Connection connecting for charger ${String(client.identity).slice(-12)}`);
+    })
+
+    client.on('open', (response) => {
+        logger.info(`[OPEN] Connection opened for charger ${String(client.identity).slice(-12)}`);
+    })
+
+    client.on('ping', (event) => {
+        const {rtt} = event;
+        logger.info(`[PING] Ping sent to charger ${String(client.identity).slice(-12)}. RTT: ${rtt} ms`);
+    })
+
+    client.on('socketError', (err:Error) => {
+        logger.error(`[SOCKET ERROR] Socket error on connection with charger ${String(client.identity).slice(-12)}: ${err.message}`);
+    })
+
 });
 
 export {
