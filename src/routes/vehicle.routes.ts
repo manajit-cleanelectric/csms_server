@@ -4,7 +4,7 @@ import {
     deleteImageFromDisk,
     getVehicleById,
     getVehiclesByUserId,
-    removeVehicle, updateBinOfVehicle,
+    replaceVehicle, updateBinOfVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
 import {authenticate, authorize} from "../middleware/auth.middleware";
@@ -52,11 +52,9 @@ router.get('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOME
 
 router.put('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), uploadRcImage, async (req: Request, res: Response) => {
     try {
-        const user = req.user;
         const vehicleId = req.params.vehicleId;
         const data = req.body;
-        await removeVehicle(vehicleId);
-        const vehicle = await addVehicle(user!.id, data);
+        const vehicle = await replaceVehicle(vehicleId, data);
         logger.info(`Vehicle with ID ${vehicle.id} added successfully`);
         res.status(200).send({status: true, message: "Vehicle updated successfully", data: vehicle});
     } catch (error: any) {
