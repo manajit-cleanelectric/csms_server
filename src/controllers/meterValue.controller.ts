@@ -10,6 +10,7 @@ import {
 } from "../models/sampledValue.model";
 import {Sessions} from "../models/session.model";
 import {logger} from "../services/logger.service";
+import {moneyCheckerService} from "../services/moneyChecker.service";
 
 function parseSampledValue(sample: any) {
     let parsedSample: any = {};
@@ -38,7 +39,10 @@ function parseSampledValue(sample: any) {
 
 async function addMeterValue(chargerId: any, params: any) {
     const {connectorId, transactionId, meterValue} = params;
-    const session = await Sessions.findOneBy({id: transactionId});
+    const session = await Sessions.findOne({
+        where: {id: transactionId},
+        relations: ['user']
+    });
     if (!session) {
         logger.error(`Session with ID ${transactionId} not found.`);
         throw new Error(`Session with ID ${transactionId} not found.`);
@@ -78,6 +82,8 @@ async function addMeterValue(chargerId: any, params: any) {
     session.energyUsed = session.meterStop - session.meterStart;
     await session.save();
     logger.info(`Meter values added for session ${transactionId} at connector ${connectorId} for charger ${chargerId}.`);
+    await moneyCheckerService(session.user?.id!);
+    return;
 }
 
 async function getMeterValuesBySessionId(sessionId: number) {
