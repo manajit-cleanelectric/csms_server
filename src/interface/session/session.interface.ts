@@ -14,12 +14,12 @@ export interface ISession {
   endTime?: Date;
   meterStart?: number;
   meterStop?: number;
-  energyUsed?: number;
+  energyUsed: number;
   location?: string;
   socStart?: number;
   socLast?: number;
   reason?: string;
-  status: 'Preparing' | 'Charging' | 'SuspendedEVSE' | 'SuspendedEV' | 'Finishing';
+  status: 'Preparing' | 'Charging' | 'SuspendedEVSE' | 'SuspendedEV' | 'Finishing' | 'Finished';
   baseAmount?: string;
   netCGST?: string;
   netSGST?: string;
@@ -36,7 +36,23 @@ export interface ISessionCompact {
     location?: string;
     startTime: Date;
     endTime?: Date;
-    energyUsed?: number;
+    energyUsed: number;
     status: string;
     totalAmount?: string;
+}
+
+export interface IOngoingSession {
+    id: number;
+    charger: IChargerCompact;
+    connector: IConnector;
+    vehicleNo?: string;
+    vehicleVendor?: string;
+    vehicleModel?: string;
+    startTime: Date;
+    meterStart?: number;
+    energyUsed: number;
+    location?: string;
+    socStart?: number;
+    status: 'Preparing' | 'Charging' | 'SuspendedEVSE' | 'SuspendedEV' | 'Finishing';
+    totalCostSoFar?: string;
 }

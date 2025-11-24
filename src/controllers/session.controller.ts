@@ -14,6 +14,7 @@ import {logger} from "../services/logger.service";
 import {In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
+import {sessionToIOngoingSession} from "../interface";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
     // Create a new session
@@ -229,26 +230,13 @@ async function getOngoingSessionV2(userId: string) {
             user: {id: userId},
             status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
         },
-        relations: ['charger.tariff', 'charger.address', 'connector']
+        relations: ['charger.tariff', 'connector']
     });
     if (sessions.length == 0) {
         throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
     }
     return sessions.map(session => {
-        const { pricePerKWh = 0, CGST = 0, SGST = 0, IGST = 0 } = session.charger?.tariff || {};
-        const taxFraction = (CGST / 100) + (SGST / 100) + (IGST / 100);
-        const totalCostSoFar = (((session.energyUsed ?? 0) / 1000) * pricePerKWh * (1 + taxFraction)).toFixed(2);
-        return {
-            id: session.id,
-            startTime: session.startTime,
-            energyUsed: session.energyUsed,
-            totalCostSoFar: totalCostSoFar,
-            charger: session.charger,
-            connector: session.connector,
-            socLast: session.socLast,
-            status: session.status,
-            location: session.location
-        };
+        return sessionToIOngoingSession(session);
     });
 }
 

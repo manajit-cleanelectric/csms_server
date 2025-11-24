@@ -111,8 +111,8 @@ router.get('/api/user/:userId/ongoing-session', authenticate, async (req: Reques
 router.get('/api/v2/user/:userId/ongoing-session', authenticate, async (req: Request, res: Response) => {
     try {
         const {userId} = req.params;
-        const session = await getOngoingSessionV2(userId);
-        res.status(200).send({success: true, message: "Ongoing sessions retrieved", data: session});
+        const ongoingSessions = await getOngoingSessionV2(userId);
+        res.status(200).send({success: true, message: "Ongoing sessions retrieved", data: ongoingSessions});
         logger.info(`Sent ongoing session for User ID ${userId} successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
