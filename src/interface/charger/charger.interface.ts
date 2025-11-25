@@ -16,6 +16,7 @@ export interface ICharger {
   longitude: string;
   status: 'Available' | 'Occupied' | 'Faulted' | 'Unavailable';
   tariff: ITariff;
+  pricePerKWh: string;
   lastHeartBeat?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -31,5 +32,13 @@ export interface IChargerCompact {
     maxPower: number;
     noOfConnector: number;
     tariff: ITariff;
+    pricePerKWh: string;
     connectors: IConnector[];
+}
+
+export interface IMapCharger {
+    id: string;
+    latitude: string;
+    longitude: string;
+    status: 'Available' | 'Occupied' | 'Faulted' | 'Unavailable';
 }
