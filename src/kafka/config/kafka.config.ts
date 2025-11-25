@@ -6,9 +6,16 @@ import {ITopicConfig, KafkaConfig, logLevel} from "kafkajs";
  */
 const kafkaConfig: KafkaConfig = {
     clientId: 'charge-clean',
-    brokers: ['localhost:29092'], // update as needed
+    brokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(',').map(b => b.trim()),
     ssl: false,
-    sasl: undefined,
+    sasl:
+        process.env.KAFKA_SASL_USERNAME && process.env.KAFKA_SASL_PASSWORD
+            ? {
+                  mechanism: 'plain',
+                  username: process.env.KAFKA_SASL_USERNAME,
+                  password: process.env.KAFKA_SASL_PASSWORD,
+              }
+            : undefined,
     retry: {
         initialRetryTime: 300,
         retries: 10,
@@ -16,7 +23,7 @@ const kafkaConfig: KafkaConfig = {
             return true;
         },
     },
-    logLevel: logLevel.WARN
+    logLevel: logLevel.WARN,
 };
 
 // TODO: Partition and replication factor should be configured based on the deployment environment and topics usage

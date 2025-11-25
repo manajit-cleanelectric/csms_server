@@ -4,11 +4,17 @@ import {Vehicles} from "../models/vehicle.model";
 import {ChargerWebsocketMap} from "../ocpp/ocppServer";
 import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/user.model";
-import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
+import {
+    InvalidUUIDError,
+    MissingParameterError,
+    NoContentError,
+    ResourceNotFoundError
+} from "../errors/customErrors";
 import {logger} from "../services/logger.service";
 import {In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
+import {sessionToIOngoingSession} from "../interface";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
     // Create a new session
@@ -42,6 +48,15 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
         logger.error(`Vehicle with battery ID ${bin} not found`);
         throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
     }
+    // const runningSession = await Sessions.findOne({
+    //     where: {
+    //         vehicleNo: vehicle.vehicleNo,
+    //         status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
+    //     }
+    // })
+    // if (runningSession) {
+    //     throw new ResourceAlreadyExistsError("An active session already exists for this vehicle");
+    // }
     session.vehicleNo = vehicle.vehicleNo;
     session.vehicleVendor = vehicle.vendor;
     session.vehicleModel = vehicle.model;
@@ -158,7 +173,6 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
     }));
 }
 
-// TODO: OPTIMIZE: Save ongoing session in cache to avoid multiple DB calls
 async function getOngoingSession(userId: string) {
     if (!userId) {
         throw new MissingParameterError(`User ID is required`);
@@ -196,6 +210,34 @@ async function getOngoingSession(userId: string) {
         status: session.status,
         location: session.location
     };
+}
+
+async function getOngoingSessionV2(userId: string) {
+    if (!userId) {
+        throw new MissingParameterError(`User ID is required`);
+    }
+    if (!uuidValidate(userId)) {
+        throw new InvalidUUIDError(`User ID ${userId} is not a valid UUID`);
+    }
+    const user = await Users.findOne({
+        where: {id: userId},
+    });
+    if (!user) {
+        throw new ResourceNotFoundError(`User with ID ${userId} not found`);
+    }
+    const sessions = await Sessions.find({
+        where: {
+            user: {id: userId},
+            status: In([SessionStatus.PREPARING, SessionStatus.CHARGING, SessionStatus.FINISHING])
+        },
+        relations: ['charger.tariff', 'connector']
+    });
+    if (sessions.length == 0) {
+        throw new NoContentError(`No ongoing session found for user with ID ${userId}`);
+    }
+    return sessions.map(session => {
+        return sessionToIOngoingSession(session);
+    });
 }
 
 async function listAllChargerSessions(chargerId: string) {
@@ -265,6 +307,7 @@ export {
     getSession,
     listAllUserSessions,
     getOngoingSession,
+    getOngoingSessionV2,
     sendRemoteStopTransaction,
     listAllChargerSessions,
 }

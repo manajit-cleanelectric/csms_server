@@ -12,6 +12,8 @@ import {Tariffs} from "../models/tariff.model";
 import {Addresses} from "../models/address.model";
 import {StatusLogs} from "../models/statusLog.model";
 import {SessionStatus} from "../models/session.model";
+import {redisClient} from "../app";
+import {In} from "typeorm";
 
 const validConnectorTransitions: Record<ConnectorStatus, ConnectorStatus[]> = {
     [ConnectorStatus.AVAILABLE]: [
@@ -164,6 +166,13 @@ async function addCharger(data: any) {
     charger.status = ChargerStatus.AVAILABLE; // Default status
 
     await charger.save(); // Save charger first to get the ID
+
+    await redisClient.geoadd(
+        "chargers:locations",
+        charger.longitude,
+        charger.latitude,
+        charger.id
+    );
     return charger;
 }
 
@@ -244,6 +253,12 @@ async function updateChargerAddress(chargerId: string, data: any) {
     charger.latitude = data.latitude;
     charger.longitude = data.longitude;
     await charger.save();
+    await redisClient.geoadd(
+        "chargers:locations",
+        charger.longitude,
+        charger.latitude,
+        charger.id
+    );
     return charger;
 }
 
@@ -405,6 +420,70 @@ async function getCities() {
     return cities.map(city => city.city);
 }
 
+async function getChargersNearLocation(longitude: number, latitude: number, radiusInKm: number) {
+    const geoResults = await redisClient.geosearch(
+        "chargers:locations",
+        "FROMLONLAT",
+        longitude,
+        latitude,
+        "BYRADIUS",
+        radiusInKm,
+        "KM",
+        "WITHDIST",
+        "ASC",
+        "COUNT",
+        50
+    );
+
+    // geoResults items are expected to be [id, dist] but may come as strings depending on client
+    const idDistancePairs: Array<[string, number]> = (geoResults as any[]).map((item: any) => {
+        const id = Array.isArray(item) ? String(item[0]) : String(item);
+        const dist = Array.isArray(item) ? parseFloat(String(item[1])) : 0;
+        return [id, isNaN(dist) ? 0 : dist];
+    });
+
+    const ids = idDistancePairs.map(([id]) => id);
+    if (ids.length === 0) {
+        throw new NoContentError(`No chargers found within ${radiusInKm} km of the specified location`);
+    }
+
+    const chargers = await Chargers.find({
+        where: { id: In(ids as string[]) },
+        relations: ['connectors', 'tariff']
+    });
+
+    // Map chargers by id for ordering and attach distance, then filter missing records
+    const chargerMap = new Map(chargers.map(c => [c.id, c]));
+    return idDistancePairs
+        .map(([id, dist]) => {
+            const charger = chargerMap.get(id);
+            if (!charger) return null;
+            return {
+                id: charger.id,
+                model: charger.model,
+                vendor: charger.vendor,
+                city: charger.city,
+                maxPower: charger.maxPower,
+                alias: charger.alias,
+                tariff: charger.tariff,
+                noOfConnector: charger.noOfConnector,
+                status: charger.status,
+                longitude: charger.longitude,
+                latitude: charger.latitude,
+                dist, // distance in KM from redis geosearch
+                connectors: (charger.connectors || [])
+                    .filter(Boolean)
+                    .map(connector => ({
+                        id: connector.id,
+                        connectorType: connector.type,
+                        connectorId: connector.chargerConnectorId,
+                        status: connector.status,
+                    }))
+            };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== null);
+}
+
 
 export {
     addCharger,
@@ -418,4 +497,5 @@ export {
     updateCharger,
     getChargerByCity,
     getCities,
+    getChargersNearLocation,
 };

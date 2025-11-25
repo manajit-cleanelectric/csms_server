@@ -27,7 +27,7 @@ async function bootstrapKafka(): Promise<void> {
         // Disconnect the admin client after setup
         await admin.disconnect();
     } catch (error) {
-        logger.error('Error connecting to Kafka broker:', error);
+        logger.error(`Error connecting to Kafka broker: ${error}`);
         process.exit(1);
     }
 }
@@ -51,7 +51,7 @@ async function bootstrapProducers(): Promise<void>{
         // You can add more producers here following the same pattern
 
     } catch (error) {
-        logger.error('Error connecting Producer:', error);
+        logger.error(`Error connecting Producer: ${error}`);
         process.exit(1);
     }
 }
@@ -74,7 +74,7 @@ async function disconnectProducers(): Promise<void>{
         // You can add more producers here following the same pattern
 
     } catch (error) {
-        logger.error('Error disconnecting Producer:', error);
+        logger.error(`Error disconnecting Producer: ${error}`);
     }
 }
 

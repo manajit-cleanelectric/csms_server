@@ -7,6 +7,7 @@ import {addMeterValue} from "./meterValue.controller";
 import {addSession, endSession} from "./session.controller";
 import {addStatusLog} from "./statusLog.controller";
 import {updateChargerStatus} from "./charger.controller";
+import {ResourceAlreadyExistsError} from "../errors/customErrors";
 
 const handleBootNotification = async ({client, params}: { client: any; params: any }) => {
     logger.info(`Received BootNotification from ${client.identity}`);
@@ -51,22 +52,28 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
         if (parseFloat(user?.wallet?.balance!) <= parseInt(process.env.WALLET_MIN_BALANCE!, 10) ) {
             minBalanceCheck = false
         }
+        if (user && minBalanceCheck) {
+            return {
+                idTagInfo: {
+                    status: "Accepted"
+                }
+            };
+        } else if(!minBalanceCheck) {
+            return {
+                idTagInfo: {
+                    status: "Blocked",
+                }
+            };
+        } else {
+            return {
+                idTagInfo: {
+                    status: "Invalid"
+                }
+            }
+        }
     } catch (err) {
-        logger.error(`Failed to read vehicle VIN from DB:`, err);
+        logger.error(`Failed to read vehicle VIN from DB: ${err}`);
         throw createRPCError("InternalError", "Database read failed.");
-    }
-    if (user && minBalanceCheck) {
-        return {
-            "idTagInfo": {
-                "status": "Accepted"
-            }
-        };
-    } else {
-        return {
-            "idTagInfo": {
-                "status": "Invalid"
-            }
-        };
     }
 };
 
@@ -105,14 +112,22 @@ const handleStartTransaction = async ({client, params}: { client: any; params: a
         const chargingSession = await addSession(chargerId, connectorId, idTag, meterStart, timestamp);
         // TODO: Add Session to Redis cache
         return {
-            "idTagInfo": {
-                "status": "Accepted"
+            idTagInfo: {
+                status: "Accepted"
             },
-            "transactionId": chargingSession.id
+            transactionId: chargingSession.id
         };
     } catch (err) {
-        logger.error(`Failed to update charger status:`, err);
-        throw createRPCError("InternalError", "Database update failed.");
+        if (err instanceof ResourceAlreadyExistsError){
+            return {
+                idTagInfo: {
+                    status: "ConcurrentTx"
+                }
+            }
+        } else {
+            logger.error(`Failed to update charger status: ${err}`);
+            throw createRPCError("InternalError", "Database update failed.");
+        }
     }
 
 };
@@ -127,8 +142,8 @@ const handleStopTransaction = async ({client, params}: { client: any; params: an
         throw createRPCError("InternalError", "Database update failed.");
     }
     return {
-        "idTagInfo": {
-            "status": "Accepted"
+        idTagInfo: {
+            status: "Accepted"
         }
     };
 };
