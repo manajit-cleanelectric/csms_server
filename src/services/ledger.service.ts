@@ -23,7 +23,7 @@ export class LedgerService {
             let debit = 0, credit = 0;
             for (const l of params.legs) {
                 const amt = Number(l.amount);
-                if (amt <= 0) throw new Error('Ledger amounts must be positive');
+                if (amt < 0) throw new Error('Ledger amounts must be non negative');
                 if (l.type === EntryType.DEBIT) debit += amt; else credit += amt;
             }
             if (Math.abs(debit - credit) > 1e-6) {

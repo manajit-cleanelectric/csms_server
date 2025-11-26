@@ -15,6 +15,7 @@ import {EntryType, TxnCategory, WalletType} from "../utils/enums";
 import {LedgerService} from "../services/ledger.service";
 import {FcmTokens} from "../models/fcmToken.model";
 import {UserProducer} from "../kafka/producers/user.producer";
+import {isTokenExpired} from "../utils/isTokenExpired";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
@@ -138,6 +139,9 @@ async function generateAccessTokenViaRefreshToken(token: string) {
         throw new ResourceNotFoundError(`User not found for the provided token`);
     }
     // Trim a user object to remove sensitive information
+    if (isTokenExpired(token)){
+        throw new ResourceNotFoundError(`Provided token is expired`);
+    }
     const trimmedUser = {
         id: user.id,
         phoneNumber: user.phoneNumber,
