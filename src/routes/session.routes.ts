@@ -3,13 +3,15 @@ import {
     getOngoingSession, getOngoingSessionV2,
     getSession,
     listAllChargerSessions,
-    listAllUserSessions,
+    listAllUserSessions, listUserSessionsV2,
     sendRemoteStopTransaction
 } from '../controllers/session.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {logger} from "../services/logger.service";
 import {UserRoles} from "../models/user.model";
 import {handleError} from "../errors/customErrors";
+import {encodeSessionIdRandomized} from "../services/idCodec.service";
+import {parseDate} from "../utils/money";
 
 
 const router: Router = Router();
@@ -68,6 +70,40 @@ router.get('/api/user/:userId/sessions', authenticate, async (req: Request, res:
         handleError(error, res, logger);
     }
 });
+
+router.get('/api/v2/user/:userId/sessions', authenticate, async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { startDate, endDate, cursor, limit } = req.query;
+
+    // Validate and parse pagination parameters
+    const parsedLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const parsedCursor = cursor
+        ? String(cursor)
+        : encodeSessionIdRandomized(2**31 - 1, process.env.ID_CODEC_KEY!);
+
+    // Parse and validate dates
+    const startTime = parseDate(startDate as string | undefined, new Date(0));
+    const endTime = parseDate(endDate as string | undefined, new Date());
+
+    // Validate date range
+    if (startTime > endTime) {
+        res.status(400).send({
+            success: false,
+            message: "Invalid date range: startDate must be before endDate",
+            data: null
+        });
+        return;
+    }
+    const {data, metadata} = await listUserSessionsV2(userId, parsedLimit, parsedCursor, startTime, endTime);
+    res.status(200).send({
+        success: true,
+        message: "User sessions retrieved",
+        metadata,
+        data
+    });
+    logger.info(`Sent sessions for user with ID ${userId} successfully`);
+    return;
+})
 
 router.get('/api/chargers/:chargerId/sessions', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
     try {

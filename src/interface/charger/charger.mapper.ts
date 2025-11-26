@@ -1,5 +1,5 @@
 import {Chargers} from "../../models/charger.model";
-import {ICharger, IChargerCompact} from "./charger.interface";
+import {ICharger, IChargerCompact, IChargerHighCompact} from "./charger.interface";
 import {tariffToITariff} from "../tariff";
 import {connectorToIConnector} from "../connector";
 import {addressToIAddress} from "../address";
@@ -47,4 +47,14 @@ export function chargerToICharger(charger: Chargers): ICharger {
         createdAt: charger.createdAt,
         updatedAt: charger.updatedAt,
     };
+}
+
+export function chargerTOIChangerHighCompact(charger: Chargers): IChargerHighCompact {
+    return {
+        id: charger.id,
+        model: charger.model,
+        vendor: charger.vendor,
+        serialNumber: charger.serialNumber,
+        city: charger.city,
+    }
 }

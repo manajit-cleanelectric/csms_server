@@ -36,6 +36,14 @@ export interface IChargerCompact {
     connectors: IConnector[];
 }
 
+export interface IChargerHighCompact {
+    id: string;
+    model: string;
+    vendor: string;
+    serialNumber: string;
+    city: string;
+}
+
 export interface IMapCharger {
     id: string;
     latitude: string;

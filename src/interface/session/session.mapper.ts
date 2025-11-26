@@ -14,8 +14,6 @@ function calculateTotalCostSoFar(tariff: Tariffs, energyUsed: number): string {
 export function sessionTOISessionCompact(session: Sessions): ISessionCompact {
     return {
         id: session.id,
-        charger: chargerToIChargerCompact(session.charger),
-        startTime: session.startTime,
         endTime: session.endTime,
         energyUsed: session.energyUsed,
         status: session.status,

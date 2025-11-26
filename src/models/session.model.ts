@@ -119,7 +119,7 @@ class Sessions extends BaseEntity {
 
     @Column({
         type: "int",
-        nullable: false,
+        nullable: true,
         default: 0
     })
     energyUsed!: number;

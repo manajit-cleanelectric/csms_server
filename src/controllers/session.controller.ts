@@ -11,10 +11,11 @@ import {
     ResourceNotFoundError
 } from "../errors/customErrors";
 import {logger} from "../services/logger.service";
-import {In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
+import {Between, In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
-import {sessionToIOngoingSession} from "../interface";
+import {sessionToIOngoingSession, sessionTOISessionCompact} from "../interface";
+import {decodeSessionIdRandomized, encodeSessionIdRandomized} from "../services/idCodec.service";
 
 async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
     // Create a new session
@@ -173,6 +174,46 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
     }));
 }
 
+async function listUserSessionsV2(userId: string, limit: number, cursor: string, startDate: Date, endDate: Date) {
+    if (!userId) {
+        throw new MissingParameterError(`Charger ID is required`);
+    }
+    if (!uuidValidate(userId)) {
+        throw new InvalidUUIDError(`Charger ID ${userId} is not a valid UUID`);
+    }
+    const user = await Users.findOne({
+        where: {id: userId},
+    });
+    if (!user) {
+        throw new ResourceNotFoundError(`User with ID ${userId} not found`);
+    }
+    const cursorSessionIdRaw = decodeSessionIdRandomized(cursor, process.env.ID_CODEC_KEY!);
+    const cursorSessionId = Number(cursorSessionIdRaw);
+    const sessions = await Sessions.find({
+        where: {
+            user: {id: userId},
+            startTime: Between(startDate, endDate),
+            status: In([SessionStatus.FINISHED, SessionStatus.FAULTED]),
+            id: LessThanOrEqual(cursorSessionId)
+        },
+        order: {
+            id: 'DESC',
+        },
+        take: limit + 1,
+    });
+    const data = sessions.map(session => {
+        return sessionTOISessionCompact(session)
+    });
+    const metadata: any = {
+        hasMore: data.length > limit,
+        nextCursor: data.length > limit ? encodeSessionIdRandomized(data[limit].id, process.env.ID_CODEC_KEY!) : null
+    };
+    return {
+        data: data.slice(0, limit),
+        metadata: metadata
+    };
+}
+
 async function getOngoingSession(userId: string) {
     if (!userId) {
         throw new MissingParameterError(`User ID is required`);
@@ -306,6 +347,7 @@ export {
     endSession,
     getSession,
     listAllUserSessions,
+    listUserSessionsV2,
     getOngoingSession,
     getOngoingSessionV2,
     sendRemoteStopTransaction,

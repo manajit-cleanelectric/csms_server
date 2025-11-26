@@ -120,7 +120,7 @@ function feistelInvert(y: bigint, key: Buffer, rounds = 12): bigint {
  * @returns A session ID string in the format 'session_XXXXXXXXXX' where X are base36 chars
  * @throws RangeError if input is out of range
  */
-function makeSessionIdRandomized(input: number | bigint, secretKey: string, rounds = 12): string {
+function encodeSessionIdRandomized(input: number | bigint, secretKey: string, rounds = 12): string {
     const n = typeof input === 'bigint' ? input : BigInt(input);
     if (n < BigInt(0) || n >= N) throw new RangeError(`Input must be 0 <= n < 36^${LEN}`);
 
@@ -153,6 +153,6 @@ function decodeSessionIdRandomized(sessionId: string, secretKey: string, rounds 
 
 
 export {
-    makeSessionIdRandomized,
+    encodeSessionIdRandomized,
     decodeSessionIdRandomized,
 };

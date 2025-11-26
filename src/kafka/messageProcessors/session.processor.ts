@@ -8,7 +8,7 @@ import {EntryType, TxnCategory} from "../../utils/enums";
 import {toAmountString} from "../../utils/money";
 import {sendMail} from "../../services/mail.service";
 import {chargeCompletionMailBodyInterface} from "../../utils/mailBodyInterface";
-import {makeSessionIdRandomized} from "../../services/idCodec.service";
+import {encodeSessionIdRandomized} from "../../services/idCodec.service";
 
 /**
  * Processor for handling session-related Kafka messages.
@@ -79,7 +79,7 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
                     const mailBody = chargeCompletionMailBodyInterface(
                         chargingSession.user.firstName ?? 'User',
                         chargingSession.location,
-                        makeSessionIdRandomized(sessionId, process.env.ID_CODEC_KEY!),
+                        encodeSessionIdRandomized(sessionId, process.env.ID_CODEC_KEY!),
                         chargingSession.startTime.toLocaleString(),
                         chargingSession.endTime.toLocaleString(),
                         energyUsed,

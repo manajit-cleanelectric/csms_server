@@ -32,9 +32,7 @@ export interface ISession {
 
 export interface ISessionCompact {
     id: number;
-    charger: IChargerCompact;
     location?: string;
-    startTime: Date;
     endTime?: Date;
     energyUsed: number;
     status: string;
