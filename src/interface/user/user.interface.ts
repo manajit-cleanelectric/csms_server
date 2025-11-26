@@ -5,6 +5,7 @@ export interface IUser {
   phoneNumber: string;
   firstName?: string;
   lastName?: string;
+  role: string;
   city?: string;
   state?: string;
   vehicles: IVehicleCompact[];

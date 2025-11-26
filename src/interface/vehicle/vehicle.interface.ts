@@ -11,8 +11,6 @@ export interface IVehicle {
   rcNumber?: string;
   isApproved: boolean;
   rcImageUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface IVehicleCompact {

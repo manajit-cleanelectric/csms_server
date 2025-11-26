@@ -5,8 +5,8 @@ import {userToIUserCompact} from "../user";
 export function vehicleToIVehicleCompact(vehicle: Vehicles): IVehicleCompact {
     return {
         id: vehicle.id,
-        model: vehicle.model,
-        vendor: vehicle.vendor,
+        model: vehicle.model ?? undefined,
+        vendor: vehicle.vendor ?? undefined,
         vin: vehicle.vin,
     };
 }
@@ -14,16 +14,14 @@ export function vehicleToIVehicleCompact(vehicle: Vehicles): IVehicleCompact {
 export function vehicleToIVehicle(vehicle: Vehicles): IVehicle {
     return {
         id: vehicle.id,
-        user: userToIUserCompact(vehicle.user!),
-        model: vehicle.model,
-        vendor: vehicle.vendor,
+        user: userToIUserCompact(vehicle.user!) ?? undefined,
+        model: vehicle.model ?? undefined,
+        vendor: vehicle.vendor ?? undefined,
         vin: vehicle.vin,
-        bin: vehicle.bin,
-        vehicleNo: vehicle.vehicleNo,
-        rcNumber: vehicle.rcNumber,
+        bin: vehicle.bin ?? undefined,
+        vehicleNo: vehicle.vehicleNo ?? undefined,
+        rcNumber: vehicle.rcNumber ?? undefined,
         isApproved: vehicle.isApproved,
-        rcImageUrl: vehicle.rcImageUrl,
-        createdAt: vehicle.createdAt,
-        updatedAt: vehicle.updatedAt,
+        rcImageUrl: vehicle.rcImageUrl ?? undefined,
     };
 }

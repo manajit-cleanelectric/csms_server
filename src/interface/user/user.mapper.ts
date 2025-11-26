@@ -6,8 +6,8 @@ export function userToIUserCompact(user: Users): IUserCompact {
     return {
         id: user.id,
         phoneNumber: user.phoneNumber,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
         role: user.role,
     };
 }
@@ -16,11 +16,12 @@ export function userToIUser(user: Users): IUser {
     return {
         id: user.id,
         phoneNumber: user.phoneNumber,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        city: user.city,
-        state: user.state,
-        email: user.email,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
+        role: user.role,
+        city: user.city ?? undefined,
+        state: user.state ?? undefined,
+        email: user.email ?? undefined,
         isEmailVerified: user.isEmailVerified,
         isAccountApproved: user.isAccountApproved,
         isProfileComplete: user.isProfileComplete,
