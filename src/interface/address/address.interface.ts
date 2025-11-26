@@ -7,6 +7,4 @@ export interface IAddress {
   state: string;
   zipCode: string;
   country: string;
-  createdAt: Date;
-  updatedAt: Date;
 }

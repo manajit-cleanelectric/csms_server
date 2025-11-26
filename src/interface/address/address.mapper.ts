@@ -10,7 +10,5 @@ export function addressToIAddress(address: any): IAddress {
         state: address.state,
         zipCode: address.zipCode,
         country: address.country,
-        createdAt: address.createdAt,
-        updatedAt: address.updatedAt,
     };
 }
