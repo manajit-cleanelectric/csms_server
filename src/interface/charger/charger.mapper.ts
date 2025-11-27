@@ -38,6 +38,7 @@ export function chargerToICharger(charger: Chargers): ICharger {
         city: charger.city,
         address: addressToIAddress(charger.address),
         noOfConnector: charger.noOfConnector,
+        connectors: charger.connectors.map(connector => connectorToIConnector(connector)),
         latitude: charger.latitude.toString(7),
         longitude: charger.longitude.toString(7),
         status: charger.status as ICharger['status'],

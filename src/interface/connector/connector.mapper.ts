@@ -7,7 +7,5 @@ export function connectorToIConnector(connector: Connectors): IConnector {
         chargerConnectorId:connector.chargerConnectorId,
         type: connector.type as IConnector['type'],
         status: connector.status,
-        createdAt: connector.createdAt,
-        updatedAt: connector.updatedAt,
     };
 }

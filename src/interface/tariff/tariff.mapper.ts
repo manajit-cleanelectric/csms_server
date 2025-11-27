@@ -8,7 +8,5 @@ export function tariffToITariff(tariff: Tariffs): ITariff {
         CGST: Number(tariff.CGST).toFixed(2),
         SGST: Number(tariff.SGST).toFixed(2),
         IGST: Number(tariff.IGST).toFixed(2),
-        createdAt: tariff.createdAt,
-        updatedAt: tariff.updatedAt,
     };
 }

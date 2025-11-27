@@ -4,6 +4,4 @@ export interface ITariff {
   CGST: string;
   SGST: string;
   IGST: string;
-  createdAt: Date;
-  updatedAt: Date;
 }

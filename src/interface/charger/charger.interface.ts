@@ -12,6 +12,7 @@ export interface ICharger {
   city: string;
   address: IAddress;
   noOfConnector: number;
+  connectors: IConnector[];
   latitude: string;
   longitude: string;
   status: 'Available' | 'Occupied' | 'Faulted' | 'Unavailable';

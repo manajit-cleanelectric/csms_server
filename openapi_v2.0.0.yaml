@@ -1,0 +1,337 @@
+openapi: 3.1.0
+info:
+  title: Charging Infrastructure API
+  description: |-
+    This API enables management of users, chargers, vehicles, sessions, payments, and other core operations for
+    EV infrastructure.
+    Field types and enumerations are standardized to match the database schema.
+    All decimal, numeric, and bigint fields are represented as `string` in the API.
+    For details, refer to the attached API and data type docs.
+  termsOfService: 'https://example.com/terms/'
+  contact:
+    email: api-support@example.com
+  license:
+    name: Proprietary Internal Use
+    url: 'https://example.com/license'
+  version: 2.0.0
+externalDocs:
+  description: API Docs
+  url: 'https://example.com/docs'
+servers:
+  - url: 'https://dev.cpo.cehive.com'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    IAddress:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        line1:
+          type: string
+        line2:
+          type: string
+        location:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        country:
+          type: string
+      required:
+        - id
+        - line1
+        - line2
+        - location
+        - city
+        - state
+        - zipCode
+        - country
+    ITariff:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        pricePerKWh:
+          type: string
+        CGST:
+          type: string
+        SGST:
+          type: string
+        IGST:
+          type: string
+    IUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IVehicleCompact'
+        email:
+          type: string
+        isEmailVerified:
+          type: boolean
+        idAccountVerified:
+          type: boolean
+        isProfileComplete:
+          type: boolean
+        isVehicleRegistered:
+          type: boolean
+        isActive:
+          type: boolean
+        isDeleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - phoneNumber
+        - role
+        - vehicles
+        - isEmailVerified
+        - idAccountVerified
+        - isProfileComplete
+        - isVehicleRegistered
+        - isActive
+        - isDeleted
+        - createdAt
+        - updatedAt
+    IUserCompact:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          phoneNumber:
+            type: string
+          firstName:
+            type: string
+          lastName:
+            type: string
+          role:
+            type: string
+        required:
+            - id
+            - phoneNumber
+            - role
+    IVehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/IUserCompact'
+        model:
+          type: string
+        vendor:
+          type: string
+        vin:
+          type: string
+        bin:
+          type: string
+        vehicleNo:
+          type: string
+        rcNumber:
+          type: string
+        isApproved:
+          type: boolean
+        rcImageUrl:
+          type: string
+      required:
+        - id
+        - user
+        - vin
+        - isApproved
+    IVehicleCompact:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          model:
+            type: string
+          vendor:
+            type: string
+          vin:
+            type: string
+        required:
+            - id
+            - vin
+    IConnector:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chargerConnectorId:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+      required:
+        - id
+        - chargerConnectorId
+        - type
+        - status
+    ICharger:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        model:
+          type: string
+        vendor:
+          type: string
+        serialNo:
+          type: string
+        maxPower:
+          type: integer
+        alias:
+          type: string
+        address:
+          $ref: '#/components/schemas/IAddress'
+        noOfConnectors:
+          type: integer
+        connectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/IConnector'
+        latitude:
+          type: string
+        longitude:
+          type: string
+        status:
+          type: string
+        tariff:
+          $ref: '#/components/schemas/ITariff'
+        pricePerKWh:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - model
+        - vendor
+        - serialNo
+        - maxPower
+        - address
+        - noOfConnectors
+        - connectors
+        - latitude
+        - longitude
+        - status
+        - tariff
+        - pricePerKWh
+        - createdAt
+        - updatedAt
+    IChargerCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        model:
+          type: string
+        vendor:
+          type: string
+        serialNo:
+          type: string
+        city:
+          type: integer
+        alias:
+          type: string
+        maxPower:
+          type: integer
+        noOfConnectors:
+          type: integer
+        tariff:
+          $ref: '#/components/schemas/ITariff'
+        pricePerKWh:
+          type: string
+        connectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/IConnector'
+      required:
+        - id
+        - model
+        - vendor
+        - serialNo
+        - city
+        - maxPower
+        - noOfConnectors
+        - tariff
+        - pricePerKWh
+        - connectors
+    IChargerHighCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        model:
+          type: string
+        vendor:
+          type: string
+        serialNo:
+          type: string
+        city:
+          type: integer
+      required:
+        - id
+        - model
+        - vendor
+        - serialNo
+        - city
+    IMapChanger:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        latitude:
+          type: string
+        longitude:
+          type: string
+        status:
+          type: string
+      required:
+        - id
+        - latitude
+        - longitude
+        - status
