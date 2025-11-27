@@ -94,6 +94,57 @@ async function getSession(sessionId: number) {
     return session;
 }
 
+async function getSessionInvoiceDetails(sessionId: number) {
+    if (!sessionId) {
+        throw new MissingParameterError(`Session ID is required`);
+    }
+    // TODO: OPTIMIZE: Use query builder to partially fetch session data
+    const session = await Sessions.findOne({
+        where: {id: sessionId},
+        relations: ["charger", "connector", "user"]
+    });
+    if (!session) {
+        logger.error(`Session with ID ${sessionId} not found`);
+        throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
+    }
+    const charger = await Chargers.findOne({
+        where: {id: session.charger.id},
+        relations: ["address", "tariff"]
+    });
+    if (!charger) {
+        logger.error(`Charger not found`);
+        throw new ResourceNotFoundError(`Charger not found`);
+    }
+
+    return {
+        sessionId: session.id,
+        vehicleNo: session.vehicleNo,
+        vehicleVendor: session.vehicleVendor,
+        vehicleModel: session.vehicleModel,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        energyUsed: session.energyUsed,
+        location: session.location,
+        baseAmount: session.baseAmount,
+        netCGST: session.netCGST,
+        netSGST: session.netSGST,
+        netIGST: session.netIGST,
+        totalAmount: session.totalAmount,
+        baseTariffRate: charger.tariff.pricePerKWh,
+        CGSTRate: charger.tariff.CGST,
+        SGSTRate: charger.tariff.SGST,
+        IGSTRate: charger.tariff.IGST,
+        chargerSerialNumber: session.charger.serialNumber,
+        chargerId: session.charger.id,
+        connectorId: session.connector.id,
+        chargerConnectorId: session.connector.id,
+        placeOfSupplyCity: charger.address.city,
+        placeOfSupplyState: charger.address.state,
+        customerName: session.user?.fullName,
+        customerPhoneNumber: session.user?.phoneNumber
+    };
+}
+
 async function listAllUserSessions(userId: string, page: number, limit: number, startDate: Date, endDate: Date) {
     if (!userId) {
         throw new MissingParameterError(`Charger ID is required`);
@@ -267,4 +318,5 @@ export {
     getOngoingSession,
     sendRemoteStopTransaction,
     listAllChargerSessions,
+    getSessionInvoiceDetails
 }
