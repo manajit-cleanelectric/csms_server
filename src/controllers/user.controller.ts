@@ -176,7 +176,7 @@ async function sendOtpToPhoneNumber(phoneNumber: string) {
         await sendOtp(phoneNumber, otp);
         return true;
     } catch (error) {
-        logger.error("Error occurred while sending otp:", error);
+        logger.error(`Error in sending OTP to phone number ${phoneNumber}: ${error}`);
         throw new Error("Something went wrong in sending OTP");
     }
 }
