@@ -335,3 +335,180 @@ components:
         - latitude
         - longitude
         - status
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the user
+    vehicleId:
+      name: vehicleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the vehicle
+    chargerId:
+      name: chargerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the charger
+    sessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: ID of the session
+  requestBodies:
+    OTPRequestBody:
+      description: Request body for sending OTP
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: Phone number
+    LoginRequestBody:
+      description: Request body for user login
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: Phone number
+              otp:
+                type: string
+                description: OTP code
+  responses:
+    GeneralSuccess:
+      description: General success response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+              data:
+                type: object
+    LoginSuccess:
+      description: Successful login response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+              accessToken:
+                type: string
+                description: JWT access token
+              refreshToken:
+                type: string
+                description: JWT refresh token
+              data:
+                $ref: '#/components/schemas/IUser'
+    UnauthorizedError:
+      description: Authentication is required and has failed or has not yet been provided
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+              data:
+                type: object
+    ForbiddenError:
+      description: You do not have permission to access this resource
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+              data:
+                type: object
+    NotFoundError:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+              data:
+                type: object
+    AlreadyExistsError:
+      description: The resource already exists
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+              data:
+                type: object
+    BadRequestError:
+      description: The request was invalid or cannot be served
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+              data:
+                type: object
+    InternalServerError:
+      description: An unexpected error occurred on the server
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+              data:
+                type: object
