@@ -91,10 +91,10 @@ async function getSession(sessionId: number) {
         logger.error(`Session with ID ${sessionId} not found`);
         throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
     }
-    session.netCGST = parseFloat(session.totalAmount!).toFixed(2);
-    session.netIGST = parseFloat(session.totalAmount!).toFixed(2);
-    session.netSGST = parseFloat(session.totalAmount!).toFixed(2);
-    session.baseAmount = parseFloat(session.totalAmount!).toFixed(2);
+    session.netCGST = parseFloat(session.netCGST!).toFixed(2);
+    session.netIGST = parseFloat(session.netIGST!).toFixed(2);
+    session.netSGST = parseFloat(session.netSGST!).toFixed(2);
+    session.baseAmount = parseFloat(session.baseAmount!).toFixed(2);
     session.totalAmount = parseFloat(session.totalAmount!).toFixed(2);
     return session;
 }
@@ -134,7 +134,7 @@ async function getSessionInvoiceDetails(sessionId: number) {
         netCGST: parseFloat(session.netCGST!).toFixed(2),
         netSGST: parseFloat(session.netSGST!).toFixed(2),
         netIGST: parseFloat(session.netIGST!).toFixed(2),
-        totalAmount: session.totalAmount,
+        totalAmount: parseFloat(session.totalAmount!).toFixed(2),
         baseTariffRate: charger.tariff.pricePerKWh,
         CGSTRate: charger.tariff.CGST,
         SGSTRate: charger.tariff.SGST,
@@ -177,7 +177,7 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
         ],
         relations: ['charger', 'connector'],
         order: {
-            endTime: 'ASC',
+            endTime: 'DESC',
         },
         skip: (page - 1) * limit,
         take: limit,
@@ -210,7 +210,7 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
             model: session.charger?.model
         },
         connectorId: session.connector?.chargerConnectorId,
-        totalAmount: session.totalAmount,
+        totalAmount: parseFloat(session.totalAmount!).toFixed(2),
     }));
 }
 
