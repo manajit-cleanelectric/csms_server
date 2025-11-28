@@ -1,7 +1,7 @@
 import {Request, Response, Router} from 'express';
 import {
     getOngoingSession,
-    getSession,
+    getSession, getSessionInvoiceDetails,
     listAllChargerSessions,
     listAllUserSessions,
     sendRemoteStopTransaction
@@ -103,6 +103,17 @@ router.get('/api/user/:userId/ongoing-session', authenticate, async (req: Reques
         const session = await getOngoingSession(userId);
         res.status(200).send({success: true, message: "Ongoing sessions retrieved", data: session});
         logger.info(`Sent ongoing session for User ID ${userId} successfully`);
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.get('/api/sessions/:sessionId/invoice-details', authenticate, async (req: Request, res: Response) => {
+    try {
+        const {sessionId} = req.params;
+        const invoiceDetails = await getSessionInvoiceDetails(Number(sessionId));
+        res.status(200).send({success: true, message: "Session details retrieved", data: invoiceDetails});
+        logger.info(`Sent session with ID ${sessionId} successfully`);
     } catch (error: any) {
         handleError(error, res, logger);
     }
