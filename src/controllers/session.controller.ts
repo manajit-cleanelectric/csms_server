@@ -91,6 +91,11 @@ async function getSession(sessionId: number) {
         logger.error(`Session with ID ${sessionId} not found`);
         throw new ResourceNotFoundError(`Session with ID ${sessionId} not found`);
     }
+    session.netCGST = parseFloat(session.totalAmount!).toFixed(2);
+    session.netIGST = parseFloat(session.totalAmount!).toFixed(2);
+    session.netSGST = parseFloat(session.totalAmount!).toFixed(2);
+    session.baseAmount = parseFloat(session.totalAmount!).toFixed(2);
+    session.totalAmount = parseFloat(session.totalAmount!).toFixed(2);
     return session;
 }
 
@@ -125,10 +130,10 @@ async function getSessionInvoiceDetails(sessionId: number) {
         endTime: session.endTime,
         energyUsed: session.energyUsed,
         location: session.location,
-        baseAmount: session.baseAmount,
-        netCGST: session.netCGST,
-        netSGST: session.netSGST,
-        netIGST: session.netIGST,
+        baseAmount: parseFloat(session.baseAmount!).toFixed(2),
+        netCGST: parseFloat(session.netCGST!).toFixed(2),
+        netSGST: parseFloat(session.netSGST!).toFixed(2),
+        netIGST: parseFloat(session.netIGST!).toFixed(2),
         totalAmount: session.totalAmount,
         baseTariffRate: charger.tariff.pricePerKWh,
         CGSTRate: charger.tariff.CGST,
