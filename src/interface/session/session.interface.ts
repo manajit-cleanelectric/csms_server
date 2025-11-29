@@ -25,7 +25,7 @@ export interface ISession {
   netSGST?: string;
   netIGST?: string;
   totalAmount?: string;
-  transaction?: string;
+  transactionId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,7 +50,7 @@ export interface IOngoingSession {
     meterStart?: number;
     energyUsed: number;
     location?: string;
-    socStart?: number;
+    socLast?: number;
     status: 'Preparing' | 'Charging' | 'SuspendedEVSE' | 'SuspendedEV' | 'Finishing';
     totalCostSoFar?: string;
 }

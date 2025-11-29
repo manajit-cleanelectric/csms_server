@@ -335,6 +335,131 @@ components:
         - latitude
         - longitude
         - status
+    ISession:
+      type: object
+      properties:
+        id:
+          type: integer
+        changer:
+          $ref: '#/components/schemas/IChargerCompact'
+        connector:
+          $ref: '#/components/schemas/IConnector'
+        vehicleNo:
+          type: string
+        vehicleVendor:
+          type: string
+        vehicleModel:
+          type: string
+        user:
+          $ref: '#/components/schemas/IUserCompact'
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        meterStart:
+          type: string
+        meterStop:
+          type: string
+        energyUsed:
+          type: integer
+        location:
+          type: string
+        socStart:
+          type: integer
+        socLast:
+          type: integer
+        reason:
+          type: string
+        status:
+          type: string
+        baseAmount:
+          type: string
+        netCGST:
+          type: string
+        netSGST:
+          type: string
+        netIGST:
+          type: string
+        totalAmount:
+          type: string
+        transactionId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - changer
+        - connector
+        - user
+        - startTime
+        - energyUsed
+        - status
+        - createdAt
+        - updatedAt
+    ISessionCompact:
+      type: object
+      properties:
+        id:
+          type: integer
+        location:
+          type: string
+        endTime:
+          type: string
+          format: date-time
+        energyUsed:
+          type: integer
+        status:
+          type: string
+        totalAmount:
+          type: string
+      required:
+        - id
+        - energyUsed
+        - status
+        - totalAmount
+    IOngoingSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        changer:
+          $ref: '#/components/schemas/IChargerCompact'
+        connector:
+          $ref: '#/components/schemas/IConnector'
+        vehicleNo:
+          type: string
+        vehicleVendor:
+          type: string
+        vehicleModel:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        meterStart:
+          type: string
+        energyUsed:
+          type: integer
+        location:
+          type: string
+        socLast:
+          type: integer
+        status:
+          type: string
+        totalCostSoFar:
+          type: string
+      required:
+        - id
+        - changer
+        - connector
+        - startTime
+        - energyUsed
+        - status
   parameters:
     userId:
       name: userId

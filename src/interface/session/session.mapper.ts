@@ -45,7 +45,7 @@ export function sessionToISession(session: Sessions): ISession {
         netSGST: session.netSGST ?? undefined,
         netIGST: session.netIGST ?? undefined,
         totalAmount: session.totalAmount ?? undefined,
-        transaction: session.transaction?.id ?? undefined,
+        transactionId: session.transaction?.id ?? undefined,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
     };
@@ -63,7 +63,7 @@ export function sessionToIOngoingSession(session: Sessions): IOngoingSession {
         meterStart: session.meterStart ?? undefined,
         energyUsed: session.energyUsed,
         location: session.location ?? undefined,
-        socStart: session.socStart ?? undefined,
+        socLast: session.socLast ?? undefined,
         status: session.status as IOngoingSession['status'],
         totalCostSoFar: calculateTotalCostSoFar(session.charger.tariff, session.energyUsed),
     }
