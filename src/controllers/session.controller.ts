@@ -6,7 +6,7 @@ import {validate as uuidValidate} from "uuid";
 import {Users} from "../models/user.model";
 import {InvalidUUIDError, MissingParameterError, NoContentError, ResourceNotFoundError} from "../errors/customErrors";
 import {logger} from "../services/logger.service";
-import {In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
+import {Between, In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
 
@@ -168,11 +168,7 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
         where: [
             {
                 user: {id: userId},
-                endTime: MoreThanOrEqual(startDate),
-            },
-            {
-                user: {id: userId},
-                endTime: LessThanOrEqual(endDate),
+                endTime: Between(startDate, endDate),
             }
         ],
         relations: ['charger', 'connector'],
