@@ -11,7 +11,7 @@ async function addStatusLog(chargerId: string, params: any) {
         'errorCode',
         'status',
     ];
-    const missingFields = requiredFields.filter(field => !params[field]);
+    const missingFields = requiredFields.filter(field => !Object.prototype.hasOwnProperty.call(params, field));
     if (missingFields.length > 0) {
         throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
     }

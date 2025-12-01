@@ -105,7 +105,7 @@ async function addCharger(data: any) {
         "latitude",
         "pricePerKWh",
     ];
-    const missingFields = requiredFields.filter(field => !data[field]);
+    const missingFields = requiredFields.filter(field => !Object.prototype.hasOwnProperty.call(data, field));
     if (missingFields.length > 0) {
         throw new MissingParameterError(`Missing required fields: ${missingFields.join(", ")}`);
     }
@@ -183,7 +183,7 @@ async function updateChargerTariff(chargerId: string, data: any) {
     const requiredFields = [
         "pricePerKWh",
     ];
-    const missingFields = requiredFields.filter(field => !data[field]);
+    const missingFields = requiredFields.filter(field => !Object.prototype.hasOwnProperty.call(data, field));
     if (missingFields.length > 0) {
         throw new MissingParameterError(`Missing required fields: ${missingFields.join(", ")}`);
     }
@@ -227,7 +227,7 @@ async function updateChargerAddress(chargerId: string, data: any) {
         "latitude",
         "longitude",
     ];
-    const missingFields = requiredFields.filter(field => !data[field]);
+    const missingFields = requiredFields.filter(field => !Object.prototype.hasOwnProperty.call(data, field));
     if (missingFields.length > 0) {
         throw new MissingParameterError(`Missing required fields: ${missingFields.join(", ")}`);
     }
