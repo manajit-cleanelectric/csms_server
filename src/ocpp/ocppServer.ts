@@ -10,6 +10,9 @@ import {
     handleStopTransaction
 } from "../controllers/ocpp.controller"
 import RpcServerClient from "ocpp-rpc/lib/server-client";
+import {Sessions, SessionStatus} from "../models/session.model";
+import {In, LessThan} from "typeorm";
+import {handleExpiredSession} from "../services/cron.services";
 
 const ChargerWebsocketMap = new Map<string, RpcServerClient>();
 
@@ -71,6 +74,37 @@ rpcServer.on("client", async (client: RpcServerClient) => {
         logger.warn(`Unhandled RPC method ${method} from ${client.identity}`);
         throw createRPCError("NotImplemented", `Method ${method} not supported.`);
     });
+
+    client.on("disconnect", async () => {
+        const chargerId = client.identity;
+        const ongoingSessions = await Sessions.find({
+            where: {
+                charger: {id: chargerId},
+                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING]),
+            },
+            relations: ['connector.currentSession'],
+        });
+        for (const session of ongoingSessions) {
+            await handleExpiredSession(session);
+        }
+        logger.info(`Defaulted ${ongoingSessions.length} ongoing sessions`);
+    });
+
+    client.on("close", async () => {
+        const chargerId = client.identity;
+        const ongoingSessions = await Sessions.find({
+            where: {
+                charger: {id: chargerId},
+                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING]),
+            },
+            relations: ['connector.currentSession'],
+        });
+        for (const session of ongoingSessions) {
+            await handleExpiredSession(session);
+        }
+        logger.info(`Defaulted ${ongoingSessions.length} ongoing sessions`);
+    });
+
 });
 
 export {
