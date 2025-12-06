@@ -10,6 +10,9 @@ import {
     handleStopTransaction
 } from "../controllers/ocpp.controller"
 import RpcServerClient from "ocpp-rpc/lib/server-client";
+import {Sessions, SessionStatus} from "../models/session.model";
+import {In, LessThan} from "typeorm";
+import {handleExpiredSession} from "../services/cron.services";
 
 const ChargerWebsocketMap = new Map<string, RpcServerClient>();
 
@@ -72,46 +75,35 @@ rpcServer.on("client", async (client: RpcServerClient) => {
         throw createRPCError("NotImplemented", `Method ${method} not supported.`);
     });
 
-    client.on('message', (event) => {
-        const {message, outbound} = event;
-        const direction = outbound ? 'SENT' : 'RECV';
-        logger.info(`[${direction}] OCPP message for ${String(client.identity).slice(-12)}: ${message}`);
-    })
+    client.on("disconnect", async () => {
+        const chargerId = client.identity;
+        const ongoingSessions = await Sessions.find({
+            where: {
+                charger: {id: chargerId},
+                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING]),
+            },
+            relations: ['connector.currentSession'],
+        });
+        for (const session of ongoingSessions) {
+            await handleExpiredSession(session);
+        }
+        logger.info(`Defaulted ${ongoingSessions.length} ongoing sessions`);
+    });
 
-    client.on('close', (event) => {
-        const {code, reason} = event;
-        logger.info(`[CLOSE] Charger ${String(client.identity).slice(-12)} connection closed. Code: ${code}, Reason: ${reason}`);
-    })
-
-    client.on('error', (err) => {
-        logger.warn(`[ERROR] Error on connection with charger ${String(client.identity).slice(-12)}: ${err}`);
-    })
-
-    client.on('disconnect', (event) => {
-        const {code, reason} = event;
-        logger.info(`[DISCONNECT] Charger ${String(client.identity).slice(-12)} disconnected. Code: ${code}, Reason: ${reason}`);
-    })
-
-    client.on('closing', () => {
-        logger.info(`[CLOSING] Connection closing for charger ${String(client.identity).slice(-12)}`);
-    })
-
-    client.on('connecting', () => {
-        logger.info(`[CONNECTING] Connection connecting for charger ${String(client.identity).slice(-12)}`);
-    })
-
-    client.on('open', (response) => {
-        logger.info(`[OPEN] Connection opened for charger ${String(client.identity).slice(-12)}`);
-    })
-
-    client.on('ping', (event) => {
-        const {rtt} = event;
-        logger.info(`[PING] Ping sent to charger ${String(client.identity).slice(-12)}. RTT: ${rtt} ms`);
-    })
-
-    client.on('socketError', (err:Error) => {
-        logger.error(`[SOCKET ERROR] Socket error on connection with charger ${String(client.identity).slice(-12)}: ${err.message}`);
-    })
+    client.on("close", async () => {
+        const chargerId = client.identity;
+        const ongoingSessions = await Sessions.find({
+            where: {
+                charger: {id: chargerId},
+                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING]),
+            },
+            relations: ['connector.currentSession'],
+        });
+        for (const session of ongoingSessions) {
+            await handleExpiredSession(session);
+        }
+        logger.info(`Defaulted ${ongoingSessions.length} ongoing sessions`);
+    });
 
 });
 

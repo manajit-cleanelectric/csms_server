@@ -55,7 +55,7 @@ router.put('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOME
         const vehicleId = req.params.vehicleId;
         const data = req.body;
         const vehicle = await replaceVehicle(vehicleId, data);
-        logger.info(`Vehicle with ID ${vehicle.id} added successfully`);
+        logger.info(`Vehicle with ID ${vehicle.id} updated successfully`);
         res.status(200).send({status: true, message: "Vehicle updated successfully", data: vehicle});
     } catch (error: any) {
         deleteImageFromDisk(req.body.rcImageUrl);

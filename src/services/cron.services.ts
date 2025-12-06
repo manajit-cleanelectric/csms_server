@@ -115,3 +115,7 @@ parentPort?.on('message', async  (msg) => {
 });
 
 scheduleHeartbeatJob();
+
+export {
+    handleExpiredSession,
+}

@@ -184,11 +184,7 @@ async function listAllUserSessions(userId: string, page: number, limit: number, 
         where: [
             {
                 user: {id: userId},
-                endTime: MoreThanOrEqual(startDate),
-            },
-            {
-                user: {id: userId},
-                endTime: LessThanOrEqual(endDate),
+                endTime: Between(startDate, endDate),
             }
         ],
         relations: ['charger', 'connector'],
