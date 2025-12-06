@@ -84,6 +84,67 @@ async function addVehicle(userId: string, data: any) {
     return vehicle;
 }
 
+async function replaceVehicle(vehicleId: string, data: any) {
+    if (!vehicleId) {
+        throw new MissingParameterError(`Vehicle ID is required`);
+    }
+    if (!validate(vehicleId)) {
+        throw new InvalidUUIDError(`Invalid Vehicle ID format`);
+    }
+    const requiredFields = ['vehicleNo', 'rcNumber', 'rcImageUrl', 'vin'];
+    const missingFields = requiredFields.filter(field => !data[field]);
+    if (missingFields.length > 0) {
+        throw new MissingParameterError(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+    const existingVehicle = await AppDataSource.getRepository(Vehicles)
+        .createQueryBuilder('vehicle')
+        .where('vehicle.rcNumber = :rcNumber', {rcNumber: data.rcNumber})
+        .orWhere('vehicle.vin = :vin', {vin: data.vin})
+        .getMany();
+
+    if (existingVehicle.length > 1 || (existingVehicle.length === 1 && existingVehicle[0].id !== vehicleId)) {
+        throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
+    }
+    const vehicle = await Vehicles.findOne({
+        where: {id: vehicleId},
+        relations: ["user"]
+    })
+    if (!vehicle) {
+        throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
+    }
+    const previousRcImageUrl = vehicle.rcImageUrl;
+    vehicle.vehicleNo = data.vehicleNo;
+    vehicle.rcNumber = data.rcNumber;
+    vehicle.rcImageUrl = data.rcImageUrl;
+    vehicle.vin = data.vin;
+    vehicle.vendor = data.vendor ?? vehicle.vendor;
+    vehicle.model = data.model ?? vehicle.model;
+    vehicle.isApproved = false;
+    if (vehicle.user) {
+        vehicle.user.isAccountApproved = false;
+        await vehicle.user.save();
+    }
+    await vehicle.save();
+    deleteImageFromDisk(previousRcImageUrl);
+
+    const userProducer = UserProducer.getInstance();
+    try {
+        await userProducer.sendVehicleRegistrationMessage(
+            vehicle.user!.fullName,
+            vehicle.user!.phoneNumber,
+            vehicle.user!.email ?? undefined,
+            `${vehicle.vendor} ${vehicle.model}`,
+            vehicle.rcNumber,
+            new Date().toISOString()
+        );
+        logger.info(`Vehicle registration message sent to Kafka for vehicle ID ${vehicle.id}`);
+    } catch (error) {
+        logger.error(`Failed to send vehicle registration message to Kafka: ${error}`);
+    }
+
+    return vehicle;
+}
+
 async function updateVehicle(vehicleId: string, data: any) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
@@ -202,6 +263,7 @@ async function updateBinOfVehicle(vin: string, bin: string) {
 export {
     deleteImageFromDisk,
     addVehicle,
+    replaceVehicle,
     updateVehicle,
     getVehicleById,
     getVehiclesByUserId,
