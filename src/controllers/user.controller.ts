@@ -22,7 +22,7 @@ async function addUserInfo(userId: string, data: any) {
     if (!data.firstName || !data.lastName) {
         throw new MissingParameterError("Missing required user information");
     }
-    const {firstName, lastName, city, state} = data;
+    const {firstName, lastName, city, state, email} = data;
     // Check if a user already exists
     const user = await Users.findOneBy({id: userId});
     if (!user) {
@@ -33,6 +33,15 @@ async function addUserInfo(userId: string, data: any) {
     user.city = city;
     user.state = state;
     user.isProfileComplete = true;
+
+    if (email) {
+        // send email verification
+        user.email = email;
+        user.isEmailVerified = false;
+        const userProducer = UserProducer.getInstance();
+        await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email);
+    }
+
     await user.save();
     return user;
 }
