@@ -1,6 +1,6 @@
 import {Sessions} from "../../models/session.model";
 import {IOngoingSession, ISession, ISessionCompact} from "./session.interface";
-import {chargerToIChargerCompact} from "../charger";
+import {chargerTOIChangerHighCompact, chargerToIChargerCompact} from "../charger";
 import {connectorToIConnector} from "../connector";
 import {userToIUserCompact} from "../user";
 import {Tariffs} from "../../models/tariff.model";
@@ -54,7 +54,8 @@ export function sessionToISession(session: Sessions): ISession {
 export function sessionToIOngoingSession(session: Sessions): IOngoingSession {
     return {
         id: session.id,
-        charger: chargerToIChargerCompact(session.charger),
+        // charger: chargerToIChargerCompact(session.charger),
+        charger: chargerTOIChangerHighCompact(session.charger),
         connector: connectorToIConnector(session.connector),
         vehicleNo: session.vehicleNo ?? undefined,
         vehicleVendor: session.vehicleVendor ?? undefined,
@@ -63,7 +64,7 @@ export function sessionToIOngoingSession(session: Sessions): IOngoingSession {
         meterStart: session.meterStart ?? undefined,
         energyUsed: session.energyUsed,
         location: session.location ?? undefined,
-        socLast: session.socLast ?? undefined,
+        socLast: session.socLast,
         status: session.status as IOngoingSession['status'],
         totalCostSoFar: calculateTotalCostSoFar(session.charger.tariff, session.energyUsed),
     }

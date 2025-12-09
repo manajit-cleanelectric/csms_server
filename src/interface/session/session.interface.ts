@@ -1,4 +1,4 @@
-import { IChargerCompact } from '../charger';
+import {IChargerCompact, IChargerHighCompact} from '../charger';
 import { IConnector } from '../connector';
 import { IUserCompact } from '../user';
 
@@ -41,7 +41,7 @@ export interface ISessionCompact {
 
 export interface IOngoingSession {
     id: number;
-    charger: IChargerCompact;
+    charger: IChargerHighCompact;
     connector: IConnector;
     vehicleNo?: string;
     vehicleVendor?: string;
