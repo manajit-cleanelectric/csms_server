@@ -167,8 +167,8 @@ async function sendOtpToPhoneNumber(phoneNumber: string) {
     if (!otp) {
         otp = generateRandomDigitString(OTP_LENGTH);
         // TODO remove if block once DLT message is implemented as it prevents from sending the message
-        if (/^[0-5]/.test(phoneNumber)) {
-            otp = "1234";
+        if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
+            throw new Error("Invalid Phone Number");
         }
         await storeOTP(phoneNumber, otp);
     }
