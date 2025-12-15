@@ -24,7 +24,7 @@ router.get('/api/chargers', authenticate, async (req: Request, res: Response) =>
     }
 });
 
-router.post('/api/chargers', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.post('/api/chargers', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const charger = await addCharger(req.body);
         res.status(201).send({success: true, message: "New Charger Added", data: charger});
@@ -34,7 +34,7 @@ router.post('/api/chargers', authenticate, authorize(UserRoles.ADMINISTRATOR), a
     }
 });
 
-router.put('/api/chargers/:chargerId', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.put('/api/chargers/:chargerId', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const {chargerId} = req.params;
         const updatedCharger  = await updateCharger(chargerId, req.body);
@@ -45,7 +45,7 @@ router.put('/api/chargers/:chargerId', authenticate, authorize(UserRoles.ADMINIS
     }
 });
 
-router.patch('/api/chargers/:chargerId/address', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.patch('/api/chargers/:chargerId/address', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const {chargerId} = req.params;
         const updatedCharger = await updateChargerAddress(chargerId, req.body);
@@ -56,7 +56,7 @@ router.patch('/api/chargers/:chargerId/address', authenticate, authorize(UserRol
     }
 });
 
-router.patch('/api/chargers/:chargerId/tariff', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.patch('/api/chargers/:chargerId/tariff', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const {chargerId} = req.params;
         const updatedCharger = await updateChargerTariff(chargerId, req.body);
@@ -67,7 +67,7 @@ router.patch('/api/chargers/:chargerId/tariff', authenticate, authorize(UserRole
     }
 });
 
-router.patch('/api/chargers/:chargerId/data', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.patch('/api/chargers/:chargerId/data', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const {chargerId} = req.params;
         const updatedCharger = await updateChargerData(chargerId, req.body);
@@ -78,7 +78,7 @@ router.patch('/api/chargers/:chargerId/data', authenticate, authorize(UserRoles.
     }
 });
 
-router.patch('/api/chargers/:chargerId/connector', authenticate, authorize(UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+router.patch('/api/chargers/:chargerId/connector', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const {chargerId} = req.params;
         const {connectorId, connectorType} = req.body;
