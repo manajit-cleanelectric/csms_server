@@ -225,6 +225,23 @@ router.post('/api/save-fcm-token', authenticate, authorize(UserRoles.CUSTOMER), 
     }
 })
 
+router.get('/api/users/:userId', authenticate, authorize(UserRoles.SUPERVISOR) ,async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    try {
+        if (userId) {
+            const myUser = await getUserByIdWithVehicles(userId);
+            res.status(200).send({success: true, message: "User details fetched.", data: myUser});
+            logger.info(`User with ID ${userId} retrieved successfully`);
+        } else {
+            res.status(400).send({success: false, message: "User not found", data: null});
+            logger.error(`User with ID ${userId} not found`);
+        }
+    } catch (error: any) {
+        res.status(500).send({success: false, message: error.message, data: null});
+        logger.error(`Error retrieving user with ID ${userId}: ${error.message}`);
+    }
+});
+
 export {
     router,
 };
