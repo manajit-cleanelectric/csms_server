@@ -3,7 +3,7 @@ import {logger} from "./logger.service";
 
 async function sendOtp(phoneNumber: string, otp: string) {
     logger.info(`Sending ${otp} to phone number ${phoneNumber}`);
-    const otpMessage = `${otp} is your Clean Charge OTP (valid for 5 mins). Do not share it with anyone. \n www.cleanelectric.in`;
+    const otpMessage = `${otp}`;
     await sendTextSms(phoneNumber, otpMessage);
     return true;
 }
@@ -25,9 +25,12 @@ async function sendTextSms(phoneNumber: string, message: string) {
     };
 
     const body = new URLSearchParams({
-        message: message,
-        language: 'english',
-        route: 'q',
+        route: 'dlt',
+        sender_id: 'CLNELC',
+        message: '204586',
+        variables_values: message,
+        schedule_time: '',
+        flash: '0',
         numbers: phoneNumber,
     });
     try {
