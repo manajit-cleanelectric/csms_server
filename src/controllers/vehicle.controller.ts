@@ -14,6 +14,7 @@ import {STATIC_FOLDER_PATH} from "../app";
 import {logger} from "../services/logger.service";
 import {AppDataSource} from "../database/datasource";
 import {UserProducer} from "../kafka/producers/user.producer";
+import {trimBIN} from "../utils/titleCase";
 
 function deleteImageFromDisk(imagePath: string): void {
     if (!imagePath) return;
@@ -41,12 +42,14 @@ async function addVehicle(userId: string, data: any) {
     if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
-    if (!data.vehicleNo || !data.rcNumber || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
+    if (!data.bin || !data.rcImageUrl || !data.vin || !data.vendor || !data.model) {
         throw new MissingParameterError(`All vehicle details are required`);
     }
+    data.bin = trimBIN(data.bin);
+    data.vin = data.vin.toUpperCase().trim();
     const existingVehicle = await AppDataSource.getRepository(Vehicles)
         .createQueryBuilder('vehicle')
-        .where('vehicle.rcNumber = :rcNumber', {rcNumber: data.rcNumber})
+        .where('vehicle.bin = :bin', {bin: data.bin})
         .orWhere('vehicle.vin = :vin', {vin: data.vin})
         .getMany();
 
@@ -54,10 +57,11 @@ async function addVehicle(userId: string, data: any) {
         throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
     }
     const vehicle = new Vehicles();
-    vehicle.vehicleNo = data.vehicleNo;
-    vehicle.rcNumber = data.rcNumber;
+    vehicle.vehicleNo = data.vehicleNo ?? vehicle.vehicleNo;
+    vehicle.rcNumber = data.rcNumber ?? vehicle.rcNumber;
     vehicle.rcImageUrl = data.rcImageUrl;
     vehicle.vin = data.vin;
+    vehicle.bin = data.bin;
     vehicle.vendor = data.vendor;
     vehicle.model = data.model ?? null;
     user.isVehicleRegistered = true;
@@ -73,7 +77,7 @@ async function addVehicle(userId: string, data: any) {
             user.phoneNumber,
             user.email ?? undefined,
             `${vehicle.vendor} ${vehicle.model}`,
-            vehicle.rcNumber,
+            vehicle.vehicleNo,
             new Date().toISOString()
         );
         logger.info(`Vehicle registration message sent to Kafka for vehicle ID ${vehicle.id}`);
@@ -91,16 +95,19 @@ async function replaceVehicle(vehicleId: string, data: any) {
     if (!validate(vehicleId)) {
         throw new InvalidUUIDError(`Invalid Vehicle ID format`);
     }
-    const requiredFields = ['vehicleNo', 'rcNumber', 'rcImageUrl', 'vin'];
+    const requiredFields = ['bin', 'rcImageUrl', 'vin'];
     const missingFields = requiredFields.filter(field => !data[field]);
     if (missingFields.length > 0) {
         throw new MissingParameterError(`Missing required fields: ${missingFields.join(', ')}`);
     }
-    const existingVehicle = await AppDataSource.getRepository(Vehicles)
-        .createQueryBuilder('vehicle')
-        .where('vehicle.rcNumber = :rcNumber', {rcNumber: data.rcNumber})
-        .orWhere('vehicle.vin = :vin', {vin: data.vin})
-        .getMany();
+    data.bin = trimBIN(data.bin);
+    data.vin = data.vin.toUpperCase().trim();
+    const existingVehicle = await Vehicles.find({
+        where: [
+            {bin: data.bin},
+            {vin: data.vin}
+        ],
+    })
 
     if (existingVehicle.length > 1 || (existingVehicle.length === 1 && existingVehicle[0].id !== vehicleId)) {
         throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
@@ -117,6 +124,7 @@ async function replaceVehicle(vehicleId: string, data: any) {
     vehicle.rcNumber = data.rcNumber;
     vehicle.rcImageUrl = data.rcImageUrl;
     vehicle.vin = data.vin;
+    vehicle.bin = data.bin;
     vehicle.vendor = data.vendor ?? vehicle.vendor;
     vehicle.model = data.model ?? vehicle.model;
     vehicle.isApproved = false;
@@ -134,7 +142,7 @@ async function replaceVehicle(vehicleId: string, data: any) {
             vehicle.user!.phoneNumber,
             vehicle.user!.email ?? undefined,
             `${vehicle.vendor} ${vehicle.model}`,
-            vehicle.rcNumber,
+            vehicle.vehicleNo,
             new Date().toISOString()
         );
         logger.info(`Vehicle registration message sent to Kafka for vehicle ID ${vehicle.id}`);
@@ -239,9 +247,17 @@ async function removeVehicle(vehicleId: string) {
     if (!validate(vehicleId)) {
         throw new InvalidUUIDError(`Invalid Vehicle ID format for deletion`);
     }
-    const vehicle = await Vehicles.findOneBy({id: vehicleId});
+    const vehicle = await Vehicles.findOne({
+        where: {id: vehicleId},
+        relations: ["user"]
+    });
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found for deletion`);
+    }
+    if (vehicle.user) {
+        vehicle.user.isVehicleRegistered = false;
+        vehicle.user.isAccountApproved = false;
+        await vehicle.user.save();
     }
     if (vehicle.rcImageUrl) {
         deleteImageFromDisk(vehicle.rcImageUrl);

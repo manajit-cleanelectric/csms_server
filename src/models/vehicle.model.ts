@@ -68,7 +68,7 @@ class Vehicles extends BaseEntity {
         nullable: true,
         length: 64
     })
-    @Index('Vehicle RC Number', ['rcNumber'], {unique: true})
+    // @Index('Vehicle RC Number', ['rcNumber'], {unique: true})
     rcNumber!: string;
 
     @Column({type: "boolean", default: false})
@@ -97,7 +97,8 @@ class Vehicles extends BaseEntity {
     transformFields() {
         if (this.model) this.model = toTitleCase(this.model);
         if (this.vendor) this.vendor = toTitleCase(this.vendor);
-        if (this.vin) this.vin = this.vin.toUpperCase();
+        if (this.vin) this.vin = this.vin.toUpperCase().trim();
+        if (this.bin) this.bin = this.bin.toUpperCase().trim();
         if (this.vehicleNo) this.vehicleNo = this.vehicleNo.toUpperCase();
         if (this.rcNumber) this.rcNumber = this.rcNumber.toUpperCase();
     }

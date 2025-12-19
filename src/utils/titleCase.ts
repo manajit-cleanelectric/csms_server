@@ -14,3 +14,12 @@ export function toTitleCase(str: any): string {
         )
         .join(' ')
 }
+
+export function trimBIN(bin: string): string {
+    const startIndex = 7;
+    const removeCount = 5;
+    if (bin.length > startIndex) {
+        bin = bin.slice(0, startIndex) + bin.slice(startIndex + removeCount);
+    }
+    return bin.toUpperCase().trim();
+}
