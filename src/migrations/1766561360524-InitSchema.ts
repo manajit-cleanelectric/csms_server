@@ -1,0 +1,122 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class InitSchema1766561360524 implements MigrationInterface {
+    name = 'InitSchema1766561360524'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "vehicles" ("id" uuid NOT NULL, "model" character varying(128), "vendor" character varying(128), "vin" character varying(64) NOT NULL, "bin" character varying(64), "vehicleNo" character varying(16), "rcNumber" character varying(64), "isApproved" boolean NOT NULL DEFAULT false, "rcImageUrl" character varying(256), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "UQ_8288ce015b69c5856cf54e07a67" UNIQUE ("vin"), CONSTRAINT "UQ_ebd31c3f57403cca42f54826f00" UNIQUE ("bin"), CONSTRAINT "PK_18d8646b59304dce4af3a9e35b6" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "Vehicle RC Number" ON "vehicles" ("rcNumber") `);
+        await queryRunner.query(`CREATE TABLE "authTokens" ("id" uuid NOT NULL, "token" character varying(1024) NOT NULL, "platform" character varying(64), "location" character varying(64), "ipAddress" character varying(32), "isRevoked" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "PK_9e3341478b431e1bba3f8be1b60" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."connectors_type_enum" AS ENUM('TYPE_2_AC', 'CCS2_DC', 'CHADEMO_DC', 'TYPE_1_AC', 'TYPE_6_DC', 'TYPE_7_ACDC', 'BHARAT_AC001', 'BHARAT_DC001', 'GBT_AC', 'GBT_DC', 'PANTOGRAPH_DOWN', 'PANTOGRAPH_UP')`);
+        await queryRunner.query(`CREATE TYPE "public"."connectors_status_enum" AS ENUM('Available', 'Preparing', 'Charging', 'Suspended_EVSE', 'Suspended_EV', 'Finishing', 'Reserved', 'Unavailable', 'Faulted')`);
+        await queryRunner.query(`CREATE TABLE "connectors" ("id" uuid NOT NULL, "chargerConnectorId" integer NOT NULL, "type" "public"."connectors_type_enum" NOT NULL DEFAULT 'TYPE_6_DC', "status" "public"."connectors_status_enum" NOT NULL DEFAULT 'Available', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "chargerId" uuid, "currentSessionId" integer, CONSTRAINT "REL_ded742ca9a6b8959395729052f" UNIQUE ("currentSessionId"), CONSTRAINT "PK_c1334e2a68a8de86d1732a8e3fb" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "addresses" ("id" uuid NOT NULL, "line1" character varying(128) NOT NULL, "line2" character varying(128) NOT NULL, "location" character varying(64) NOT NULL, "city" character varying(64) NOT NULL, "state" character varying(64) NOT NULL, "zipCode" character varying(16) NOT NULL, "country" character varying(64), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_745d8f43d3af10ab8247465e450" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "tariffs" ("id" uuid NOT NULL, "pricePerKWh" numeric(7,2) NOT NULL DEFAULT '0', "CGST" numeric(7,2) NOT NULL DEFAULT '0', "SGST" numeric(7,2) NOT NULL DEFAULT '0', "IGST" numeric(7,2) NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_7f32baf8d8b4bb0cf4d7ac97741" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."chargers_status_enum" AS ENUM('Available', 'Faulted', 'Unavailable')`);
+        await queryRunner.query(`CREATE TABLE "chargers" ("id" uuid NOT NULL, "model" character varying(128) NOT NULL, "vendor" character varying(128) NOT NULL, "serialNumber" character varying(128) NOT NULL, "maxPower" integer NOT NULL DEFAULT '0', "alias" character varying(64), "city" character varying(64) NOT NULL, "noOfConnector" integer NOT NULL, "latitude" numeric(10,6) NOT NULL DEFAULT '0', "longitude" numeric(10,6) NOT NULL DEFAULT '0', "status" "public"."chargers_status_enum" NOT NULL DEFAULT 'Unavailable', "lastHeartBeat" TIMESTAMP WITH TIME ZONE DEFAULT now(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "addressId" uuid, "tariffId" uuid, CONSTRAINT "UQ_83ed5287a43f3001961865acaec" UNIQUE ("serialNumber"), CONSTRAINT "REL_c4566674870a4a687aad4d3e28" UNIQUE ("addressId"), CONSTRAINT "CHK_b3a5525d96a9efa6558d701eaa" CHECK ("noOfConnector" >= 1 AND "noOfConnector" <= 10), CONSTRAINT "PK_a7727cc8135208dc840389cb0ec" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."wallets_type_enum" AS ENUM('USER', 'SYSTEM', 'MERCHANT')`);
+        await queryRunner.query(`CREATE TABLE "wallets" ("id" uuid NOT NULL, "type" "public"."wallets_type_enum" NOT NULL, "currency" character varying NOT NULL DEFAULT 'INR', "code" character varying NOT NULL, "balance" numeric(20,4) NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "REL_2ecdb33f23e9a6fc392025c0b9" UNIQUE ("userId"), CONSTRAINT "PK_8402e5df5a30a229380e83e4f7e" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_wallet_code" ON "wallets" ("code") `);
+        await queryRunner.query(`CREATE TYPE "public"."ledger_entries_type_enum" AS ENUM('DEBIT', 'CREDIT')`);
+        await queryRunner.query(`CREATE TABLE "ledger_entries" ("id" uuid NOT NULL, "type" "public"."ledger_entries_type_enum" NOT NULL, "amount" numeric(20,4) NOT NULL, "memo" text, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "transactionId" uuid NOT NULL, "walletId" uuid NOT NULL, CONSTRAINT "PK_6efcb84411d3f08b08450ae75d5" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_a8781f3c6e59c59666272e896b" ON "ledger_entries" ("type") `);
+        await queryRunner.query(`CREATE TYPE "public"."transactions_category_enum" AS ENUM('TOPUP', 'CHARGE', 'ADJUSTMENT', 'REFUND', 'ADDMONEY')`);
+        await queryRunner.query(`CREATE TABLE "transactions" ("id" uuid NOT NULL, "externalRef" character varying NOT NULL, "amount" numeric(20,4) NOT NULL, "category" "public"."transactions_category_enum" NOT NULL, "description" text, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_75c9aaf7392d3c7812afe5b6366" UNIQUE ("externalRef"), CONSTRAINT "PK_a219afd8dd77ed80f5a862f1db9" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_75c9aaf7392d3c7812afe5b636" ON "transactions" ("externalRef") `);
+        await queryRunner.query(`CREATE TYPE "public"."sessions_reason_enum" AS ENUM('DeAuthorized', 'EmergencyStop', 'EVDisconnected', 'HardReset', 'Local', 'Other', 'PowerLoss', 'Reboot', 'Remote', 'SoftReset', 'UnlockCommand')`);
+        await queryRunner.query(`CREATE TYPE "public"."sessions_status_enum" AS ENUM('Idle', 'Preparing', 'Charging', 'Suspended', 'Finishing', 'Finished', 'Unavailable', 'Faulted')`);
+        await queryRunner.query(`CREATE TABLE "sessions" ("id" SERIAL NOT NULL, "vehicleNo" character varying(16), "vehicleVendor" character varying(64), "vehicleModel" character varying(64), "startTime" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "endTime" TIMESTAMP WITH TIME ZONE, "meterStart" bigint, "meterStop" bigint, "energyUsed" integer DEFAULT '0', "location" character varying(64), "socStart" integer, "socLast" integer, "reason" "public"."sessions_reason_enum", "status" "public"."sessions_status_enum" NOT NULL DEFAULT 'Preparing', "baseAmount" numeric(20,4), "netCGST" numeric(20,4), "netSGST" numeric(20,4), "netIGST" numeric(20,4), "totalAmount" numeric(20,4), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "chargerId" uuid, "connectorId" uuid, "userId" uuid, "transactionId" uuid, CONSTRAINT "REL_928890f0904ed6b773b81daa63" UNIQUE ("transactionId"), CONSTRAINT "PK_3238ef96f18b355b671619111bc" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('administrator', 'supervisor', 'customer')`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL, "phoneNumber" character varying(10) NOT NULL, "firstName" character varying(64), "lastName" character varying(64), "city" character varying(64), "state" character varying(64), "email" character varying(254), "isEmailVerified" boolean NOT NULL DEFAULT false, "isAccountApproved" boolean NOT NULL DEFAULT false, "isProfileComplete" boolean NOT NULL DEFAULT false, "isVehicleRegistered" boolean NOT NULL DEFAULT false, "isActive" boolean NOT NULL DEFAULT true, "isDeleted" boolean NOT NULL DEFAULT false, "role" "public"."users_role_enum" NOT NULL DEFAULT 'customer', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_1e3d0240b49c40521aaeb953293" UNIQUE ("phoneNumber"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."sampledValues_context_enum" AS ENUM('Interruption.Begin', 'Interruption.End', 'Other', 'Sample.Clock', 'Sample.Periodic', 'Transaction.Begin', 'Transaction.End', 'Trigger')`);
+        await queryRunner.query(`CREATE TYPE "public"."sampledValues_format_enum" AS ENUM('Raw', 'SignedData')`);
+        await queryRunner.query(`CREATE TYPE "public"."sampledValues_measurand_enum" AS ENUM('Current.Export', 'Current.Import', 'Current.Offered', 'Energy.Active.Export.Register', 'Energy.Active.Import.Register', 'Energy.Reactive.Export.Register', 'Energy.Reactive.Import.Register', 'Energy.Active.Export.Interval', 'Energy.Active.Import.Interval', 'Energy.Reactive.Export.Interval', 'Energy.Reactive.Import.Interval', 'Frequency', 'Power.Active.Export', 'Power.Active.Import', 'Power.Factor', 'Power.Offered', 'Power.Reactive.Export', 'Power.Reactive.Import', 'RPM', 'SoC', 'Temperature', 'Voltage')`);
+        await queryRunner.query(`CREATE TYPE "public"."sampledValues_phase_enum" AS ENUM('L1', 'L2', 'L3', 'N', 'L1-N', 'L2-N', 'L3-N', 'L1-L2', 'L2-L3', 'L3-L1', 'NoPhase')`);
+        await queryRunner.query(`CREATE TYPE "public"."sampledValues_location_enum" AS ENUM('Body', 'Cable', 'EV', 'Inlet', 'Outlet')`);
+        await queryRunner.query(`CREATE TYPE "public"."sampledValues_unit_enum" AS ENUM('Wh', 'kWh', 'varh', 'kvarh', 'W', 'kW', 'VA', 'kVA', 'var', 'kvar', 'A', 'V', 'Celsius', 'Fahrenheit', 'Kelvin', 'Percent')`);
+        await queryRunner.query(`CREATE TABLE "sampledValues" ("id" uuid NOT NULL, "stringValue" character varying(256), "numericValue" numeric(10,2), "context" "public"."sampledValues_context_enum" NOT NULL DEFAULT 'Sample.Periodic', "format" "public"."sampledValues_format_enum" NOT NULL DEFAULT 'Raw', "measurand" "public"."sampledValues_measurand_enum" NOT NULL DEFAULT 'Energy.Active.Import.Register', "phase" "public"."sampledValues_phase_enum" NOT NULL DEFAULT 'NoPhase', "location" "public"."sampledValues_location_enum" NOT NULL DEFAULT 'Outlet', "unit" "public"."sampledValues_unit_enum" NOT NULL DEFAULT 'Wh', "meterValueId" uuid, CONSTRAINT "PK_2a237ab887ebe8b63314f8508df" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "meterValues" ("id" uuid NOT NULL, "chargerId" uuid NOT NULL, "connectorId" integer NOT NULL DEFAULT '0', "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "sessionId" integer NOT NULL, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_5b4f6eb5628fcb4125edf2f9379" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "heartbeats" ("id" uuid NOT NULL, "chargerId" uuid NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_a7375f00766c83ddca3c1f939e3" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."statusLogs_errorcode_enum" AS ENUM('ConnectorLockFailure', 'EVCommunicationError', 'GroundFailure', 'HighTemperature', 'InternalError', 'LocalListConflict', 'NoError', 'OtherError', 'OvercurrentFailure', 'OverVoltage', 'PowerMeterFailure', 'PowerSwitchFailure', 'ReaderFailure', 'ResetFailure', 'UnderVoltage', 'UnlockFailure')`);
+        await queryRunner.query(`CREATE TYPE "public"."statusLogs_status_enum" AS ENUM('Available', 'Preparing', 'Charging', 'Suspended_EVSE', 'Suspended_EV', 'Finishing', 'Reserved', 'Unavailable', 'Faulted')`);
+        await queryRunner.query(`CREATE TABLE "statusLogs" ("id" uuid NOT NULL, "chargerId" uuid NOT NULL, "connectorId" integer NOT NULL DEFAULT '0', "errorCode" "public"."statusLogs_errorcode_enum" NOT NULL DEFAULT 'NoError', "status" "public"."statusLogs_status_enum" NOT NULL, "info" character varying(50), "vendorId" character varying(255), "vendorErrorCode" character varying(50), "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_ef243c1cee127afbce4ef5c9e98" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."payment_gateway_orders_status_enum" AS ENUM('initialised', 'pending', 'completed', 'failed')`);
+        await queryRunner.query(`CREATE TABLE "payment_gateway_orders" ("id" uuid NOT NULL, "orderId" character varying(128) NOT NULL, "amount" character varying(128) NOT NULL, "currency" character varying(128) NOT NULL DEFAULT 'INR', "status" "public"."payment_gateway_orders_status_enum" NOT NULL DEFAULT 'initialised', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "PK_606fc29698e706ecfd1d6f4b4f6" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "fcm_tokens" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "token" character varying(2048) NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "UQ_639c0f1d38d97d778122d4f2998" UNIQUE ("token"), CONSTRAINT "PK_0802a779d616597e9330bb9a7cc" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`ALTER TABLE "vehicles" ADD CONSTRAINT "FK_20f139b9d79f917ef735efacb00" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "authTokens" ADD CONSTRAINT "FK_c8fcea2fb5deb273416b64815ed" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "connectors" ADD CONSTRAINT "FK_1a2c96342ab3016d080caa09f95" FOREIGN KEY ("chargerId") REFERENCES "chargers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "connectors" ADD CONSTRAINT "FK_ded742ca9a6b8959395729052fc" FOREIGN KEY ("currentSessionId") REFERENCES "sessions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "chargers" ADD CONSTRAINT "FK_c4566674870a4a687aad4d3e282" FOREIGN KEY ("addressId") REFERENCES "addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "chargers" ADD CONSTRAINT "FK_c2f80fcfd01df08eec35120f797" FOREIGN KEY ("tariffId") REFERENCES "tariffs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "wallets" ADD CONSTRAINT "FK_2ecdb33f23e9a6fc392025c0b97" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "ledger_entries" ADD CONSTRAINT "FK_ce01dd5f8bde23f503bf01ffacc" FOREIGN KEY ("transactionId") REFERENCES "transactions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "ledger_entries" ADD CONSTRAINT "FK_df977c08d98fab6543724d74859" FOREIGN KEY ("walletId") REFERENCES "wallets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sessions" ADD CONSTRAINT "FK_76f2c19d519c2cc6230176b0c96" FOREIGN KEY ("chargerId") REFERENCES "chargers"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sessions" ADD CONSTRAINT "FK_b72c85e4f87d06a8e440543e50c" FOREIGN KEY ("connectorId") REFERENCES "connectors"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sessions" ADD CONSTRAINT "FK_57de40bc620f456c7311aa3a1e6" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sessions" ADD CONSTRAINT "FK_928890f0904ed6b773b81daa63a" FOREIGN KEY ("transactionId") REFERENCES "transactions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sampledValues" ADD CONSTRAINT "FK_4d45ac1f5fcee75e0884daac12b" FOREIGN KEY ("meterValueId") REFERENCES "meterValues"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "payment_gateway_orders" ADD CONSTRAINT "FK_7dce8283326dc1b8351bbf56f2b" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "fcm_tokens" ADD CONSTRAINT "FK_642d4f7ba5c6e019c2d8f5332a5" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "fcm_tokens" DROP CONSTRAINT "FK_642d4f7ba5c6e019c2d8f5332a5"`);
+        await queryRunner.query(`ALTER TABLE "payment_gateway_orders" DROP CONSTRAINT "FK_7dce8283326dc1b8351bbf56f2b"`);
+        await queryRunner.query(`ALTER TABLE "sampledValues" DROP CONSTRAINT "FK_4d45ac1f5fcee75e0884daac12b"`);
+        await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_928890f0904ed6b773b81daa63a"`);
+        await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_57de40bc620f456c7311aa3a1e6"`);
+        await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_b72c85e4f87d06a8e440543e50c"`);
+        await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_76f2c19d519c2cc6230176b0c96"`);
+        await queryRunner.query(`ALTER TABLE "ledger_entries" DROP CONSTRAINT "FK_df977c08d98fab6543724d74859"`);
+        await queryRunner.query(`ALTER TABLE "ledger_entries" DROP CONSTRAINT "FK_ce01dd5f8bde23f503bf01ffacc"`);
+        await queryRunner.query(`ALTER TABLE "wallets" DROP CONSTRAINT "FK_2ecdb33f23e9a6fc392025c0b97"`);
+        await queryRunner.query(`ALTER TABLE "chargers" DROP CONSTRAINT "FK_c2f80fcfd01df08eec35120f797"`);
+        await queryRunner.query(`ALTER TABLE "chargers" DROP CONSTRAINT "FK_c4566674870a4a687aad4d3e282"`);
+        await queryRunner.query(`ALTER TABLE "connectors" DROP CONSTRAINT "FK_ded742ca9a6b8959395729052fc"`);
+        await queryRunner.query(`ALTER TABLE "connectors" DROP CONSTRAINT "FK_1a2c96342ab3016d080caa09f95"`);
+        await queryRunner.query(`ALTER TABLE "authTokens" DROP CONSTRAINT "FK_c8fcea2fb5deb273416b64815ed"`);
+        await queryRunner.query(`ALTER TABLE "vehicles" DROP CONSTRAINT "FK_20f139b9d79f917ef735efacb00"`);
+        await queryRunner.query(`DROP TABLE "fcm_tokens"`);
+        await queryRunner.query(`DROP TABLE "payment_gateway_orders"`);
+        await queryRunner.query(`DROP TYPE "public"."payment_gateway_orders_status_enum"`);
+        await queryRunner.query(`DROP TABLE "statusLogs"`);
+        await queryRunner.query(`DROP TYPE "public"."statusLogs_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."statusLogs_errorcode_enum"`);
+        await queryRunner.query(`DROP TABLE "heartbeats"`);
+        await queryRunner.query(`DROP TABLE "meterValues"`);
+        await queryRunner.query(`DROP TABLE "sampledValues"`);
+        await queryRunner.query(`DROP TYPE "public"."sampledValues_unit_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."sampledValues_location_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."sampledValues_phase_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."sampledValues_measurand_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."sampledValues_format_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."sampledValues_context_enum"`);
+        await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`DROP TYPE "public"."users_role_enum"`);
+        await queryRunner.query(`DROP TABLE "sessions"`);
+        await queryRunner.query(`DROP TYPE "public"."sessions_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."sessions_reason_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_75c9aaf7392d3c7812afe5b636"`);
+        await queryRunner.query(`DROP TABLE "transactions"`);
+        await queryRunner.query(`DROP TYPE "public"."transactions_category_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_a8781f3c6e59c59666272e896b"`);
+        await queryRunner.query(`DROP TABLE "ledger_entries"`);
+        await queryRunner.query(`DROP TYPE "public"."ledger_entries_type_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_wallet_code"`);
+        await queryRunner.query(`DROP TABLE "wallets"`);
+        await queryRunner.query(`DROP TYPE "public"."wallets_type_enum"`);
+        await queryRunner.query(`DROP TABLE "chargers"`);
+        await queryRunner.query(`DROP TYPE "public"."chargers_status_enum"`);
+        await queryRunner.query(`DROP TABLE "tariffs"`);
+        await queryRunner.query(`DROP TABLE "addresses"`);
+        await queryRunner.query(`DROP TABLE "connectors"`);
+        await queryRunner.query(`DROP TYPE "public"."connectors_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."connectors_type_enum"`);
+        await queryRunner.query(`DROP TABLE "authTokens"`);
+        await queryRunner.query(`DROP INDEX "public"."Vehicle RC Number"`);
+        await queryRunner.query(`DROP TABLE "vehicles"`);
+    }
+
+}

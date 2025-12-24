@@ -7,7 +7,9 @@
     "start": "nodemon",
     "test": "jest",
     "docs": "typedoc",
-    "docs:serve": "typedoc && npx http-server docs -p 8080 -o"
+    "docs:serve": "typedoc && npx http-server docs -p 8080 -o",
+    "typeorm:migration:gen": "node -r ts-node/register --env-file=.env ./node_modules/typeorm/cli.js migration:generate -d src/database/datasource.ts",
+    "typeorm:migration:run": "node -r ts-node/register --env-file=.env ./node_modules/typeorm/cli.js migration:run -d src/database/datasource.ts"
   },
   "author": "Achyut Salunkhe",
   "dependencies": {
