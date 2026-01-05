@@ -297,7 +297,7 @@ async function getVehicleById(vehicleId: string) {
     }
     const vehicle = await Vehicles.findOne({
         where: {id: vehicleId},
-        relations: ["user"]
+        relations: ["user", "proofImages"]
     });
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
@@ -314,7 +314,7 @@ async function getVehiclesByUserId(userId: string) {
     }
     const vehicles = await Vehicles.find({
         where: {user: {id: userId}},
-        relations: ["user"]
+        relations: ["user", "proofImages"]
     });
     if (vehicles.length === 0) {
         throw new NoContentError(`No vehicles found for user with ID ${userId}`);
