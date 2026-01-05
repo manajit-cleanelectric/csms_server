@@ -9,7 +9,7 @@ async function moneyCheckerService(userId: string) {
     if (!userId) {
         return;
     }
-    if (validate(userId)) {
+    if (!validate(userId)) {
         return;
     }
     const wallet = await getUserWallet(userId);
