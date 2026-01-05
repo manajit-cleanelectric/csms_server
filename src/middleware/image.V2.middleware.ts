@@ -81,10 +81,9 @@ const processFieldImages = async (
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const firstName = sanitizeFilename(req.user?.firstName || 'user');
-        const lastName = sanitizeFilename(req.user?.lastName || 'unknown');
+        const phoneNumber = sanitizeFilename(req.user?.phoneNumber || '0000000000');
         const timestamp = Date.now();
-        const fileName = `${timestamp}_${fieldName}_${i}_${firstName}_${lastName}.jpeg`;
+        const fileName = `${phoneNumber}_${timestamp}_${fieldName}_${i}.jpeg`;
 
         const url = await processImage(file.buffer, uploadPath, fileName);
         processedUrls.push(url);
