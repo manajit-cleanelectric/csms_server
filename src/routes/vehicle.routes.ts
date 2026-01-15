@@ -1,9 +1,9 @@
 import {Request, Response, Router} from 'express';
 import {
-    addVehicle,
+    addVehicle, approveVehicle,
     deleteImageFromDisk,
     getVehicleById,
-    getVehiclesByUserId, removeVehicle,
+    getVehiclesByUserId, listUnapprovedVehicles, removeVehicle,
     replaceVehicle, updateBinOfVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
@@ -48,7 +48,7 @@ router.get('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOME
     } catch (error: any) {
         handleError(error, res, logger);
     }
-})
+});
 
 router.put('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), uploadRcImage, async (req: Request, res: Response) => {
     try {
@@ -83,7 +83,7 @@ router.put('/api/vehicles/update-bin-number', authenticate, authorize(UserRoles.
     } catch (error: any) {
         handleError(error, res, logger);
     }
-})
+});
 
 router.delete('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
@@ -94,7 +94,28 @@ router.delete('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.SUPE
     } catch (error: any) {
         handleError(error, res, logger);
     }
-})
+});
+
+router.get('/api/vehicles/unapproved-vehicles', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
+    try {
+        const unapprovedVehicles = await listUnapprovedVehicles()
+        logger.info(`Unapproved vehicles retrieved successfully`);
+        res.status(200).send({status: true, message: "Unapproved vehicles retrieved successfully", data: unapprovedVehicles});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.post('/api/vehicles/:vehicleId/approve', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
+    try {
+        const vehicleId = req.params.vehicleId;
+        const vehicle = await approveVehicle(vehicleId)
+        logger.info(`Vehicle with ID ${vehicleId} approved successfully`);
+        res.status(200).send({status: true, message: "Vehicle approved successfully", data: vehicle});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
 
 
 export {

@@ -65,7 +65,7 @@ async function addVehicle(userId: string, data: any) {
     vehicle.vendor = data.vendor;
     vehicle.model = data.model ?? null;
     user.isVehicleRegistered = true;
-    user.isAccountApproved = false;
+    // user.isAccountApproved = false;
     await user.save();
     vehicle.user = user;
     await vehicle.save();
@@ -128,10 +128,10 @@ async function replaceVehicle(vehicleId: string, data: any) {
     vehicle.vendor = data.vendor ?? vehicle.vendor;
     vehicle.model = data.model ?? vehicle.model;
     vehicle.isApproved = false;
-    if (vehicle.user) {
-        vehicle.user.isAccountApproved = false;
-        await vehicle.user.save();
-    }
+    // if (vehicle.user) {
+    //     vehicle.user.isAccountApproved = false;
+    //     await vehicle.user.save();
+    // }
     await vehicle.save();
     deleteImageFromDisk(previousRcImageUrl);
 
@@ -213,18 +213,18 @@ async function approveVehicle(vehicleId: string) {
     }
     const vehicle = await Vehicles.findOne({
         where: {id: vehicleId},
-        relations: ["user"]
+        // relations: ["user"]
     });
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
     vehicle.isApproved = true;
-    if (vehicle.user) {
-        vehicle.user.isAccountApproved = true;
-        await vehicle.user.save();
-    } else {
-        throw new Error("Vehicle has no associated user");
-    }
+    // if (vehicle.user) {
+    //     vehicle.user.isAccountApproved = true;
+    //     await vehicle.user.save();
+    // } else {
+    //     throw new Error("Vehicle has no associated user");
+    // }
     await vehicle.save();
     return vehicle;
 }
@@ -254,11 +254,11 @@ async function removeVehicle(vehicleId: string) {
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found for deletion`);
     }
-    if (vehicle.user) {
-        vehicle.user.isVehicleRegistered = false;
-        vehicle.user.isAccountApproved = false;
-        await vehicle.user.save();
-    }
+    // if (vehicle.user) {
+    //     vehicle.user.isVehicleRegistered = false;
+    //     vehicle.user.isAccountApproved = false;
+    //     await vehicle.user.save();
+    // }
     if (vehicle.rcImageUrl) {
         deleteImageFromDisk(vehicle.rcImageUrl);
     }

@@ -101,7 +101,7 @@ async function getSession(sessionId: number) {
     // TODO: OPTIMIZE: Use query builder to partially fetch session data
     const session = await Sessions.findOne({
         where: {id: sessionId},
-        relations: ["charger", "connector"]
+        relations: ["charger.address", "connector"]
     });
     if (!session) {
         logger.error(`Session with ID ${sessionId} not found`);
