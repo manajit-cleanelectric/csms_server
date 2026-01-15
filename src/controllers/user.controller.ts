@@ -71,6 +71,7 @@ async function login(phoneNumber: string, otp: string, clientIp: string = '0.0.0
         // create a new user
         user = new Users();
         user.phoneNumber = phoneNumber;
+        user.isAccountApproved = true; // by default approved
         await user.save();
         const wallet = new Wallet();
         wallet.type = WalletType.USER;

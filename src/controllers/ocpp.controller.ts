@@ -49,10 +49,10 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
         user = vehicle?.user;
 
         // TODO: IMPLEMENT: Send push notification to user to recharge wallet if balance is low
-        if (parseFloat(user?.wallet?.balance!) <= parseInt(process.env.WALLET_MIN_BALANCE!, 10) ) {
+        if (parseFloat(user?.wallet?.balance!) < parseInt(process.env.WALLET_MIN_BALANCE!, 10)) {
             minBalanceCheck = false
         }
-        if (user && minBalanceCheck) {
+        if (vehicle?.isApproved && minBalanceCheck) {
             return {
                 idTagInfo: {
                     status: "Accepted"
