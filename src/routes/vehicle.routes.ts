@@ -1,10 +1,14 @@
 import {Request, Response, Router} from 'express';
 import {
-    addVehicle, approveVehicle,
+    addVehicle,
+    approveVehicle,
     deleteImageFromDisk,
     getVehicleById,
-    getVehiclesByUserId, listUnapprovedVehicles, removeVehicle,
-    replaceVehicle, updateBinOfVehicle,
+    getVehiclesByUserId,
+    listUnapprovedVehicles,
+    removeVehicle,
+    replaceVehicle,
+    updateBinOfVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
 import {authenticate, authorize} from "../middleware/auth.middleware";
@@ -85,7 +89,7 @@ router.put('/api/vehicles/update-bin-number', authenticate, authorize(UserRoles.
     }
 });
 
-router.delete('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
+router.delete('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER, UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const vehicleId = req.params.vehicleId;
         const result = await removeVehicle(vehicleId);
