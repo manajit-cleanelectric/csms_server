@@ -19,7 +19,7 @@ import {isTokenExpired} from "../utils/isTokenExpired";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
-    if (!data.firstName || !data.lastName) {
+    if (!data.firstName) {
         throw new MissingParameterError("Missing required user information");
     }
     const {firstName, lastName, city, state, email} = data;
@@ -56,7 +56,7 @@ async function updateUser(userId: string, data: any) {
     user.lastName = data.lastName ?? user.lastName;
     user.city = data.city ?? user.city;
     user.state = data.state ?? user.state;
-    user.isProfileComplete = !(!user.firstName || !user.lastName);
+    user.isProfileComplete = !(!user.firstName);
     await user.save();
     return user;
 }
