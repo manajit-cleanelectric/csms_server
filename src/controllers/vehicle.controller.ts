@@ -51,7 +51,7 @@ async function addVehicle(userId: string, data: any) {
         .getMany();
 
     if (existingVehicle.length > 0) {
-        throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
+        throw new ResourceAlreadyExistsError(`Vehicle with BIN ${data.bin} or VIN ${data.vin} already exists in database`);
     }
     const vehicle = new Vehicles();
     vehicle.vehicleNo = data.vehicleNo ?? vehicle.vehicleNo;
@@ -107,7 +107,7 @@ async function replaceVehicle(vehicleId: string, data: any) {
     })
 
     if (existingVehicle.length > 1 || (existingVehicle.length === 1 && existingVehicle[0].id !== vehicleId)) {
-        throw new ResourceAlreadyExistsError(`Vehicle with RC Number ${data.rcNumber} or VIN ${data.vin} already exists in database`);
+        throw new ResourceAlreadyExistsError(`Vehicle with BIN ${data.bin} or VIN ${data.vin} already exists in database`);
     }
     const vehicle = await Vehicles.findOne({
         where: {id: vehicleId},
