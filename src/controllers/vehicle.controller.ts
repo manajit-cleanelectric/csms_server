@@ -36,9 +36,6 @@ async function addVehicle(userId: string, data: any) {
         throw new InvalidUUIDError(`Invalid User ID format`);
     }
     const user = await Users.findOne({where: [{id: userId}], relations: ["vehicles"]});
-    if ((user?.vehicles?.length ?? 0) > 1) {
-        throw new ResourceAlreadyExistsError(`User has already registered a vehicle.`);
-    }
     if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
     }
