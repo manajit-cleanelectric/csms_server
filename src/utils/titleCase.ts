@@ -17,9 +17,9 @@ export function toTitleCase(str: any): string {
 
 export function trimBIN(bin: string): string {
     const startIndex = 7;
-    const removeCount = 5;
-    if (bin.length > startIndex) {
-        bin = bin.slice(0, startIndex) + bin.slice(startIndex + removeCount);
+    const endCount = 4;
+    if (bin.length > startIndex + endCount) {
+        bin = bin.slice(0, startIndex) + bin.slice(-endCount);
     }
     return bin.toUpperCase().trim();
 }
