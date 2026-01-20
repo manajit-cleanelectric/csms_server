@@ -9,7 +9,7 @@ export interface IVehicle {
   vin: string;
   bin: string;
   vehicleNo?: string;
-  isApproved: boolean;
+  status: string;
   images: IImage[];
 }
 

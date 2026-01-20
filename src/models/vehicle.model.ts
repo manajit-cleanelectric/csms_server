@@ -2,17 +2,28 @@ import {
     BaseEntity, BeforeInsert, BeforeRemove, BeforeUpdate,
     Column,
     CreateDateColumn,
-    Entity, Index,
+    Entity,
     JoinColumn,
     ManyToOne, OneToMany,
     PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
+
 import {Users} from "./user.model";
 import {toTitleCase} from "../utils/titleCase";
 import {v7} from "uuid";
 import {Image} from "./image.model";
 
+enum VehicleStatus {
+    PENDING = "PENDING",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED"
+}
+
+enum ActionType {
+    APPROVE = "APPROVE",
+    REJECT = "REJECT"
+}
 
 @Entity("vehicles")
 class Vehicles extends BaseEntity {
@@ -73,8 +84,38 @@ class Vehicles extends BaseEntity {
     // @Index('Vehicle RC Number', ['rcNumber'], {unique: true})
     // rcNumber!: string;
 
-    @Column({type: "boolean", default: false})
-    isApproved!: boolean;
+    @Column({
+        type: "enum",
+        enum: VehicleStatus,
+        default: VehicleStatus.PENDING
+    })
+    status!: VehicleStatus;
+
+    @ManyToOne(() => Users, {
+        nullable: true
+    })
+    @JoinColumn({name: "supervisorActionBy"})
+    supervisorActionBy!: Users | null;
+
+    @Column({
+        type: "enum",
+        enum: ActionType,
+        nullable: true
+    })
+    supervisorActionType!: ActionType | null;
+
+    @Column({
+        type: "timestamptz",
+        nullable: true
+    })
+    supervisorActionAt!: Date | null;
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 128
+    })
+    supervisorActionReason!: string | null;
 
     // @Column({
     //     type: "varchar",
@@ -116,4 +157,6 @@ class Vehicles extends BaseEntity {
 
 export {
     Vehicles,
+    VehicleStatus,
+    ActionType,
 };

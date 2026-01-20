@@ -23,7 +23,7 @@ export function vehicleToIVehicle(vehicle: Vehicles): IVehicle {
         vin: vehicle.vin,
         bin: vehicle.bin ?? undefined,
         vehicleNo: vehicle.vehicleNo ?? undefined,
-        isApproved: vehicle.isApproved,
+        status: vehicle.status,
         images: vehicle.proofImages.map(img => imageToIImage(img))
     };
 }

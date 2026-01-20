@@ -1,5 +1,5 @@
 import {Users} from "../models/user.model";
-import {Vehicles} from "../models/vehicle.model";
+import {Vehicles, VehicleStatus} from "../models/vehicle.model";
 import {
     InvalidUUIDError,
     MissingParameterError,
@@ -167,7 +167,7 @@ async function replaceVehicle(vehicleId: string, data: any) {
     vehicle.bin = data.bin;
     vehicle.vendor = data.vendor ?? vehicle.vendor;
     vehicle.model = data.model ?? vehicle.model;
-    vehicle.isApproved = false;
+    vehicle.status = VehicleStatus.PENDING;
     // if (vehicle.user) {
     //     vehicle.user.isAccountApproved = false;
     //     await vehicle.user.save();
@@ -246,7 +246,7 @@ async function replaceVehicleV2(vehicleId: string, data: any) {
     vehicle.bin = data.bin;
     vehicle.vendor = data.vendor ?? vehicle.vendor;
     vehicle.model = data.model ?? vehicle.model;
-    vehicle.isApproved = false;
+    vehicle.status = VehicleStatus.PENDING;
     // if (vehicle.user) {
     //     vehicle.user.isAccountApproved = false;
     //     await vehicle.user.save();
@@ -336,7 +336,7 @@ async function approveVehicle(vehicleId: string) {
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
-    vehicle.isApproved = true;
+    vehicle.status = VehicleStatus.APPROVED;
     // if (vehicle.user) {
     //     vehicle.user.isAccountApproved = true;
     //     await vehicle.user.save();
@@ -349,7 +349,7 @@ async function approveVehicle(vehicleId: string) {
 
 async function listUnapprovedVehicles() {
     const vehicles = await Vehicles.find({
-        where: {isApproved: false},
+        where: {status: VehicleStatus.PENDING},
         relations: ["user"]
     });
     if (vehicles.length === 0) {

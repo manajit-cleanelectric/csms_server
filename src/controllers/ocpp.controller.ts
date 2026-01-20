@@ -1,7 +1,7 @@
 import {logger} from "../services/logger.service";
 import {Chargers, ChargerStatus} from "../models/charger.model";
 import {createRPCError} from "ocpp-rpc";
-import {Vehicles} from "../models/vehicle.model";
+import {Vehicles, VehicleStatus} from "../models/vehicle.model";
 import {Heartbeats} from "../models/heartbeat.model";
 import {addMeterValue} from "./meterValue.controller";
 import {addSession, endSession} from "./session.controller";
@@ -52,7 +52,7 @@ const handleAuthorize = async ({client, params}: { client: any; params: any }) =
         if (parseFloat(user?.wallet?.balance!) < parseInt(process.env.WALLET_MIN_BALANCE!, 10)) {
             minBalanceCheck = false
         }
-        if (vehicle?.isApproved && minBalanceCheck) {
+        if (vehicle?.status==VehicleStatus.APPROVED && minBalanceCheck) {
             return {
                 idTagInfo: {
                     status: "Accepted"
