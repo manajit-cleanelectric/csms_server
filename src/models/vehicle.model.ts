@@ -4,13 +4,14 @@ import {
     CreateDateColumn,
     Entity, Index,
     JoinColumn,
-    ManyToOne,
+    ManyToOne, OneToMany,
     PrimaryColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Users} from "./user.model";
 import {toTitleCase} from "../utils/titleCase";
 import {v7} from "uuid";
+import {Image} from "./image.model";
 
 
 @Entity("vehicles")
@@ -59,27 +60,31 @@ class Vehicles extends BaseEntity {
     @Column({
         type: "varchar",
         nullable: true,
+        unique: true,
         length: 16
     })
     vehicleNo!: string;
 
-    @Column({
-        type: "varchar",
-        nullable: true,
-        length: 64
-    })
+    // @Column({
+    //     type: "varchar",
+    //     nullable: true,
+    //     length: 64
+    // })
     // @Index('Vehicle RC Number', ['rcNumber'], {unique: true})
-    rcNumber!: string;
+    // rcNumber!: string;
 
     @Column({type: "boolean", default: false})
     isApproved!: boolean;
 
-    @Column({
-        type: "varchar",
-        nullable: true,
-        length: 256
-    })
-    rcImageUrl!: string;
+    // @Column({
+    //     type: "varchar",
+    //     nullable: true,
+    //     length: 256
+    // })
+    // rcImageUrl!: string;
+
+    @OneToMany(() => Image, (image) => image.vehicle, {cascade: true})
+    proofImages!: Image[];
 
     @CreateDateColumn({type: 'timestamptz'})
     createdAt!: Date;
@@ -95,12 +100,12 @@ class Vehicles extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     transformFields() {
-        if (this.model) this.model = toTitleCase(this.model);
-        if (this.vendor) this.vendor = toTitleCase(this.vendor);
+        if (this.model) this.model = toTitleCase(this.model).trim();
+        if (this.vendor) this.vendor = toTitleCase(this.vendor).trim();
         if (this.vin) this.vin = this.vin.toUpperCase().trim();
+        if (this.vehicleNo) this.vehicleNo = this.vehicleNo.toUpperCase().trim();
         if (this.bin) this.bin = this.bin.toUpperCase().trim();
-        if (this.vehicleNo) this.vehicleNo = this.vehicleNo.toUpperCase();
-        if (this.rcNumber) this.rcNumber = this.rcNumber.toUpperCase();
+        // if (this.rcNumber) this.rcNumber = this.rcNumber.toUpperCase();
     }
 
     @BeforeRemove()

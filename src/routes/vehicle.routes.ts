@@ -1,21 +1,22 @@
 import {Request, Response, Router} from 'express';
 import {
-    addVehicle,
-    approveVehicle,
-    deleteImageFromDisk,
+    addVehicle, addVehicleV2, approveVehicle,
     getVehicleById,
     getVehiclesByUserId,
     listUnapprovedVehicles,
     removeVehicle,
     replaceVehicle,
+   replaceVehicleV2,
     updateBinOfVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {uploadRcImage} from "../middleware/image.middleware";
+import {uploadProofImage} from "../middleware/image.V2.middleware";
 import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
+import {deleteImageFromDisk} from "../utils/helperFunctions";
 
 const router: Router = Router();
 
@@ -43,6 +44,24 @@ router.post('/api/users/:userId/vehicles', authenticate, authorize(UserRoles.CUS
     }
 });
 
+router.post('/api/v2/users/:userId/vehicles', authenticate, authorize(UserRoles.CUSTOMER), uploadProofImage, async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.userId;
+        const data = req.body;
+        const vehicle = await addVehicleV2(userId, data);
+        logger.info(`Vehicle added for user with ID ${userId}`);
+        res.status(201).send({status: true, message: "Vehicle added successfully", data: vehicle});
+    } catch (error: any) {
+        for (const fileUrl of req.body.invoiceProofUrls){
+            deleteImageFromDisk(fileUrl);
+        }
+        for (const fileUrl of req.body.rcImageUrls){
+            deleteImageFromDisk(fileUrl);
+        }
+        handleError(error, res, logger);
+    }
+});
+
 router.get('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
     try {
         const vehicleId = req.params.vehicleId;
@@ -63,6 +82,24 @@ router.put('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOME
         res.status(200).send({status: true, message: "Vehicle updated successfully", data: vehicle});
     } catch (error: any) {
         deleteImageFromDisk(req.body.rcImageUrl);
+        handleError(error, res, logger);
+    }
+});
+
+router.put('/api/v2/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), uploadProofImage, async (req: Request, res: Response) => {
+    try {
+        const vehicleId = req.params.vehicleId;
+        const data = req.body;
+        const vehicle = await replaceVehicleV2(vehicleId, data);
+        logger.info(`Vehicle with ID ${vehicle.id} replaced successfully`);
+        res.status(200).send({status: true, message: "Vehicle replaced successfully", data: vehicle});
+    } catch (error: any) {
+        for (const fileUrl of req.body.invoiceProofUrls){
+            deleteImageFromDisk(fileUrl);
+        }
+        for (const fileUrl of req.body.rcImageUrls){
+            deleteImageFromDisk(fileUrl);
+        }
         handleError(error, res, logger);
     }
 });

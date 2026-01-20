@@ -1,4 +1,5 @@
 import {IUserCompact} from '../user';
+import {IImage} from "../image";
 
 export interface IVehicle {
   id: string;
@@ -6,16 +7,17 @@ export interface IVehicle {
   model?: string;
   vendor?: string;
   vin: string;
-  bin?: string;
+  bin: string;
   vehicleNo?: string;
-  rcNumber?: string;
   isApproved: boolean;
-  rcImageUrl?: string;
+  images: IImage[];
 }
 
 export interface IVehicleCompact {
     id: string;
     model?: string;
     vendor?: string;
+    bin: string;
     vin: string;
+    vehicleNo?: string;
 }

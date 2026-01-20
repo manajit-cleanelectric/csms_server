@@ -1,6 +1,7 @@
 import {IVehicle, IVehicleCompact} from "./vehicle.interface";
 import {Vehicles} from "../../models/vehicle.model";
 import {userToIUserCompact} from "../user";
+import {imageToIImage} from "../image";
 
 export function vehicleToIVehicleCompact(vehicle: Vehicles): IVehicleCompact {
     return {
@@ -8,6 +9,8 @@ export function vehicleToIVehicleCompact(vehicle: Vehicles): IVehicleCompact {
         model: vehicle.model ?? undefined,
         vendor: vehicle.vendor ?? undefined,
         vin: vehicle.vin,
+        bin: vehicle.bin,
+        vehicleNo: vehicle.vehicleNo ?? undefined
     };
 }
 
@@ -20,8 +23,7 @@ export function vehicleToIVehicle(vehicle: Vehicles): IVehicle {
         vin: vehicle.vin,
         bin: vehicle.bin ?? undefined,
         vehicleNo: vehicle.vehicleNo ?? undefined,
-        rcNumber: vehicle.rcNumber ?? undefined,
         isApproved: vehicle.isApproved,
-        rcImageUrl: vehicle.rcImageUrl ?? undefined,
+        images: vehicle.proofImages.map(img => imageToIImage(img))
     };
 }

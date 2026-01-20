@@ -121,7 +121,7 @@ async function getUserByIdWithVehicles(userId: string) {
     try {
         const user = await Users.findOne({
             where: {id: userId},
-            relations: ['vehicles'],
+            relations: ['vehicles.proofImages']
         });
         if (!user) {
             throw new Error("User not found with id " + userId);
