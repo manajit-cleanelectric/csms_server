@@ -58,8 +58,8 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
 
 router.post('/api/auth/logout', authenticate, async (req: Request, res: Response) => {
     try {
-        const {refreshToken} = req.body;
-        await userLogout(refreshToken);
+        const {refreshToken, fcmToken} = req.body;
+        await userLogout(refreshToken, fcmToken);
         res.status(200).send({success: true, message: "Successfully logged out", data: null});
         logger.info(`User with ID ${req.user?.id} logged out successfully`);
     } catch (error: any) {
