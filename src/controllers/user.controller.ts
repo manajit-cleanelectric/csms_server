@@ -162,13 +162,19 @@ async function generateAccessTokenViaRefreshToken(token: string) {
     return jwt.sign({trimmedUser}, JWT_SECRET_KEY, {expiresIn: '3h'});
 }
 
-async function logout(token: string) {
+async function logout(token: string, fcmToken: string) {
     const authToken = await AuthTokens.findOneBy({token: token, isRevoked: false});
     if (!authToken) {
         return true;
     }
     authToken.isRevoked = true;
     await authToken.save();
+    if (fcmToken) {
+        const fcmTokenObj = await FcmTokens.findOneBy({token: fcmToken})
+        if (fcmTokenObj) {
+            await fcmTokenObj.remove();
+        }
+    }
     return true;
 }
 
@@ -358,6 +364,12 @@ async function addFcmToken(userId: string, token: string) {
     let user = await Users.findOneBy({id: userId});
     if (!user) {
         throw new ResourceNotFoundError(`User not found with id ${userId}`);
+    }
+    let existingFcmToken = await FcmTokens.findOneBy({token: token});
+    if (existingFcmToken) {
+        existingFcmToken.user = user;
+        await existingFcmToken.save();
+        return;
     }
     let fcmToken = new FcmTokens()
     fcmToken.token = token;

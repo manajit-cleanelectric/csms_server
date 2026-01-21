@@ -21,6 +21,7 @@ import {apiLimiter} from "../app";
 import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
+import {NotificationPayload, sendPushNotification} from "../services/pushNotification.service";
 
 
 const router: Router = Router();
@@ -57,8 +58,8 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
 
 router.post('/api/auth/logout', authenticate, async (req: Request, res: Response) => {
     try {
-        const {refreshToken} = req.body;
-        await userLogout(refreshToken);
+        const {refreshToken, fcmToken} = req.body;
+        await userLogout(refreshToken, fcmToken);
         res.status(200).send({success: true, message: "Successfully logged out", data: null});
         logger.info(`User with ID ${req.user?.id} logged out successfully`);
     } catch (error: any) {
@@ -241,6 +242,35 @@ router.get('/api/users/:userId', authenticate, authorize(UserRoles.SUPERVISOR) ,
         logger.error(`Error retrieving user with ID ${userId}: ${error.message}`);
     }
 });
+
+
+// TODO
+// this is a test api, will be removed
+router.post('/api/echo-push-notification', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        if(!user) {
+            res.status(200).send({success: true, message: "User not found", data: null});
+            return;
+        }
+        const data = req.body;
+        const notificationPayLoad: NotificationPayload = {title: "Test", body: "body"};
+        if (data["title"]) {
+            notificationPayLoad.title = data["title"];
+        }
+        if (data["body"]) {
+            notificationPayLoad.body = data["body"];
+        }
+        if (data["imageUrl"]) {
+            notificationPayLoad.imageUrl = data["imageUrl"];
+        }
+        const fcmData = data?.data;
+        await sendPushNotification(user.id, notificationPayLoad, fcmData)
+        res.status(200).send({success: true, message: "Push Notification sent Successfully", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
 
 export {
     router,
