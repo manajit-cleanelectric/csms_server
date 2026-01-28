@@ -322,13 +322,14 @@ async function getVehiclesByUserId(userId: string) {
     return vehicles;
 }
 
-async function approveVehicle(vehicleId: string) {
+async function approveRejectVehicle(vehicleId: string, reason: string, approverId: string, action: VehicleStatus) {
     if (!vehicleId) {
         throw new MissingParameterError(`Vehicle ID is required`);
     }
     if (!validate(vehicleId)) {
         throw new InvalidUUIDError(`Invalid Vehicle ID format`);
     }
+    const approver = await Users.findOneOrFail({where: {id: approverId}});
     const vehicle = await Vehicles.findOne({
         where: {id: vehicleId},
         // relations: ["user"]
@@ -336,7 +337,10 @@ async function approveVehicle(vehicleId: string) {
     if (!vehicle) {
         throw new ResourceNotFoundError(`Vehicle with ID ${vehicleId} not found`);
     }
-    vehicle.status = VehicleStatus.APPROVED;
+    vehicle.status = action;
+    vehicle.supervisorActionBy = approver;
+    vehicle.supervisorActionAt = new Date();
+    vehicle.supervisorActionReason = reason;
     // if (vehicle.user) {
     //     vehicle.user.isAccountApproved = true;
     //     await vehicle.user.save();
@@ -399,7 +403,7 @@ export {
     updateVehicle,
     getVehicleById,
     getVehiclesByUserId,
-    approveVehicle,
+    approveRejectVehicle,
     listUnapprovedVehicles,
     removeVehicle,
     updateBinOfVehicle,

@@ -1,12 +1,14 @@
 import {Request, Response, Router} from 'express';
 import {
-    addVehicle, addVehicleV2, approveVehicle,
+    addVehicle,
+    addVehicleV2,
+    approveRejectVehicle,
     getVehicleById,
     getVehiclesByUserId,
     listUnapprovedVehicles,
     removeVehicle,
     replaceVehicle,
-   replaceVehicleV2,
+    replaceVehicleV2,
     updateBinOfVehicle,
     updateVehicle
 } from "../controllers/vehicle.controller";
@@ -17,6 +19,7 @@ import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
 import {deleteImageFromDisk} from "../utils/helperFunctions";
+import {VehicleStatus} from "../models/vehicle.model";
 
 const router: Router = Router();
 
@@ -149,10 +152,25 @@ router.get('/api/vehicles/unapproved-vehicles', authenticate, authorize(UserRole
 
 router.post('/api/vehicles/:vehicleId/approve', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
+        const supervisorId = req.user!.id;
         const vehicleId = req.params.vehicleId;
-        const vehicle = await approveVehicle(vehicleId)
+        const { reason } = req.body;
+        const vehicle = await approveRejectVehicle(vehicleId, reason, supervisorId, VehicleStatus.APPROVED);
         logger.info(`Vehicle with ID ${vehicleId} approved successfully`);
         res.status(200).send({status: true, message: "Vehicle approved successfully", data: vehicle});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+router.post('/api/vehicles/:vehicleId/reject', authenticate, authorize(UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
+    try {
+        const supervisorId = req.user!.id;
+        const vehicleId = req.params.vehicleId;
+        const { reason } = req.body;
+        const vehicle = await approveRejectVehicle(vehicleId, reason, supervisorId, VehicleStatus.REJECTED);
+        logger.info(`Vehicle with ID ${vehicleId} rejected successfully`);
+        res.status(200).send({status: true, message: "Vehicle rejected successfully", data: vehicle});
     } catch (error: any) {
         handleError(error, res, logger);
     }
