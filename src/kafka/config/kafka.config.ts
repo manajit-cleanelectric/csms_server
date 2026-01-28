@@ -54,8 +54,8 @@ const topics: ITopicConfig[] = [
     },
     // {
     //     topic: 'vehicle-update',
-    //     numPartitions: parseInt(process..env.KAFKA_TOPICS_NUMBER ?? '4', 10),
-    //     replicationFactor: parseInt(process..env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
+    //     numPartitions: parseInt(process.env.KAFKA_TOPICS_NUMBER ?? '4', 10),
+    //     replicationFactor: parseInt(process.env.KAFKA_REPLICATION_PARAMS ?? '1', 10),
     // },
     // {
     //     topic: 'heartbeat',
