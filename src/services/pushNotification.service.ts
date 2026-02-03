@@ -27,11 +27,6 @@ export async function sendPushNotification(
     const deviceTokens = fcmTokens.map((fcmToken) => fcmToken.token);
     const message = {
         tokens: deviceTokens,
-        notification: {
-            title: payload.title,
-            body: payload.body,
-            imageUrl: payload.imageUrl,
-        },
         data: data || {},
     };
 
