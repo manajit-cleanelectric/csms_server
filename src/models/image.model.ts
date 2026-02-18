@@ -32,7 +32,10 @@ class Image extends  BaseEntity {
     })
     url!: string;
 
-    @ManyToOne(() => Vehicles, (vehicle) => vehicle.proofImages, {orphanedRowAction: "delete"})
+    @ManyToOne(() => Vehicles, (vehicle) => vehicle.proofImages, {
+        orphanedRowAction: "delete",
+        onDelete: "CASCADE",
+    })
     @JoinColumn({name: "vehicleId"})
     vehicle!: Vehicles;
 

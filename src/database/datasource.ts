@@ -22,6 +22,7 @@ import {InitSchema1766561360524} from "../migrations/1766561360524-InitSchema";
 import {RemoveIndexRCNumberOnVehicles1766565854393} from "../migrations/1766565854393-RemoveIndexRCNumberOnVehicles";
 import {AddImagesSchema1767178984153} from "../migrations/1767178984153-AddImagesSchema";
 import {AddVehicleStatus1768904448203} from "../migrations/1768904448203-AddVehicleStatus";
+import {UpdateImageToCascadeDelete1771398654149} from "../migrations/1771398654149-UpdateImageToCascadeDelete";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -62,6 +63,7 @@ const AppDataSource = new DataSource({
         RemoveIndexRCNumberOnVehicles1766565854393,
         AddImagesSchema1767178984153,
         AddVehicleStatus1768904448203,
+        UpdateImageToCascadeDelete1771398654149,
     ],
 })
 export { AppDataSource };

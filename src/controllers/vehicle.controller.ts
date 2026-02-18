@@ -382,7 +382,6 @@ async function removeVehicle(vehicleId: string) {
     //     await vehicle.user.save();
     // }
     await vehicle.remove();
-    logger.info(`Vehicle with ID ${vehicleId} removed successfully`);
     return true;
 }
 
