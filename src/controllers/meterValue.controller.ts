@@ -58,7 +58,7 @@ async function addMeterValue(chargerId: any, params: any) {
         });
         meterValueEntity.sampledValues = sampledValue.map((sample: any) => {
             const parsedSample = parseSampledValue(sample);
-            if (parsedSample.measurand == Measurand.ENERGY_ACTIVE_IMPORT_REGISTER && parsedSample.numericValue) {
+            if (parsedSample.measurand == Measurand.ENERGY_ACTIVE_IMPORT_REGISTER && parsedSample.numericValue && parsedSample.location == Location.OUTLET) {
                 if (parsedSample.unit == UnitOfMeasure.KILOWATT_HOUR) {
                     session.meterStop = parsedSample.numericValue ? parsedSample.numericValue * 1000 : session.meterStop;
                 } else {
