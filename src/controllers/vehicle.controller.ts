@@ -22,6 +22,9 @@ async function addVehicle(userId: string, data: any) {
     if (!validate(userId)) {
         throw new InvalidUUIDError(`Invalid User ID format`);
     }
+    if (data.vehicleNo == ''){
+        data.vehicleNo = null;
+    }
     const user = await Users.findOne({where: [{id: userId}], relations: ["vehicles"]});
     if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
@@ -81,6 +84,9 @@ async function addVehicleV2(userId: string, data: any) {
     if (!validate(userId)) {
         throw new InvalidUUIDError(`Invalid User ID format`);
     }
+    if (data.vehicleNo == ''){
+        data.vehicleNo = null;
+    }
     const user = await Users.findOne({where: [{id: userId}], relations: ["vehicles"]});
     if (!user) {
         throw new ResourceNotFoundError(`User with ID ${userId} not found`);
@@ -133,6 +139,9 @@ async function replaceVehicle(vehicleId: string, data: any) {
     }
     if (!validate(vehicleId)) {
         throw new InvalidUUIDError(`Invalid Vehicle ID format`);
+    }
+    if (data.vehicleNo == ''){
+        data.vehicleNo = null;
     }
     const requiredFields = ['bin', 'rcImageUrl', 'vin'];
     const missingFields = requiredFields.filter(field => !data[field]);
@@ -198,6 +207,9 @@ async function replaceVehicleV2(vehicleId: string, data: any) {
     }
     if (!validate(vehicleId)) {
         throw new InvalidUUIDError(`Invalid Vehicle ID format`);
+    }
+    if (data.vehicleNo == ''){
+        data.vehicleNo = null;
     }
     const requiredFields = ['bin', 'rcImageUrl', 'vin', 'invoiceProofUrls'];
     const missingFields = requiredFields.filter(field => !data[field]);
