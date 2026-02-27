@@ -57,6 +57,15 @@ async function updateUser(userId: string, data: any) {
     user.city = data.city ?? user.city;
     user.state = data.state ?? user.state;
     user.isProfileComplete = !(!user.firstName);
+
+    if (data.email) {
+        // send email verification
+        user.email = data.email;
+        user.isEmailVerified = false;
+        const userProducer = UserProducer.getInstance();
+        await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email);
+    }
+
     await user.save();
     return user;
 }
