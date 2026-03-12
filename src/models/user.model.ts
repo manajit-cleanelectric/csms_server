@@ -78,7 +78,7 @@ class Users extends BaseEntity {
         nullable: true,
         length: 254,
     })
-    email!: string;
+    email!: string | null;
 
     @Column({type: "boolean", default: false})
     isEmailVerified!: boolean;

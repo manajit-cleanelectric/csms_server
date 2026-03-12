@@ -39,7 +39,10 @@ async function addUserInfo(userId: string, data: any) {
         user.email = email;
         user.isEmailVerified = false;
         const userProducer = UserProducer.getInstance();
-        await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email);
+        await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email!);
+    } else{
+        user.email = null;
+        user.isEmailVerified = false;
     }
 
     await user.save();
@@ -63,7 +66,10 @@ async function updateUser(userId: string, data: any) {
         user.email = data.email;
         user.isEmailVerified = false;
         const userProducer = UserProducer.getInstance();
-        await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email);
+        await userProducer.sendEmailVerificationMessage(user.phoneNumber, user.email!);
+    } else{
+        user.email = null;
+        user.isEmailVerified = false;
     }
 
     await user.save();
