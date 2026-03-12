@@ -91,7 +91,7 @@ const sessionMessageProcessor: EachMessageHandler = async (payload: EachMessageP
                     );
                     sendMail(
                         'clean@gmail.com',
-                        chargingSession.user.email,
+                        chargingSession.user.email!,
                         `🔋 ${energyUsed} kWh — Charge Clean: Receipt Ready`,
                         mailBody);
                 }

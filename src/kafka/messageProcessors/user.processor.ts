@@ -51,7 +51,7 @@ const userMessageProcessor: EachMessageHandler = async (payload: EachMessagePayl
             });
             if (user.isEmailVerified) {
                 const body = topUpSuccessfulMailBodyInterface(user.firstName, amount, orderId, timeStamp);
-                sendMail('clean@gmail.com', user.email, '💰 Wallet Top-Up Successful', body);
+                sendMail('clean@gmail.com', user.email!, '💰 Wallet Top-Up Successful', body);
             }
             break;
         }
