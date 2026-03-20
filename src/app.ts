@@ -43,6 +43,7 @@ const EMAIL_APP_PASSWORD = process.env.EMAIL_APP_PASSWORD!;
 const SERVER_URL = process.env.SERVER_URL!;
 const ID_CODEC_KEY = process.env.ID_CODEC_KEY!;
 const WALLET_MIN_BALANCE = parseInt(process.env.WALLET_MIN_BALANCE!, 10);
+const ANDROID_APP_VERSION = process.env.ANDROID_APP_VERSION!;
 
 if (!JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY is not defined in environment variables.');
@@ -136,6 +137,9 @@ if (!ID_CODEC_KEY) {
 }
 if (!WALLET_MIN_BALANCE) {
     throw new Error('WALLET_MIN_BALANCE is not defined in environment variables.');
+}
+if (!ANDROID_APP_VERSION) {
+    throw new Error('ANDROID_APP_VERSION is not defined in environment variables.');
 }
 
 function ensureDirExistsSync(dirPath: string): void {
@@ -265,4 +269,5 @@ export {
     RAZORPAY_API_KEY_ID,
     RAZORPAY_API_KEY_SECRET,
     RAZORPAY_WEBHOOK_SECRET,
+    ANDROID_APP_VERSION
 };

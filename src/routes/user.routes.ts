@@ -22,6 +22,7 @@ import {logger} from "../services/logger.service";
 import {handleError} from "../errors/customErrors";
 import {UserRoles} from "../models/user.model";
 import {NotificationPayload, sendPushNotification} from "../services/pushNotification.service";
+import {ANDROID_APP_VERSION} from "../app";
 
 
 const router: Router = Router();
@@ -267,6 +268,14 @@ router.post('/api/echo-push-notification', authenticate, authorize(UserRoles.CUS
         const fcmData = data?.data;
         await sendPushNotification(user.id, notificationPayLoad, fcmData)
         res.status(200).send({success: true, message: "Push Notification sent Successfully", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
+router.get('/api/minimum-supported-android-app-version', async (req: Request, res: Response) => {
+    try {
+        res.status(200).send({success: true, message: "Minimum Supported Android App Version", data: {version: ANDROID_APP_VERSION}});
     } catch (error: any) {
         handleError(error, res, logger);
     }
