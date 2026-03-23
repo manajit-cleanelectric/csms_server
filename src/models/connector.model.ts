@@ -44,6 +44,9 @@ enum ConnectorType {
     GBT_AC = 'GBT_AC',
     GBT_DC = 'GBT_DC',
 
+    // Connectors for 2 plugs but 1 power source
+    TYPE_6_DC_GBT_DC = 'TYPE_6_DC/GBT_DC',
+
     // Automated high-power interfaces (buses)
     PANTOGRAPH_DOWN = 'PANTOGRAPH_DOWN',
     PANTOGRAPH_UP = 'PANTOGRAPH_UP'
