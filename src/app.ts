@@ -241,7 +241,7 @@ app.get('/metrics', async (req: Request, res: Response) => {
 // Swagger Documentation
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-const swaggerDocument = YAML.load(path.join(__dirname,'..', 'openapi.yaml'));
+const swaggerDocument = YAML.load(path.join(__dirname,'..', 'openapi_new.yaml'));
 
 // Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
