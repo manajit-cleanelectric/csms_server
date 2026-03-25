@@ -107,7 +107,7 @@ router.put('/api/v2/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUST
     }
 });
 
-router.patch('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
+router.patch('/api/vehicles/:vehicleId', authenticate, authorize(UserRoles.CUSTOMER, UserRoles.SUPERVISOR), async (req: Request, res: Response) => {
     try {
         const vehicleId = req.params.vehicleId;
         const data = req.body;

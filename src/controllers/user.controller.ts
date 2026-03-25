@@ -338,6 +338,21 @@ async function listCustomers() {
     }
 }
 
+async function listCustomersV2(page: number,limit: number) {
+    try {
+        return await Users.findAndCount({
+            where: {role: UserRoles.CUSTOMER},
+            order: {
+                createdAt: 'DESC',
+            },
+            skip: (page - 1) * limit,
+            take: limit,
+        });
+    } catch (error) {
+        logger.error(`Error occurred while listing customers: ${error}`);
+    }
+}
+
 async function changeUserRole(userId: string, role: UserRoles) {
     let user = await Users.findOneBy({id: userId});
     if (!user) {
@@ -412,4 +427,5 @@ export {
     changeUserRole,
     addMoney,
     addFcmToken,
+    listCustomersV2,
 }

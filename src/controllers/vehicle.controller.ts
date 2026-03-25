@@ -296,6 +296,9 @@ async function updateVehicle(vehicleId: string, data: any) {
     }
     vehicle.model = data.model ?? vehicle.model;
     vehicle.vendor = data.vendor ?? vehicle.vendor;
+    vehicle.vin = data.vin ?? vehicle.vin;
+    vehicle.bin = data.bin ?? vehicle.bin;
+    vehicle.vehicleNo = data.vehicleNo ?? vehicle.vehicleNo;
     await vehicle.save();
     return vehicle;
 }
