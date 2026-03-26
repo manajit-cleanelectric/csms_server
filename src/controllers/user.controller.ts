@@ -16,6 +16,7 @@ import {LedgerService} from "../services/ledger.service";
 import {FcmTokens} from "../models/fcmToken.model";
 import {UserProducer} from "../kafka/producers/user.producer";
 import {isTokenExpired} from "../utils/isTokenExpired";
+import {AppDataSource} from "../database/datasource";
 
 async function addUserInfo(userId: string, data: any) {
     // Validate input data
@@ -353,6 +354,52 @@ async function listCustomersV2(page: number,limit: number) {
     }
 }
 
+
+async function listCustomersV3(page: number,limit: number) {
+    try {
+        let sql = `SELECT 
+                u.id,
+                u."phoneNumber",
+                u."firstName",
+                u."lastName",
+                COALESCE(v.approved_count, 0)::int AS approved,
+                COALESCE(v.pending_count, 0)::int  AS pending,
+                COALESCE(v.rejected_count, 0)::int AS rejected
+            FROM (
+                SELECT id, "phoneNumber", "firstName", "lastName"
+                FROM users
+                WHERE role = $1
+                ORDER BY "updatedAt" DESC
+                LIMIT 100
+            ) u
+            LEFT JOIN (
+                SELECT 
+                    "userId",
+                    COUNT(*) FILTER (WHERE status = 'APPROVED'):: int AS approved_count,
+                    COUNT(*) FILTER (WHERE status = 'PENDING'):: int  AS pending_count,
+                    COUNT(*) FILTER (WHERE status = 'REJECTED'):: int AS rejected_count
+                FROM vehicles
+                WHERE "userId" IN (
+                    SELECT id
+                    FROM users
+                    WHERE role = 'customer'
+                    ORDER BY "updatedAt" DESC
+                    LIMIT $2
+                    OFFSET $3
+                )
+                GROUP BY "userId"
+            ) v ON v."userId" = u.id;`
+
+        const [users, [{ total }]] = await Promise.all([
+            AppDataSource.query(sql, ['customer', limit, (page - 1) * limit]),
+            AppDataSource.query(`SELECT COUNT(*)::int AS total FROM users WHERE role = $1`, ['customer'])
+        ]);
+        return [users, total];
+    } catch (error) {
+        logger.error(`Error occurred while listing customers: ${error}`);
+    }
+}
+
 async function changeUserRole(userId: string, role: UserRoles) {
     let user = await Users.findOneBy({id: userId});
     if (!user) {
@@ -428,4 +475,5 @@ export {
     addMoney,
     addFcmToken,
     listCustomersV2,
+    listCustomersV3
 }
