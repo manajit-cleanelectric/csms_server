@@ -364,13 +364,13 @@ async function listCustomersV3(page: number,limit: number) {
                 u."lastName",
                 COALESCE(v.approved_count, 0)::int AS approved,
                 COALESCE(v.pending_count, 0)::int  AS pending,
-                COALESCE(v.rejected_count, 0)::int AS rejected
+                COALESCE(v.rejected_count, 0)::int AS rejected,
+                cs.latest_session_time AS latest_session
             FROM (
                 SELECT id, "phoneNumber", "firstName", "lastName"
                 FROM users
                 WHERE role = $1
                 ORDER BY "updatedAt" DESC
-                LIMIT 100
             ) u
             LEFT JOIN (
                 SELECT 
@@ -382,13 +382,20 @@ async function listCustomersV3(page: number,limit: number) {
                 WHERE "userId" IN (
                     SELECT id
                     FROM users
-                    WHERE role = 'customer'
+                    WHERE role = $1
                     ORDER BY "updatedAt" DESC
                     LIMIT $2
                     OFFSET $3
                 )
                 GROUP BY "userId"
-            ) v ON v."userId" = u.id;`
+            ) v ON v."userId" = u.id
+            LEFT JOIN (
+                SELECT 
+                    "userId",
+                    MAX("createdAt") AS latest_session_time
+                    FROM sessions
+                    GROUP BY "userId"
+                ) cs ON cs."userId" = u.id`
 
         const [users, [{ total }]] = await Promise.all([
             AppDataSource.query(sql, ['customer', limit, (page - 1) * limit]),
