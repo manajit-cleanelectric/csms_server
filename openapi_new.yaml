@@ -1,0 +1,2829 @@
+openapi: 3.0.4
+info:
+  title: Charging Infrastructure API
+  description: |-
+    This API enables management of users, chargers, vehicles, sessions, payments, and other core operations for 
+    EV infrastructure.
+    Field types and enumerations are standardized to match the database schema.
+    All decimal, numeric, and bigint fields are represented as `string` in the API.
+    For details, refer to the attached API and data type docs.
+  termsOfService: 'https://example.com/terms/'
+  contact:
+    email: api-support@example.com
+  license:
+    name: Proprietary Internal Use
+    url: 'https://example.com/license'
+  version: 1.0.0
+externalDocs:
+  description: API Docs
+  url: 'https://example.com/docs'
+servers:
+  - url: 'http://localhost:3000'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Address:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        line1:
+          type: string
+        line2:
+          type: string
+        location:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        country:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+        phoneNumber:
+          type: string
+          description: Phone number
+        firstName:
+          type: string
+          nullable: true
+          description: First name
+        lastName:
+          type: string
+          nullable: true
+          description: Last name
+        city:
+          type: string
+          nullable: true
+          description: City
+        state:
+          type: string
+          nullable: true
+          description: State
+        email:
+          type: string
+          nullable: true
+          description: Email
+        isEmailVerified:
+          type: boolean
+          description: Email verified status
+        isAccountApproved:
+          type: boolean
+          description: Account approval status
+        isProfileComplete:
+          type: boolean
+          description: Profile completion status
+        isVehicleRegistered:
+          type: boolean
+          description: Vehicle registration status
+        isActive:
+          type: boolean
+          description: Active status
+        isDeleted:
+          type: boolean
+          description: Deleted status
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    UserCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        role:
+          type: string
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Vehicle ID
+        user:
+          type: string
+          format: uuid
+          nullable: true
+          description: User ID
+        model:
+          type: string
+          nullable: true
+          description: Vehicle model
+        vendor:
+          type: string
+          nullable: true
+          description: Vehicle vendor
+        vin:
+          type: string
+          description: Vehicle Identification Number
+        bin:
+          type: string
+          nullable: true
+          description: BIN
+        vehicleNo:
+          type: string
+          nullable: true
+          description: Vehicle number
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - REJECTED
+          description: Vehicle approval status
+        supervisorActionType:
+          type: string
+          enum:
+            - APPROVE
+            - REJECT
+          nullable: true
+          description: Supervisor action type for vehicle approval
+        supervisorActionAt:
+          type: string
+          format: date-time
+          description: Timestamp of supervisor action
+        supervisorActionReason:
+          type: string
+          nullable: true
+          description: Reason for supervisor action
+        proofImages:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              title:
+                type: string
+              url:
+                type: string
+          nullable: true
+          description: Array of proof image URLs for vehicle approval
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    Charger:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Charger ID
+        model:
+          type: string
+          description: Charger model
+        vendor:
+          type: string
+          description: Charger vendor
+        serialNumber:
+          type: string
+          description: Serial number
+        maxPower:
+          type: number
+          description: Maximum power in kW
+        alias:
+          type: string
+          nullable: true
+          description: Charger alias
+        city:
+          type: string
+          description: City location
+        address:
+          $ref: '#/components/schemas/Address'
+        noOfConnector:
+          type: number
+          description: Number of connectors
+        latitude:
+          type: string
+          description: Latitude coordinates
+        longitude:
+          type: string
+          description: Longitude coordinates
+        status:
+          type: string
+          enum:
+            - Available
+            - Occupied
+            - Faulted
+            - Unavailable
+          description: Charger status
+        tariff:
+          $ref: '#/components/schemas/Tariff'
+        lastHeartBeat:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last heartbeat
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    ChargerCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        model:
+          type: string
+        vendor:
+          type: string
+        serialNumber:
+          type: string
+        city:
+          type: string
+        alias:
+          type: string
+        maxPower:
+          type: number
+          format: integer
+        noOfConnector:
+          type: number
+        tariff:
+          $ref: '#/components/schemas/Tariff'
+        connectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connector'
+    Connector:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        chargerConnectorId:
+          type: number
+          format: integer
+        type:
+          type: string
+          enum:
+            - TYPE_2_AC
+            - CCS2_DC
+            - CHADEMO_DC
+            - TYPE_1_AC
+            - TYPE_6_DC
+            - TYPE_7_ACDC
+            - BHARAT_AC001
+            - BHARAT_DC001
+            - GBT_AC
+            - GBT_DC
+            - PANTOGRAPH_DOWN
+            - PANTOGRAPH_UP
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PaymentOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Order ID
+        user:
+          $ref: '#/components/schemas/UserCompact'
+        orderId:
+          type: string
+        amount:
+          type: string
+          description: Payment amount
+        currency:
+          type: string
+          description: Currency code
+        status:
+          type: string
+          enum:
+            - initialised
+            - pending
+            - complete
+            - failed
+          description: Payment status
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    Session:
+      type: object
+      properties:
+        id:
+          type: number
+          format: integer 
+          description: Session ID
+        charger:
+          $ref: '#/components/schemas/ChargerCompact'
+        connector:
+          $ref: '#/components/schemas/Connector'
+        vehicleNo:
+          type: string
+          nullable: true
+          description: Vehicle number
+        vehicleVendor:
+          type: string
+          nullable: true
+          description: Vehicle vendor
+        vehicleModel:
+          type: string
+          nullable: true
+          description: Vehicle model
+        startTime:
+          type: string
+          format: date-time
+          description: Session start time
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Session end time
+        meterStart:
+          type: string
+          nullable: true
+          description: Starting meter reading
+        meterStop:
+          type: string
+          nullable: true
+          description: Ending meter reading
+        energyUsed:
+          type: number
+          nullable: true
+          description: Energy consumed
+        location:
+          type: string
+          nullable: true
+          description: Location
+        socStart:
+          type: number
+          nullable: true
+          description: Starting State of Charge
+        socLast:
+          type: number
+          nullable: true
+          description: Last State of Charge
+        reason:
+          type: string
+          nullable: true
+          description: Session end reason
+        status:
+          type: string
+          enum:
+            - Preparing
+            - Finished
+            - Idle
+            - Faulted
+          description: Session status
+        baseAmount:
+          type: string
+          nullable: true
+          description: Base amount
+        netCGST:
+          type: string
+          nullable: true
+          description: CGST amount
+        netSGST:
+          type: string
+          nullable: true
+          description: SGST amount
+        netIGST:
+          type: string
+          nullable: true
+          description: IGST amount
+        totalAmount:
+          type: string
+          nullable: true
+          description: Total amount
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    SessionCompact:
+      type: object
+      properties:
+        id:
+          type: number
+          format: integer
+          description: 'Session ID'
+        charger:
+          $ref: '#/components/schemas/ChargerCompact'
+        location:
+          type: string
+          nullable: true
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+        energyUsed:
+          type: number
+          format: integer
+          nullable: true
+        status:
+          type: string
+        totalAmount:
+          type: string
+          description: numeric as string
+          nullable: true
+    Wallet:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Wallet ID
+        type:
+          type: string
+          enum:
+            - Customer
+            - System
+          description: Wallet type
+        currency:
+          type: string
+          description: Currency code
+        code:
+          type: string
+          description: user id
+          x-format: 'USER:{id}'
+          x-params:
+            - name: id
+              type: string
+              format: uuid
+        balance:
+          type: string
+          description: Current balance
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Update timestamp
+    WalletCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 'Wallet ID'
+        balance:
+          type: string
+          description: numeric as string
+    Tariff:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        pricePerKWh:
+          type: string
+          description: numeric as string
+        CGST:
+          type: string
+          description: numeric as string
+        SGST:
+          type: string
+          description: numeric as string
+        IGST:
+          type: string
+          description: numeric as string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the user
+    vehicleId:
+      name: vehicleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the vehicle
+    chargerId:
+      name: chargerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the charger
+    sessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: number
+        format: integer
+      description: ID of the session
+    page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      description: Number of items per page
+  requestBodies:
+    OTPRequestBody:
+      description: Request body for sending OTP
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: Phone number
+            required:
+              - phoneNumber
+    LoginRequestBody:
+      description: Request body for user login
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: Phone number
+              otp:
+                type: string
+                description: OTP code
+            required:
+              - phoneNumber
+              - otp
+  responses:
+    GeneralSuccess:
+      description: General success response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: Operation completed successfully
+              data:
+                type: object
+                example: null
+            required:
+              - success
+              - message
+    LoginSuccess:
+      description: Successful login response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: Logged user successfully
+              accessToken:
+                type: string
+                description: JWT access token
+              refreshToken:
+                type: string
+                description: JWT refresh token
+              data:
+                $ref: '#/components/schemas/User'
+    UnauthorizedError:
+      description: Authentication is required and has failed or has not yet been provided
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: 'Unauthorized: Invalid or missing token'
+              data:
+                type: object
+                example: null
+    ForbiddenError:
+      description: You do not have permission to access this resource
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: 'Forbidden: Access denied'
+              data:
+                type: object
+                example: null
+    NotFoundError:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: 'Resource not found'
+              data:
+                type: object
+                example: null
+    AlreadyExistsError:
+      description: The resource already exists
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: 'Resource already exists'
+              data:
+                type: object
+                example: null
+    BadRequestError:
+      description: The request was invalid or cannot be served
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: 'Cannot destructure property {propertyName} of req.body as it is undefined.'
+                x-params:
+                  - name: propertyName
+                    type: string
+              data:
+                type: object
+                example: null
+    InternalServerError:
+      description: An unexpected error occurred on the server
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: 'An unexpected error occurred. Please try again later.'
+              data:
+                type: object
+                example: null
+paths:
+  /api/auth/send-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Send OTP to phone number
+      description: Sends an OTP code to the provided phone number for authentication
+      requestBody:
+        $ref: '#/components/requestBodies/OTPRequestBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/GeneralSuccess'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login with phone number and OTP
+      description: Authenticates user with phone number and OTP, returns JWT tokens
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequestBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginSuccess'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Logs out the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/GeneralSuccess'
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Refreshes the access token using refresh token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Token refreshed successfully'
+                  accessToken:
+                    type: string
+                    description: New JWT access token
+                  data:
+                    type: object
+                    example: null
+                required:
+                  - success
+                  - message
+                  - accessToken
+  /api/users:
+    get:
+      tags:
+        - User Management
+      summary: List all customers
+      description: Retrieves a list of all customers (supervisor only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Users retrieved successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v2/users:
+    get:
+      tags:
+        - User Management
+      summary: List all customers (paginated)
+      description: Retrieves a paginated list of all customers (supervisor only)
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Users retrieved successfully'
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+                      total:
+                        type: integer
+                        description: Total number of users
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/users/{userId}/approve:
+    get:
+      tags:
+        - User Management
+      deprecated: true
+      summary: Approve user account
+      description: Approves a user account (supervisor only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          $ref: '#/components/responses/GeneralSuccess'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/users/me:
+    get:
+      tags:
+        - User Profile
+      summary: Get current user profile
+      description: Retrieves the profile of the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'User details fetched'
+                  data:
+                    $ref: '#/components/schemas/User'
+    put:
+      tags:
+        - User Profile
+      summary: Update user profile
+      description: Updates the profile information of the authenticated user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Profile updated successfully'
+                  data:
+                    $ref: '#/components/schemas/User'
+    post:
+      tags:
+        - User Profile
+      summary: Create or update user account info
+      description: Creates or updates user account information
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+              required:
+                - firstName
+                - lastName
+      responses:
+        '200':
+          description: Account info updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Account info updated successfully'
+                  data:
+                    $ref: '#/components/schemas/User'
+  /api/users/{userId}/vehicles:
+    get:
+      tags:
+        - Vehicles
+      summary: Get user vehicles
+      description: Retrieves all vehicles for a specific user
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Vehicles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicles retrieved successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Vehicle'
+    post:
+      tags:
+        - Vehicles
+      deprecated: true
+      summary: Add vehicle to user
+      description: Adds a new vehicle for the user
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                vendor:
+                  type: string
+                vin:
+                  type: string
+                bin:
+                  type: string
+                vehicleNo:
+                  type: string
+                  nullable: true
+                rcImage:
+                  type: string
+              required:
+                - vin
+                - bin
+                - model
+                - vendor
+                - rcImage
+      responses:
+        '201':
+          description: Vehicle added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle added successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '400':
+          description: Missing fields in request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'All vehicle details are required'
+                  data:
+                    type: object
+                    example: null
+        '409':
+          description: Vehicle already registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle with BIN {bin} or VIN {vin} already exists in database'
+                    x-params:
+                      - name: bin
+                        type: string
+                      - name: vin
+                        type: string
+                  data:
+                    type: object
+                    example: null
+  /api/v2/users/{userId}/vehicles:
+    get:
+      tags:
+        - Vehicles
+      summary: Get user vehicles (paginated)
+      description: Retrieves all vehicles for a specific user with pagination
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Vehicles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicles retrieved successfully'
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Vehicle'
+                      total:
+                        type: integer
+                        description: Total number of vehicles
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+        - Vehicles
+      summary: Add vehicle to user
+      description: Adds a new vehicle for the user
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                vendor:
+                  type: string
+                vin:
+                  type: string
+                bin:
+                  type: string
+                vehicleNo:
+                  type: string
+                  nullable: true
+                rcImage:
+                  type: string
+              required:
+                - vin
+                - bin
+                - model
+                - vendor
+                - vehicleNo
+                - rcImage
+      responses:
+        '201':
+          description: Vehicle added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle added successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '400':
+          description: Missing fields in request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'All vehicle details are required'
+                  data:
+                    type: object
+                    example: null
+        '409':
+          description: Vehicle already registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle with BIN {bin} or VIN {vin} already exists in database'
+                    x-params:
+                      - name: bin
+                        type: string
+                      - name: vin
+                        type: string
+                  data:
+                    type: object
+                    example: null
+  /api/vehicles/{vehicleId}:
+    get:
+      tags:
+        - Vehicles
+      summary: Get vehicle by ID
+      description: Retrieves a specific vehicle by its ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Vehicle retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
+        '404':
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Vehicle not found'
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      tags:
+        - Vehicles
+      summary: Update vehicle
+      description: Updates vehicle information
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                vendor:
+                  type: string
+                vehicleNo:
+                  type: string
+                  nullable: true
+                vin:
+                  type: string
+                bin:
+                  type: string
+                rcImageUrl:
+                  type: string
+              required:
+                - vin
+                - bin
+                - rcImageUrl
+      responses:
+        '200':
+          description: Vehicle updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Missing required fields: {field}'
+                    x-params:
+                      - name: field
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    patch:
+      tags:
+        - Vehicles
+      summary: Partially update vehicle
+      description: Updates specific fields of a vehicle
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                vendor:
+                  type: string
+      responses:
+        '200':
+          description: Vehicle updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Vehicle'
+        '404':
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Vehicle not found'
+                  data:
+                    type: object
+                    example: null
+        '400':
+          description: Invalid vehicle id format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Invalid Vehicle ID format'
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      tags:
+        - Vehicles
+      summary: Delete vehicle
+      description: Deletes a vehicle by its ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Vehicle deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Vehicle removed successfully'
+                  data:
+                    type: object
+                    example: null
+        '400':
+          description: Invalid Vehicle ID format for deletion
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Invalid Vehicle ID format for deletion'
+                    x-example2: 'Vehicle with ID {id} not found for deletion'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/chargers:
+    get:
+      tags:
+        - Chargers
+      summary: Get all chargers
+      description: Retrieves a list of all available chargers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Chargers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'All charger found'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Charger'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+        - Chargers
+      summary: Create new charger
+      description: Creates a new charger (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                vendor:
+                  type: string
+                serialNumber:
+                  type: string
+                  x-unique: true
+                maxPower:
+                  type: number
+                alias:
+                  type: string
+                address_line1:
+                  type: string
+                address_line2:
+                  type: string
+                address_location:
+                  type: string
+                address_city:
+                  type: string
+                address_state:
+                  type: string
+                address_zipCode:
+                  type: number
+                  format: integer
+                address_country:
+                  type: string
+                latitude:
+                  type: number
+                  format: float
+                longitude:
+                  type: number
+                  format: float
+                noOfConnector:
+                  type: number
+                  format: integer
+                connectorTypes:
+                  type: array
+                  items:
+                    type: string 
+                pricePerKWh:
+                  type: number
+                  format: float
+                CGST:
+                  type: number
+                  format: float
+                SGST:
+                  type: number
+                  format: float
+              required:
+                - model
+                - vendor
+                - serialNumber
+                - maxPower
+                - address_line1
+                - address_line2
+                - address_location
+                - address_city
+                - address_state
+                - address_zipCode
+                - address_country
+                - noOfConnector
+                - latitude
+                - longitude
+                - pricePerKWh
+                - CGST
+                - SGST
+                - connectorTypes
+      responses:
+        '201':
+          description: Charger created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'New Charger Added'
+                  data:
+                    $ref: '#/components/schemas/Charger'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Missing required fields: {field}'
+                    x-params:
+                      - name: field
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: Charger with serial number already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Charger with serial number {serialNumber} already exists'
+                    x-params:
+                      - name: serialNumber
+                        type: string
+                  data:
+                    type: object
+                    example: null
+  /api/v2/chargers:
+    get:
+      tags:
+        - Chargers
+      summary: Get all chargers (paginated)
+      description: Retrieves a paginated list of all available chargers
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Chargers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Chargers retrieved successfully'
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Charger'
+                      total:
+                        type: integer
+                        description: Total number of chargers
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/chargers/{chargerId}:
+    get:
+      tags:
+        - Chargers
+      summary: Get charger by ID
+      description: Retrieves a specific charger by its ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/chargerId'
+      responses:
+        '200':
+          description: Charger retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Charger details'
+                  data:
+                    $ref: '#/components/schemas/Charger'
+        '404':
+          description: Charger not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean                 
+                    example: false
+                  message:
+                    type: string                  
+                    example: 'Charger with ID {id} not found'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      tags:
+        - Chargers
+      summary: Update charger
+      x-bug: Admin user gets logged out and API returns 401 when endpoint is hit.
+      description: Updates charger information (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/chargerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alias:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - Available
+                    - Occupied
+                    - Faulted
+                    - Unavailable
+                maxPower:
+                  type: number
+      responses:
+        '200':
+          description: Charger updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Charger updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Charger'
+  /api/chargers/{chargerId}/sessions:
+    get:
+      tags:
+        - Sessions
+      summary: Get charger sessions
+      description: Retrieves all sessions for a specific charger (admin/supervisor only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/chargerId'
+      responses:
+        '200':
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Sessions retrieved successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SessionCompact'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+  /api/v2/chargers/{chargerId}/sessions:
+    get:
+      tags:
+        - Sessions
+      summary: Get charger sessions (paginated)
+      description: Retrieves paginated sessions for a specific charger (admin/supervisor only)
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/chargerId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Sessions retrieved successfully'
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SessionCompact'
+                      total:
+                        type: integer
+                        description: Total number of sessions
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/users/{userId}/sessions:
+    get:
+      tags:
+        - Sessions
+      summary: Get user sessions
+      description: Retrieves all sessions for a specific user
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          format: integer
+                        startTime:
+                          type: string
+                          format: date-time
+                        endTime:
+                          type: string
+                          format: date-time
+                        meterStart:
+                          type: number
+                        meterStop:
+                          type: number
+                        energyConsumed:
+                          type: number
+                        status:
+                          type: string
+                          enum:
+                            - Preparing
+                            - Finished
+                            - Idle
+                            - Faulted
+                        location:
+                          type: string
+                        user:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            firstName:
+                              type: string
+                            lastName:
+                              type: string
+                        vehicle:
+                          type: object
+                          properties:
+                            model:
+                              type: string
+                            vendor:
+                              type: string
+                            vehicleNo:
+                              type: string
+                        charger:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            model:
+                              type: string
+                        connectorId:
+                          type: number
+                          format: integer
+                        totalAmount:
+                          type: string
+                          format: float
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Charger ID {id} is not a valid UUID'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v2/users/{userId}/sessions:
+    get:
+      tags:
+        - Sessions
+      summary: Get user sessions (paginated)
+      description: Retrieves paginated sessions for a specific user
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SessionCompact'
+                      total:
+                        type: integer
+                        description: Total number of sessions
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/users/{userId}/ongoing-session:
+    get:
+      tags:
+        - Sessions
+      summary: Get user ongoing session
+      description: Retrieves the current ongoing session for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Ongoing session retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Ongoing session retrieved successfully'
+                    x-example2: 'No ongoing session found for user with id {id}'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        format: integer
+                      startTime:
+                        type: string
+                        format: date-time
+                      energyUsed:
+                        type: number
+                      totalCostSoFar:
+                        type: string
+                        format: float
+                      charger:
+                        $ref: '#/components/schemas/Charger'
+                      address:
+                        $ref: '#/components/schemas/Address'
+                      socLast:
+                        type: number
+                        nullable: true
+                      status:
+                        type: string
+                        enum:
+                          - Preparing
+                      location:
+                        type: string
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Charger ID {id} is not a valid UUID'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v2/users/{userId}/ongoing-session:
+    get:
+      tags:
+        - Sessions
+      summary: Get user ongoing session with vehicle details
+      description: Retrieves the current ongoing session for a user along with vehicle details
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Ongoing session retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Ongoing session retrieved successfully'
+                    x-example2: 'No ongoing session found for user with id {id}'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        format: integer
+                      startTime:
+                        type: string
+                        format: date-time
+                      energyUsed:
+                        type: number
+                      totalCostSoFar:
+                        type: string
+                        format: float
+                      charger:
+                        $ref: '#/components/schemas/Charger'
+                      vehicle:
+                        $ref: '#/components/schemas/Vehicle'
+                      address:
+                        $ref: '#/components/schemas/Address'
+                      socLast:
+                        type: number
+                        nullable: true
+                      status:
+                        type: string
+                        enum:
+                          - Preparing
+                      location:
+                        type: string
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Charger ID {id} is not a valid UUID'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/sessions/{sessionId}:
+    get:
+      tags:
+        - Sessions
+      summary: Get session by ID
+      description: Retrieves a specific session by its ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '200':
+          description: Session retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Session details retrieved'
+                  data:
+                    $ref: '#/components/schemas/Session'
+        '400':
+          description: Invalid session ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Session ID is required'
+                  data:
+                    type: object
+                    example: null
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false                  
+                  message:
+                    type: string
+                    example: 'Session with ID {id} not found'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/users/{userId}/session/remote-stop-transaction:
+    post:
+      tags:
+        - Sessions
+      summary: Remote stop transaction
+      description: Remotely stops a charging transaction
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chargerId:
+                  type: string
+                  format: uuid
+                transactionId:
+                  type: number
+                  format: integer
+              required:
+                - chargerId
+                - transactionId
+      responses:
+        '200':
+          description: Remote stop successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Transaction Stop Request Sent'
+                    x-example2: 'Transaction Stop Request could not be sent.'
+                  data:
+                    type: object
+                    example: null
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object                
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Invalid request body'
+                  data:
+                    type: object
+                    example: null
+        '404':
+          description: Session not found for remote stop
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Charger with ID {id} not connected'
+                    x-params:
+                      - name: id
+                        type: string
+                  data:
+                    type: object
+                    example: null
+  /api/payments/create-order:
+    post:
+      tags:
+        - Payments
+      summary: Create payment order
+      description: Creates a new payment order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: string
+                  description: Payment amount
+                currency:
+                  type: string
+                  description: Currency code
+                  default: INR
+                description:
+                  type: string
+                  description: Payment description
+              required:
+                - amount
+      responses:
+        '200':
+          description: Payment order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Order created'
+                  data:
+                    $ref: '#/components/schemas/PaymentOrder'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          description: Unexpeced error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'An unexpected error occurred'
+                  data:
+                    type: object
+                    example: null
+  /api/wallet/balance:
+    get:
+      tags:
+        - Wallet
+      summary: Get wallet balance
+      description: Retrieves the current wallet balance for the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wallet balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Wallet fetched successfully'
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Wallet ID
+                      type:
+                        type: string
+                        example: 'User'
+                        description: Wallet type
+                      code:
+                        type: string
+                        description: User ID
+                        format: 'USER:{id}'
+                        x-params:
+                          - name: id
+                            type: string
+                            format: uuid
+                      balance:
+                        type: string
+                        description: Current wallet balance
+                      currency:
+                        type: string
+                        description: Currency code
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/add-money:
+    post:
+      tags:
+        - Wallet
+      deprecated: true
+      summary: Add money to wallet
+      description: Adds money to user wallet (supervisor only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                amount:
+                  type: string
+                transactionId:
+                  type: string
+                  format: uuid
+                upiId:
+                  type: string
+              required:
+                - userId
+                - amount
+                - transactionId
+            example:
+              userId: 5cfb9a56-839f-4b16-ba25-01602452bac6
+              amount: '250'
+              transactionId: jdfhvgsdf
+              upiId: dcsdvfg
+      responses:
+        '200':
+          $ref: '#/components/responses/GeneralSuccess'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/cities:
+    get:
+      tags:
+        - Locations
+      summary: Get cities with chargers
+      description: Retrieves a list of cities that have available chargers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cities retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cities with Chargers
+                  data:
+                    type: array
+                    items:
+                      type: string
+                      example:
+                        - Delhi
+                        - Mumbai
+                        - Pune
+                        - Nashik
+                        - Pimpri
+                        - Hydrabad
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v2/cities:
+    get:
+      tags:
+        - Locations
+      summary: Get cities with chargers (paginated)
+      description: Retrieves a paginated list of cities that have available chargers
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Cities retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cities with Chargers
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: string
+                      total:
+                        type: integer
+                        description: Total number of cities
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/chargers/city/{cityName}:
+    get:
+      tags:
+        - Locations
+      summary: Get chargers by city
+      description: Retrieves all chargers in a specific city
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cityName
+          in: path
+          required: true
+          schema:
+            type: string
+          description: City name
+          example: Pimpri
+      responses:
+        '200':
+          description: Chargers in city retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                    x-example2: false
+                  message:
+                    type: string
+                    example: 'Charger Details by Location'
+                    x-example2: 'No chargers found in {city}'
+                    x-params:
+                      - name: city
+                        type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Charger'
+                    nullable: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v2/chargers/city/{cityName}:
+    get:
+      tags:
+        - Locations
+      summary: Get chargers by city (paginated)
+      description: Retrieves a paginated list of all chargers in a specific city
+      x-future: true
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cityName
+          in: path
+          required: true
+          schema:
+            type: string
+          description: City name
+          example: Pimpri
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Chargers in city retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                    x-example2: false
+                  message:
+                    type: string
+                    example: 'Charger Details by Location'
+                    x-example2: 'No chargers found in {city}'
+                    x-params:
+                      - name: city
+                        type: string
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Charger'
+                        nullable: true
+                      total:
+                        type: integer
+                        description: Total number of chargers
+                      page:
+                        type: integer
+                        description: Current page number
+                      limit:
+                        type: integer
+                        description: Items per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/users/is-phone-available: #Error in route, body is missing for req.body destructuring in controller
+    get:
+      tags:
+        - User Utilities
+      deprecated: true
+      summary: Check phone number availability
+      description: Checks if a phone number is available for registration
+      parameters:
+        - name: phoneNumber
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Phone number to check
+      responses:
+        '200':
+          description: Phone availability checked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  available:
+                    type: boolean
+                  message:
+                    type: string
+  /api/users/me/update-phone:
+    put:
+      tags:
+        - User Profile
+      summary: Update phone number
+      description: Updates the phone number of the authenticated user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                otp:
+                  type: string
+              required:
+                - phoneNumber
+                - otp
+      responses:
+        '200':
+          description: Phone number updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Phone number updated successfully'
+                  data:
+                    $ref: '#/components/schemas/User'
+  /api/upgrade-user-to-supervisor:
+    post:
+      tags:
+        - Administration
+      summary: Upgrade user to supervisor
+      description: Upgrades a user role to supervisor (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                newRole:
+                  type: string
+                  enum:
+                    - supervisor
+                    - administrator
+              required:
+                - userId
+                - newRole
+      responses:
+        '200':
+          $ref: '#/components/responses/GeneralSuccess'
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: User Management
+    description: User administration operations
+  - name: User Profile
+    description: User profile management
+  - name: User Utilities
+    description: User utility operations
+  - name: Vehicles
+    description: Vehicle management
+  - name: Chargers
+    description: Charger management and information
+  - name: Sessions
+    description: Charging session management
+  - name: Payments
+    description: Payment processing
+  - name: Wallet
+    description: Wallet and balance management
+  - name: Locations
+    description: Location and city information
+  - name: Administration
+    description: Administrative operations
