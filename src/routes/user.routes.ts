@@ -14,7 +14,7 @@ import {
     updateUserPhoneNo,
     listCustomers,
     addFcmToken,
-    updateUserEmail, verifyUserEmail, listCustomersV2
+    updateUserEmail, verifyUserEmail, listCustomersV2, listCustomersV3
 } from '../controllers/user.controller';
 import {authenticate, authorize} from "../middleware/auth.middleware";
 import {apiLimiter} from "../app";
@@ -207,6 +207,37 @@ router.get('/api/v2/users', authenticate, authorize(UserRoles.SUPERVISOR, UserRo
         if (isNaN(page) || page < 1) page = 1;
         if (isNaN(limit) || limit < 1) limit = 10;
         const result = await listCustomersV2(page,limit)
+        if (!result) {
+            throw new Error("Failed to fetch users");
+        }
+        const [customers,total] = result;
+        res.status(200).send(
+            {
+                success: true,
+                message: "User approved successfully",
+                data: customers,
+                meta : {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                }
+            });
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+})
+
+router.get('/api/v3/users', authenticate, authorize(UserRoles.SUPERVISOR, UserRoles.ADMINISTRATOR), async (req: Request, res: Response) => {
+    try {
+        let {page = 1, limit = 10} = req.query;
+        // Ensure page and limit are numbers
+        page = Number(page);
+        limit = Number(limit);
+        // Validate page and limit (optional: can add constraints for minimums or maximums)
+        if (isNaN(page) || page < 1) page = 1;
+        if (isNaN(limit) || limit < 1) limit = 10;
+        const result = await listCustomersV3(page,limit)
         if (!result) {
             throw new Error("Failed to fetch users");
         }
