@@ -371,6 +371,8 @@ async function listCustomersV3(page: number,limit: number) {
                 FROM users
                 WHERE role = $1
                 ORDER BY "updatedAt" DESC
+                LIMIT $2
+                OFFSET $3
             ) u
             LEFT JOIN (
                 SELECT 
