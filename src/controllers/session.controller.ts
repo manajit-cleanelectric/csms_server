@@ -16,8 +16,11 @@ import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
 import {sessionToIOngoingSession, sessionTOISessionCompact} from "../interface";
 import {decodeSessionIdRandomized, encodeSessionIdRandomized} from "../services/idCodec.service";
+import {moneyCheckerService} from "../services/moneyChecker.service";
+import {Wallet} from "../models/wallet.model";
+import {WALLET_MIN_BALANCE} from "../app";
 
-async function addSession(chargerId: string, connectorId: number, bin: string, meterStart: number, timestamp: any) {
+async function addSession(chargerId: string, connectorId: number, idTag: string, meterStart: number, timestamp: any) {
     // Create a new session
     const session = new Sessions();
     const charger = await Chargers.findOne({
@@ -42,12 +45,31 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
     }
     session.connector = connector;
     const vehicle = await Vehicles.findOne({
-        where: {bin: bin},
+        where: {bin: idTag},
         relations: ['user.wallet']
     });
     if (!vehicle) {
-        logger.error(`Vehicle with battery ID ${bin} not found`);
-        throw new ResourceNotFoundError(`Vehicle with battery ID ${bin} not found`);
+        const user = await Users.findOneByOrFail({id: idTag});
+        if (!user) {
+            logger.error(`Vehicle with battery ID ${idTag} not found`);
+            throw new ResourceNotFoundError(`Vehicle with battery ID ${idTag} not found`);
+        }
+        session.user = user;
+        session.startTime = timestamp;
+        session.meterStart = meterStart;
+        session.location = charger.address?.location;
+        await session.save();
+        return session;
+    } else {
+        session.vehicleNo = vehicle.vehicleNo;
+        session.vehicleVendor = vehicle.vendor;
+        session.vehicleModel = vehicle.model;
+        session.user = vehicle.user;
+        session.startTime = timestamp;
+        session.meterStart = meterStart;
+        session.location = charger.address?.location;
+        await session.save();
+        return session;
     }
     // const runningSession = await Sessions.findOne({
     //     where: {
@@ -58,15 +80,7 @@ async function addSession(chargerId: string, connectorId: number, bin: string, m
     // if (runningSession) {
     //     throw new ResourceAlreadyExistsError("An active session already exists for this vehicle");
     // }
-    session.vehicleNo = vehicle.vehicleNo;
-    session.vehicleVendor = vehicle.vendor;
-    session.vehicleModel = vehicle.model;
-    session.user = vehicle.user;
-    session.startTime = timestamp;
-    session.meterStart = meterStart;
-    session.location = charger.address?.location;
-    await session.save();
-    return session;
+
 }
 
 async function endSession(sessionId: number, data: any) {
@@ -394,6 +408,38 @@ async function sendRemoteStopTransaction(chargerId: string, transactionId: numbe
     return true;
 }
 
+
+async function sendRemoteStartTransaction(userId: string ,chargerSerialNumber: string, plugNumber: number) {
+    await moneyCheckerService(userId);
+    const wallet  = await Wallet.findOne({
+        where: {
+            user: {id: userId}
+        }
+    });
+    if (!wallet || Number(wallet.balance)<WALLET_MIN_BALANCE) {
+        return false;
+    }
+    const charger = await Chargers.findOneByOrFail({serialNumber: chargerSerialNumber})
+    if (!charger) {
+        return false;
+    }
+    const chargerId = charger.id;
+    const rpcClient = ChargerWebsocketMap.get(String(chargerId));
+    if (!rpcClient) {
+        logger.error(`Charger with ID ${chargerId} not connected`);
+        throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
+    }
+    const response: any = await rpcClient.call("RemoteStartTransaction", {
+        connectorId: plugNumber,
+        idTag: userId,
+    });
+    if (response?.status !== "Accepted") {
+        logger.error(`Failed to Stop Transaction Remotely to charger ${chargerId}: ${response.status}`);
+        return false;
+    }
+    return true;
+}
+
 export {
     addSession,
     endSession,
@@ -404,5 +450,6 @@ export {
     getOngoingSessionV2,
     sendRemoteStopTransaction,
     listAllChargerSessions,
-    getSessionInvoiceDetails
+    getSessionInvoiceDetails,
+    sendRemoteStartTransaction
 }

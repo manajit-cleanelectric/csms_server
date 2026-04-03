@@ -1,12 +1,15 @@
 import {Request, Response, Router} from 'express';
 import {
-    getOngoingSession, getOngoingSessionV2,
-    getSession, getSessionInvoiceDetails,
+    getOngoingSession,
+    getOngoingSessionV2,
+    getSession,
+    getSessionInvoiceDetails,
     listAllChargerSessions,
-    listAllUserSessions, listUserSessionsV2,
+    listAllUserSessions,
+    listUserSessionsV2, sendRemoteStartTransaction,
     sendRemoteStopTransaction
 } from '../controllers/session.controller';
-import {authenticate, authorize} from "../middleware/auth.middleware";
+import {authenticate, authorize, UserPayload} from "../middleware/auth.middleware";
 import {logger} from "../services/logger.service";
 import {UserRoles} from "../models/user.model";
 import {handleError} from "../errors/customErrors";
@@ -123,6 +126,31 @@ router.post('/api/users/:userId/session/remote-stop-transaction', authenticate, 
             res.status(200).send({
                 success: false,
                 message: "Transaction Stop Request could not be sent.",
+                data: null
+            });
+            return;
+        }
+        res.status(200).send({success: true, message: "Transaction Stop Request Sent", data: null});
+    } catch (error: any) {
+        handleError(error, res, logger);
+    }
+});
+
+
+router.post('/api/users/:userId/session/remote-start-transaction', authenticate, authorize(UserRoles.CUSTOMER), async (req: Request, res: Response) => {
+    try {
+        let {chargerSerialNumber, plugNumber} = req.body;
+        plugNumber = Number(plugNumber);
+        const user: UserPayload | undefined = req.user;
+        if (!user) {
+            res.status(401).send({success: false, message: "Something went wrong", data: null});
+            return;
+        }
+        const status = await sendRemoteStartTransaction(user.id, chargerSerialNumber, plugNumber);
+        if (!status) {
+            res.status(200).send({
+                success: false,
+                message: "Transaction Start Request could not be sent.",
                 data: null
             });
             return;
