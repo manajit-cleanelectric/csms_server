@@ -155,7 +155,7 @@ router.post('/api/users/:userId/session/remote-start-transaction', authenticate,
             });
             return;
         }
-        res.status(200).send({success: true, message: "Transaction Stop Request Sent", data: null});
+        res.status(200).send({success: true, message: "Transaction Start Request sent.", data: null});
     } catch (error: any) {
         handleError(error, res, logger);
     }
