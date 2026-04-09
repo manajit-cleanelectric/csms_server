@@ -27,7 +27,7 @@ async function sendTextSms(phoneNumber: string, message: string) {
     const body = new URLSearchParams({
         route: 'dlt',
         sender_id: 'CLNELC',
-        message: '204586',
+        message: '207929',
         variables_values: message,
         schedule_time: '',
         flash: '0',
