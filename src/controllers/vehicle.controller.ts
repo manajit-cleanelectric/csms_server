@@ -298,7 +298,9 @@ async function updateVehicle(vehicleId: string, data: any) {
     vehicle.vendor = data.vendor ?? vehicle.vendor;
     vehicle.vin = data.vin ?? vehicle.vin;
     vehicle.bin = data.bin ?? vehicle.bin;
-    vehicle.vehicleNo = data.vehicleNo ?? vehicle.vehicleNo;
+    if (data.vehicleNo && data.vehicleNo.trim() !== "") {
+        vehicle.vehicleNo = data.vehicleNo;
+    }
     await vehicle.save();
     return vehicle;
 }
