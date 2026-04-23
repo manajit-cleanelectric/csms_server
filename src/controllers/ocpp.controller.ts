@@ -19,7 +19,7 @@ const handleBootNotification = async ({client, params}: { client: any; params: a
 };
 
 const handleHeartbeat = async ({client, params}: { client: any; params: any }) => {
-    logger.info(`Received Heartbeat from ${client.identity}`);
+    // logger.info(`Received Heartbeat from ${client.identity}`);
     try {
         await Chargers.update({id: client.identity!}, {
             status: ChargerStatus.AVAILABLE,
