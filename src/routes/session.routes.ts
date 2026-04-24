@@ -15,6 +15,8 @@ import {UserRoles} from "../models/user.model";
 import {handleError} from "../errors/customErrors";
 import {encodeSessionIdRandomized} from "../services/idCodec.service";
 import {parseDate} from "../utils/money";
+import {Sessions, SessionStatus} from "../models/session.model";
+import {In} from "typeorm";
 
 
 const router: Router = Router();
@@ -148,6 +150,20 @@ router.post('/api/users/:userId/session/remote-start-transaction', authenticate,
         }
         const status = await sendRemoteStartTransaction(user.id, chargerSerialNumber, plugNumber);
         if (!status) {
+            const sessions = await Sessions.find({
+                where: {
+                    charger:{serialNumber: chargerSerialNumber},
+                    status: In([SessionStatus.PREPARING,SessionStatus.CHARGING]),
+                },
+            });
+            if(sessions.length > 0){
+                res.status(409).send({
+                    success: false,
+                    message: "Ongoing session on the charger.",
+                    data: null
+                });
+                return;
+            }
             res.status(200).send({
                 success: false,
                 message: "Transaction Start Request could not be sent.",
