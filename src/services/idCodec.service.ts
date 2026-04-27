@@ -1,22 +1,22 @@
-import { createHmac } from 'crypto';
+import {createHmac} from 'crypto';
 
-const RADIX = BigInt(36);               // 0-9A-Z
+const RADIX = BigInt(32);               // 1-9 A-H J-N P R-Z
 const LEN = 10;                         // length 10 digits
-const N = RADIX ** BigInt(LEN);         // domain size = 36^10
+const N = RADIX ** BigInt(LEN);         // domain size = 32^10
 
 // Split 10 digits as 5|5 for balanced Feistel (equal halves for better randomization)
 const L_LEN = 5;
 const R_LEN = LEN - L_LEN; // 5
-const MOD_L = RADIX ** BigInt(L_LEN); // 36^5
-const MOD_R = RADIX ** BigInt(R_LEN); // 36^5
+const MOD_L = RADIX ** BigInt(L_LEN); // 32^5
+const MOD_R = RADIX ** BigInt(R_LEN); // 32^5
 
-const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' as const;
+const ALPHABET = '123456789ABCDEFGHJKLMNPRSTUVWXYZ' as const;
 
-function toBase36Fixed(n: bigint, length = LEN): string {
-    if (n < BigInt(0) || n >= N) throw new RangeError(`Out of domain 0..36^${LEN}-1`);
+function toBase32Fixed(n: bigint, length = LEN): string {
+    if (n < BigInt(0) || n >= N) throw new RangeError(`Out of domain 0..32^${LEN}-1`);
     if (n === BigInt(0)) return '0'.repeat(length);
     let s = '';
-    const base = BigInt(36);
+    const base = BigInt(32);
     let x = n;
     while (x > BigInt(0)) {
         const rem = Number(x % base);
@@ -26,12 +26,12 @@ function toBase36Fixed(n: bigint, length = LEN): string {
     return s.padStart(length, '0');
 }
 
-function fromBase36Fixed(s: string): bigint {
-    if (!/^[0-9A-Z]{10}$/.test(s)) throw new RangeError('Expected 10 chars [0-9A-Z]');
+function fromBase32Fixed(s: string): bigint {
+    if (!/^[1-9A-HJ-NPR-Z]{10}$/.test(s)) throw new RangeError('Expected 10 chars [0-9A-Z]');
     let n = BigInt(0);
     for (const ch of s) {
         const v = ALPHABET.indexOf(ch);
-        n = n * BigInt(36) + BigInt(v);
+        n = n * BigInt(32) + BigInt(v);
     }
     return n;
 }
@@ -73,7 +73,7 @@ function F(key: Buffer, side: bigint, round: number, mod: bigint, sideBytes = 8)
 
 // Enhanced Feistel permutation with more rounds for better randomization
 function feistelPermute(x: bigint, key: Buffer, rounds = 12): bigint {
-    if (x < BigInt(0) || x >= N) throw new RangeError(`Out of domain 0..36^${LEN}-1`);
+    if (x < BigInt(0) || x >= N) throw new RangeError(`Out of domain 0..32^${LEN}-1`);
 
     // Split into L and R (both 4 digits for balanced Feistel)
     let L = x % MOD_L;
@@ -90,7 +90,7 @@ function feistelPermute(x: bigint, key: Buffer, rounds = 12): bigint {
 }
 
 function feistelInvert(y: bigint, key: Buffer, rounds = 12): bigint {
-    if (y < BigInt(0) || y >= N) throw new RangeError(`Out of domain 0..36^${LEN}-1`);
+    if (y < BigInt(0) || y >= N) throw new RangeError(`Out of domain 0..32^${LEN}-1`);
 
     // Split y the same way as in permute: R * MOD_L + L
     let R = y / MOD_L;  // Extract R (left 5 digits)
@@ -122,14 +122,14 @@ function feistelInvert(y: bigint, key: Buffer, rounds = 12): bigint {
  */
 function encodeSessionIdRandomized(input: number | bigint, secretKey: string, rounds = 12): string {
     const n = typeof input === 'bigint' ? input : BigInt(input);
-    if (n < BigInt(0) || n >= N) throw new RangeError(`Input must be 0 <= n < 36^${LEN}`);
+    if (n < BigInt(0) || n >= N) throw new RangeError(`Input must be 0 <= n < 32^${LEN}`);
 
     // Use the secret key directly - no input-specific derivation
     // This ensures deterministic output for the same input
     const key = Buffer.from(secretKey, 'utf8');
 
     const perm = feistelPermute(n, key, rounds);
-    const code = toBase36Fixed(perm);
+    const code = toBase32Fixed(perm);
     return `session_${code}`;
 }
 
@@ -142,17 +142,59 @@ function encodeSessionIdRandomized(input: number | bigint, secretKey: string, ro
  * @throws RangeError if sessionId format is invalid or decoding fails
  */
 function decodeSessionIdRandomized(sessionId: string, secretKey: string, rounds = 12): bigint {
-    const m = sessionId.match(/^session_([0-9A-Z]{10})$/);
+    const m = sessionId.match(/^session_([1-9A-HJ-NPR-Z]{10})$/);
     if (!m) throw new RangeError('Invalid session id format');
 
-    const perm = fromBase36Fixed(m[1]); // Fixed: was m[21]
+    const perm = fromBase32Fixed(m[1]); // Fixed: was m[21]
     const key = Buffer.from(secretKey, 'utf8');
     return feistelInvert(perm, key, rounds);
 }
 
+/**
+ * Generates a randomized charger serial from a numeric input using a Feistel network.
+ * @param input A string in the format 'CCXXXXXXXXXXXXXX' where X are digits (14 digits total)
+ * @param secretKey A secret key string used for HMAC in the Feistel rounds
+ * @param rounds Number of Feistel rounds (default 12)
+ * @returns A charger serial string in the format of 10 base32 chars (1-9A-HJ-NPR-Z)
+ * @throws RangeError if input format is invalid or out of range
+ */
+function encodeChargerSerialRandomized(input: string, secretKey: string, rounds = 12): string {
+    const m = input.match(/^CC([0-9]{14})$/);
+    if (!m) throw new RangeError('Invalid charger serial Number format');
+
+    const n = BigInt(m[1]);
+    if (n < BigInt(0) || n >= N) throw new RangeError(`Input must be 0 <= n < 32^${LEN}`);
+
+    // Use the secret key directly - no input-specific derivation
+    // This ensures deterministic output for the same input
+    const key = Buffer.from(secretKey, 'utf8');
+
+    const perm = feistelPermute(n, key, rounds);
+    return toBase32Fixed(perm);
+}
+
+/**
+* Decodes a randomized charger serial back to the original numeric input.
+* @param encoded A charger serial string in the format of 10 base32 chars (1-9A-HJ-NPR-Z)
+* @param secretKey The same secret key string used for encoding
+* @param rounds Number of Feistel rounds (default 12)
+* @returns The original numeric input as a string in the format 'CCXXXXXXXXXXXXXX'
+* @throws RangeError if encoded format is invalid or decoding fails
+*/
+function decodeChargerSerialRandomized(encoded: string, secretKey: string, rounds = 12): string {
+    if (!/^[1-9A-HJ-NPR-Z]{10}$/.test(encoded)) throw new RangeError('Invalid encoded charger serial format');
+
+    const perm = fromBase32Fixed(encoded);
+    const key = Buffer.from(secretKey, 'utf8');
+    const n = feistelInvert(perm, key, rounds);
+
+    return `CC${n.toString().padStart(14, '0')}`;
+}
 
 
 export {
     encodeSessionIdRandomized,
     decodeSessionIdRandomized,
+    encodeChargerSerialRandomized,
+    decodeChargerSerialRandomized,
 };

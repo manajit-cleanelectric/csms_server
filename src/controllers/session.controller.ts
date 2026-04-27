@@ -15,7 +15,11 @@ import {Between, In, LessThanOrEqual, MoreThanOrEqual} from "typeorm";
 import {SessionProducer} from "../kafka/producers/session.producer";
 import {cronWorker} from "../utils/workers";
 import {sessionToIOngoingSession, sessionTOISessionCompact} from "../interface";
-import {decodeSessionIdRandomized, encodeSessionIdRandomized} from "../services/idCodec.service";
+import {
+    decodeChargerSerialRandomized,
+    decodeSessionIdRandomized,
+    encodeSessionIdRandomized
+} from "../services/idCodec.service";
 import {moneyCheckerService} from "../services/moneyChecker.service";
 import {Wallet} from "../models/wallet.model";
 import {WALLET_MIN_BALANCE} from "../app";
@@ -419,6 +423,7 @@ async function sendRemoteStartTransaction(userId: string ,chargerSerialNumber: s
     if (!wallet || Number(wallet.balance)<WALLET_MIN_BALANCE) {
         return false;
     }
+    chargerSerialNumber = decodeChargerSerialRandomized(chargerSerialNumber, process.env.ID_CODEC_KEY!);
     const charger = await Chargers.findOneByOrFail({serialNumber: chargerSerialNumber})
     if (!charger) {
         return false;
