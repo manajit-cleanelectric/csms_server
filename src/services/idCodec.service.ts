@@ -1,4 +1,5 @@
 import {createHmac} from 'crypto';
+import {ResourceNotFoundError} from "../errors/customErrors";
 
 const RADIX = BigInt(32);               // 1-9 A-H J-N P R-Z
 const LEN = 10;                         // length 10 digits
@@ -182,7 +183,7 @@ function encodeChargerSerialRandomized(input: string, secretKey: string, rounds 
 * @throws RangeError if encoded format is invalid or decoding fails
 */
 function decodeChargerSerialRandomized(encoded: string, secretKey: string, rounds = 12): string {
-    if (!/^[1-9A-HJ-NPR-Z]{10}$/.test(encoded)) throw new RangeError('Invalid encoded charger serial format');
+    if (!/^[1-9A-HJ-NPR-Z]{10}$/.test(encoded)) throw new ResourceNotFoundError('Invalid charger serial format');
 
     const perm = fromBase32Fixed(encoded);
     const key = Buffer.from(secretKey, 'utf8');
