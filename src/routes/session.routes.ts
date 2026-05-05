@@ -13,7 +13,7 @@ import {authenticate, authorize, UserPayload} from "../middleware/auth.middlewar
 import {logger} from "../services/logger.service";
 import {UserRoles} from "../models/user.model";
 import {handleError} from "../errors/customErrors";
-import {encodeSessionIdRandomized} from "../services/idCodec.service";
+import {decodeChargerSerialRandomized, encodeSessionIdRandomized} from "../services/idCodec.service";
 import {parseDate} from "../utils/money";
 import {Sessions, SessionStatus} from "../models/session.model";
 import {In} from "typeorm";
@@ -152,12 +152,12 @@ router.post('/api/users/:userId/session/remote-start-transaction', authenticate,
         }
         const charger = await Chargers.find({
             where: {
-                serialNumber: chargerSerialNumber
+                serialNumber: decodeChargerSerialRandomized(chargerSerialNumber, process.env.ID_CODEC_KEY!)
             }
         });
         const connector = await Connectors.find({
             where: {
-                charger: {serialNumber: chargerSerialNumber},
+                charger: {serialNumber: decodeChargerSerialRandomized(chargerSerialNumber, process.env.ID_CODEC_KEY!)},
                 chargerConnectorId: plugNumber
             }
         });
