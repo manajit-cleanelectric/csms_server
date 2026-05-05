@@ -17,6 +17,8 @@ import {encodeSessionIdRandomized} from "../services/idCodec.service";
 import {parseDate} from "../utils/money";
 import {Sessions, SessionStatus} from "../models/session.model";
 import {In} from "typeorm";
+import {Chargers} from "../models/charger.model";
+import {Connectors} from "../models/connector.model";
 
 
 const router: Router = Router();
@@ -146,6 +148,25 @@ router.post('/api/users/:userId/session/remote-start-transaction', authenticate,
         const user: UserPayload | undefined = req.user;
         if (!user) {
             res.status(401).send({success: false, message: "Something went wrong", data: null});
+            return;
+        }
+        const charger = await Chargers.find({
+            where: {
+                serialNumber: chargerSerialNumber
+            }
+        });
+        const connector = await Connectors.find({
+            where: {
+                charger: {serialNumber: chargerSerialNumber},
+                chargerConnectorId: plugNumber
+            }
+        });
+        if (connector.length === 0 || charger.length === 0) {
+            res.status(400).send({
+                success: false,
+                message: "Charger does not exist.",
+                data: null
+            });
             return;
         }
         const status = await sendRemoteStartTransaction(user.id, chargerSerialNumber, plugNumber);
