@@ -432,7 +432,8 @@ async function sendRemoteStartTransaction(userId: string ,chargerSerialNumber: s
     const rpcClient = ChargerWebsocketMap.get(String(chargerId));
     if (!rpcClient) {
         logger.info(`Charger with ID ${chargerId} not connected`);
-        throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
+        return false;
+        // throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
     }
     logger.info(`Sending RemoteStartTransaction to Charger with ID ${chargerId}`);
     const response: any = await rpcClient.call("RemoteStartTransaction", {

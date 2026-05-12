@@ -173,7 +173,7 @@ router.post('/api/users/:userId/session/remote-start-transaction', authenticate,
         if (!status) {
             const sessions = await Sessions.find({
                 where: {
-                    charger:{serialNumber: chargerSerialNumber},
+                    charger:{serialNumber: decodeChargerSerialRandomized(chargerSerialNumber, process.env.ID_CODEC_KEY!)},
                     status: In([SessionStatus.PREPARING,SessionStatus.CHARGING]),
                 },
             });
