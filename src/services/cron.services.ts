@@ -67,7 +67,7 @@ const scheduleHeartbeatJob = () => {
         const expiredSessions = await Sessions.find({
             where: {
                 updatedAt: LessThan(cutOffTime),
-                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING]),
+                status: In([SessionStatus.CHARGING, SessionStatus.PREPARING, SessionStatus.FINISHING, SessionStatus.IDLE, SessionStatus.SUSPENDED, SessionStatus.UNAVAILABLE]),
             },
             relations: ['connector.currentSession',],
         });
