@@ -399,7 +399,7 @@ async function sendRemoteStopTransaction(chargerId: string, transactionId: numbe
         logger.error(`Charger with ID ${chargerId} not connected`);
         throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
     }
-
+    logger.info(`Sending RemoteStopTransaction for transaction ID: ${transactionId}`)
     const response: any = await rpcClient.call("RemoteStopTransaction", {
         transactionId: transactionId
     });
@@ -414,15 +414,6 @@ async function sendRemoteStopTransaction(chargerId: string, transactionId: numbe
 
 
 async function sendRemoteStartTransaction(userId: string ,chargerSerialNumber: string, plugNumber: number) {
-    await moneyCheckerService(userId);
-    const wallet  = await Wallet.findOne({
-        where: {
-            user: {id: userId}
-        }
-    });
-    if (!wallet || Number(wallet.balance)<WALLET_MIN_BALANCE) {
-        return false;
-    }
     chargerSerialNumber = decodeChargerSerialRandomized(chargerSerialNumber, process.env.ID_CODEC_KEY!);
     const charger = await Chargers.findOneByOrFail({serialNumber: chargerSerialNumber})
     if (!charger) {
@@ -436,16 +427,84 @@ async function sendRemoteStartTransaction(userId: string ,chargerSerialNumber: s
         // throw new ResourceNotFoundError(`Charger with ID ${chargerId} not connected`);
     }
     logger.info(`Sending RemoteStartTransaction to Charger with ID ${chargerId}`);
-    const response: any = await rpcClient.call("RemoteStartTransaction", {
-        connectorId: plugNumber,
-        idTag: userId,
-    });
+    const response: any = await remoteStartTransactionHelper(rpcClient,plugNumber, userId);
     if (response?.status !== "Accepted") {
         logger.info(`RemoteStartTransaction ${response.status} by charger with Charger ID ${chargerId}`);
         return false;
     }
     logger.info(`RemoteStartTransaction ${response.status} by charger with Charger ID ${chargerId}`);
     return true;
+}
+
+function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function remoteStartTransactionHelper(
+    rpcClient: any,
+    plugNumber: number,
+    userId: string
+) {
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        let responses: any[] = [];
+        const payload = {
+            connectorId: plugNumber,
+            idTag: userId,
+        };
+        const processResponse = (response: any) => {
+            if (settled) return;
+            responses.push(response);
+            // ACCEPTED always wins
+            if (response?.status === "Accepted") {
+                settled = true;
+                clearTimeout(globalTimeout);
+                if(secondRequestTimeout) {
+                    clearTimeout(secondRequestTimeout);
+                }
+                resolve(response);
+                return;
+            }
+            // if both responses arrived and none accepted
+            if (responses.length >= 2) {
+                settled = true;
+                clearTimeout(globalTimeout);
+                resolve(response);
+            }
+        };
+
+        const processError = (err: any) => {
+            console.log("RPC failed:", err);
+        };
+
+        const globalTimeout = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            // reject(new Error("RemoteStartTransaction timeout"));
+            resolve({status: 'Rejected'})
+        }, 30000);
+
+        // Request 1
+        rpcClient
+            .call("RemoteStartTransaction", payload)
+            .then((response: any)=>{
+                console.log("Received Response 1");
+                processResponse(response)
+            })
+            .catch(processError);
+
+        // Retry after 5 sec
+        const secondRequestTimeout = setTimeout(() => {
+            if (settled) return;
+            rpcClient
+                .call("RemoteStartTransaction", payload)
+                .then((response: any)=>{
+                    console.log("Received Response 2");
+                    processResponse(response)
+                })
+                .catch(processError);
+        }, 5000);
+    });
 }
 
 export {

@@ -19,6 +19,9 @@ import {Sessions, SessionStatus} from "../models/session.model";
 import {In} from "typeorm";
 import {Chargers} from "../models/charger.model";
 import {Connectors} from "../models/connector.model";
+import { moneyCheckerService } from '../services/moneyChecker.service';
+import { Wallet } from '../models/wallet.model';
+import { WALLET_MIN_BALANCE } from '../app';
 
 
 const router: Router = Router();
@@ -148,6 +151,16 @@ router.post('/api/users/:userId/session/remote-start-transaction', authenticate,
         const user: UserPayload | undefined = req.user;
         if (!user) {
             res.status(401).send({success: false, message: "Something went wrong", data: null});
+            return;
+        }
+        const userId = user.id;
+        const wallet  = await Wallet.findOne({
+            where: {
+                user: {id: userId}
+            }
+        });
+        if (!wallet || Number(wallet.balance)<WALLET_MIN_BALANCE) {
+            res.status(406).send({success: false, message: "Insufficient Balance", data: null});
             return;
         }
         const charger = await Chargers.find({
