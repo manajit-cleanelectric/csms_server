@@ -5,7 +5,15 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "nodemon",
-    "test": "jest",
+    "test": "cross-env NODE_ENV=test jest",
+    "test:watch": "cross-env NODE_ENV=test jest --watch",
+    "test:coverage": "cross-env NODE_ENV=test jest --coverage",
+    "test:unit": "cross-env NODE_ENV=test jest src/tests/unit",
+    "test:integration": "cross-env NODE_ENV=test jest src/tests/integration",
+    "test:kafka": "cross-env NODE_ENV=test jest src/tests/integration/kafka",
+    "test:ocpp": "cross-env NODE_ENV=test jest src/tests/integration/ocpp",
+    "test:routes": "cross-env NODE_ENV=test jest src/tests/integration/routes",
+    "test:detect": "cross-env NODE_ENV=test jest --detectOpenHandles",
     "docs": "typedoc",
     "docs:serve": "typedoc && npx http-server docs -p 8080 -o",
     "typeorm:migration:gen": "node -r ts-node/register --env-file=.env ./node_modules/typeorm/cli.js migration:generate -d src/database/datasource.ts",
@@ -35,13 +43,14 @@
     "rate-limit-redis": "^4.2.1",
     "razorpay": "^2.9.6",
     "sharp": "^0.34.3",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.25",
     "uuid": "^11.1.0",
     "ws": "^8.18.3",
-    "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.29.7",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/jest": "^30.0.0",
@@ -50,7 +59,10 @@
     "@types/node": "^24.9.2",
     "@types/nodemailer": "^7.0.1",
     "@types/supertest": "^6.0.3",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/ws": "^8.18.1",
+    "@types/yamljs": "^0.2.34",
+    "cross-env": "^10.1.0",
     "jest": "^30.0.5",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.4",
@@ -58,9 +70,7 @@
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.13",
     "typedoc-plugin-markdown": "^4.8.1",
-    "typescript": "^5.9.3",
-    "@types/swagger-ui-express": "^4.1.8",
-    "@types/yamljs": "^0.2.34"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": "^v22.19.0"
