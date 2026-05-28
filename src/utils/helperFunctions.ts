@@ -2,7 +2,11 @@ import path from "path";
 import {logger} from "../services/logger.service";
 import * as fs from "node:fs";
 
-const STATIC_DIR = path.join(__dirname, "..", "..", process.env.STATIC_FOLDER!);
+const STATIC_FOLDER = process.env.STATIC_FOLDER || 'public';
+
+const STATIC_DIR = path.join(__dirname, '..', '..', STATIC_FOLDER);
+// const STATIC_DIR = path.join(__dirname, "..", "..", process.env.STATIC_FOLDER!);
+
 
 export function deleteImageFromDisk(imagePath: string): void {
     if (!imagePath) return;
